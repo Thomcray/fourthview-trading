@@ -19,15 +19,15 @@ export default function Hero() {
         <h1 className="max-sm:text-4xl font-extrabold text-blue-950 sm:text-5xl lg:text-5xl">
           Fourth View has you covered
         </h1>
-      </div>
 
-      <Button
-        variant="outline"
-        className="absolute top-2 left-4 bg-blue-950 text-white flex items-center cursor-pointer hover:text-blue-950"
-      >
-        All Categories
-        <Menu className="ml-2 text-white" strokeWidth={2} size={20} />
-      </Button>
+        <Button
+          variant="outline"
+          className="absolute top-4 left-4 bg-blue-950 text-white flex items-center cursor-pointer hover:text-blue-950"
+        >
+          All Categories
+          <Menu className="ml-2 text-white" strokeWidth={2} size={20} />
+        </Button>
+      </div>
 
       <div className="bg-blue-950 text-white text-center py-8 px-4 sm:px-6 lg:px-8 space-y-2">
         <p className="lg:text-xl font-normal">

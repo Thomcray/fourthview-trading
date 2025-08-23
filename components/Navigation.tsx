@@ -16,7 +16,7 @@ export default function Navigation() {
   const navList: Array<NavType> = [
     { name: "Help", href: "/help", icon: HelpCircle },
     { name: "Cart", href: "/cart", icon: ShoppingCart },
-    { name: "Login / Sign up", href: "/login-signup", icon: UserRound },
+    { name: "Login / Sign up", href: "/signin", icon: UserRound },
   ];
   return (
     <nav className="border-0 w-full max-sm:w-full flex flex-row space-x-1.5 justify-end">

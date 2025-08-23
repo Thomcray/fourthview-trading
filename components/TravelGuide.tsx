@@ -18,7 +18,7 @@ export default function TravelGuide() {
         </div>
 
         <div className="w-1/2 max-sm:w-full py-8 items-center flex flex-col border-0 space-y-4">
-          <h1 className="font-bold text-3xl w-96 max-sm:w-80 text-center">
+          <h1 className="font-bold text-3xl w-96 max-sm:w-80 text-center text-blue-950">
             Travel Guide/ Factory Visit
           </h1>
 

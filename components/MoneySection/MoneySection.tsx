@@ -47,7 +47,7 @@ export default function MoneySection() {
           )}
         </div>
         <div className="relative w-1/2 max-sm:w-full items-center flex flex-col border-0 py-8 lg:h-72 space-y-4">
-          <h1 className="font-bold text-3xl w-60 text-center">
+          <h1 className="font-bold text-3xl w-60 text-center text-blue-950">
             Change money with us
           </h1>
 

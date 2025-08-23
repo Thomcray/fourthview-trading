@@ -1,14 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header/Header";
 import "./globals.css";
-import {
-  Facebook,
-  Mail,
-  MessageCircle,
-  MessageSquareText,
-  Phone,
-  Twitter,
-} from "lucide-react";
 
 type CustomMetadata = {
   title: {
@@ -46,24 +38,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        <Header />
-
         <div className="w-full flex-1 border">
           <main className="mx-auto border-0">{children}</main>
         </div>
-
-        <footer className="w-full border-0 bg-black text-white text-center py-4">
-          <h1 className="font-semibold text-xl leading-12">Contact Us</h1>
-          <div className="flex justify-center space-x-4">
-            <Mail className="h-6 w-6 text-white" />
-            <Phone className="h-6 w-6 text-white" />
-            <Twitter className="h-6 w-6 text-white" />
-            <Facebook className="h-6 w-6 text-white" />
-            <MessageCircle className="h-6 w-6 text-white" />
-            <MessageSquareText className="h-6 w-6 text-white" />
-          </div>
-          {/* &copy; 2025 Fourthview Trading. All rights reserved. */}
-        </footer>
       </body>
     </html>
   );

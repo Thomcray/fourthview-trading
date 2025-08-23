@@ -8,7 +8,7 @@ export default function FurnitureSection() {
     <section className="w-full flex items-center border-0 px-8 py-12 sm:px-2 max-sm:px-4 bg-blue-50">
       <div className="flex flex-row max-sm:flex-col mx-auto justify-between space-x-4 px-4 w-full sm:px-6 lg:px-8 text-center items-center border-0">
         <div className="w-1/2 max-sm:w-full py-8 items-center flex flex-col border-0 space-y-4">
-          <h1 className="font-bold text-3xl w-96 max-sm:w-80 text-center">
+          <h1 className="font-bold text-3xl w-96 max-sm:w-80 text-center text-blue-950">
             Furniture
           </h1>
 
