@@ -13,7 +13,7 @@ export default function FurnitureSection() {
           </h1>
 
           <p className="lg:text-lg sm:text-base leading-8 text-left max-sm:text-center w-full">
-            From sleek contemporary pieces to timeless classics, we've got
+            From sleek contemporary pieces to timeless classics, we&apos;ve got
             something for every aesthetic. Elevate your space with elegance and
             comfort.
           </p>

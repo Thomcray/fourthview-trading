@@ -10,9 +10,9 @@ export default function ShopWithUs() {
           <h1 className="font-bold text-3xl w-96 text-center">Shop with us</h1>
 
           <p className="lg:text-lg leading-8 sm:text-md text-left sm:text-base max-sm:text-center w-full">
-            Whether you're hunting for everyday essentials or that one special
-            find, our intuitive layout and smart search features ensure you get
-            exactly what you need with minimal fuss. Dive in and explore
+            Whether you&apos;re hunting for everyday essentials or that one
+            special find, our intuitive layout and smart search features ensure
+            you get exactly what you need with minimal fuss. Dive in and explore
           </p>
 
           <Button

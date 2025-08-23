@@ -53,9 +53,9 @@ export default function MoneySection() {
 
           <p className="text-lg leading-8 text-left max-sm:text-center w-full">
             Experience hassle - free currency exchange at your finger tips.
-            Whether you're traveling abroad, sending money to loved ones, or
-            managing international payments, we offer a fast, transparent, and
-            secure transactions.
+            Whether you&apos;re traveling abroad, sending money to loved ones,
+            or managing international payments, we offer a fast, transparent,
+            and secure transactions.
           </p>
 
           <Button

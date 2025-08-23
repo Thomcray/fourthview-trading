@@ -3,9 +3,7 @@ import Image from "next/image";
 import fourthviewLogo from "@/public/fourthviewLogo.png";
 import Navigation from "../Navigation";
 
-type Props = {};
-
-export default function Header({}: Props) {
+export default function Header() {
   return (
     <header className="border-0 py-4 px-8 max-sm:px-4 bg-blue-50 shadow-sm">
       <div className="w-full mx-auto flex flex-row justify-between items-center border-0">
