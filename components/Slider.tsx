@@ -43,6 +43,7 @@ export default function AppCarousel() {
                   <Image
                     src={image}
                     alt="carousel-images"
+                    placeholder="blur"
                     fill
                     className={`${
                       image.src.includes("slideImage1")

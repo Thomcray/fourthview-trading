@@ -57,11 +57,7 @@ export default function BookModal() {
           Get Started
         </Button>
       </DialogTrigger>
-      <DialogContent
-        className={`${geistSans.className} antialiased w-full h-full ${
-          fDetails ? "overflow-y-scroll" : ""
-        }`}
-      >
+      <DialogContent className={`${geistSans.className} antialiased w-full`}>
         <DialogHeader className="px-0 mt-4">
           <DialogTitle className="text-base">Personal Information</DialogTitle>
 
@@ -102,7 +98,7 @@ export default function BookModal() {
         )}
 
         {fDetails && purpose === "Factory Visit" && (
-          <div className="grid gap-6 px-0 py-4">
+          <div className="grid gap-6 px-0 overflow-y-scroll ">
             <div className="grid gap-3">
               <Label htmlFor="tabs-demo-factorname">Factory Name</Label>
               <Input
@@ -119,7 +115,7 @@ export default function BookModal() {
                 placeholder="Factory Address"
               />
             </div>
-            <div className="w-80 grid gap-3 border-0">
+            <div className="h-40 grid gap-3 border-0">
               <Label htmlFor="tabs-demo-visitdate">Visit Date</Label>
               <Calendar
                 mode="single"
