@@ -1,6 +1,8 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Josefin_Sans } from "next/font/google";
 import Header from "@/components/Header/Header";
+
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 type CustomMetadata = {
   title: {
@@ -20,6 +22,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const josefin = Josefin_Sans({
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: CustomMetadata = {
   title: {
     template: "%s / Fourthview-Trading",
@@ -36,11 +43,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${josefin.className} ${geistSans.variable} antialiased flex flex-col min-h-screen`}
       >
-        <div className="w-full flex-1 border">
-          <main className="mx-auto border-0">{children}</main>
-        </div>
+        {children}
       </body>
     </html>
   );

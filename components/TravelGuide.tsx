@@ -1,9 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "./ui/button";
 
 import factoryImage from "@/public/factoryImage.png";
+import { useRouter } from "next/navigation";
 
 export default function TravelGuide() {
+  const router = useRouter();
   return (
     <section className="w-full flex items-center border-0 px-8 sm:px-2 max-sm:px-4 bg-blue-50">
       <div className="flex flex-row max-sm:flex-col-reverse mx-auto justify-between sm:space-x-4 px-4 w-full sm:px-6 lg:px-8 text-center items-center border-0">
@@ -31,6 +35,9 @@ export default function TravelGuide() {
           <Button
             variant="outline"
             className="text-white bg-blue-950 self-start"
+            onClick={() => {
+              router.push("/travel");
+            }}
           >
             Get Started
           </Button>
