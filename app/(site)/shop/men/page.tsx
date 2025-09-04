@@ -10,7 +10,7 @@ import Trousers from "@/components/ShopWithUs/Trousers";
 import menBanner from "@/public/menBanner.png";
 import { usePathname } from "next/navigation";
 
-export default function page() {
+export default function Page() {
   const pathName = usePathname();
 
   const currLocation = pathName === "/shop/men";

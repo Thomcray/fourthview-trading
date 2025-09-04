@@ -11,7 +11,7 @@ import Trousers from "@/components/ShopWithUs/Trousers";
 import Jewelry from "@/components/ShopWithUs/Women/Jewelry";
 import Shoes from "@/components/ShopWithUs/Men/Shoes";
 
-export default function page() {
+export default function Page() {
   const pathName = usePathname();
 
   const currLocation = pathName === "/shop/women";
