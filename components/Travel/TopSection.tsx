@@ -1,6 +1,4 @@
 import AppCarousel from "../Slider";
-import BookWithUs from "./BookWithUs";
-import ServicesOffered from "./ServicesOffered";
 
 export default function TopSection() {
   return (

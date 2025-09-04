@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Banner from "@/components/ShopWithUs/Banner";
 import { usePathname } from "next/navigation";
 

@@ -1,8 +1,5 @@
 import { Geist, Geist_Mono, Josefin_Sans } from "next/font/google";
-import Header from "@/components/Header/Header";
-
 import "./globals.css";
-import Footer from "@/components/Footer";
 
 type CustomMetadata = {
   title: {
@@ -14,11 +11,6 @@ type CustomMetadata = {
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
