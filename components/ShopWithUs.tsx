@@ -1,8 +1,12 @@
+"use client";
+
 import shopWithUsImage from "@/public/shopWith.png";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function ShopWithUs() {
+  const router = useRouter();
   return (
     <section className="w-full flex items-center border-0 px-8 sm:px-2 py-12 max-sm:px-4 bg-blue-50">
       <div className="flex flex-row max-sm:flex-col sm:space-x-4 mx-auto justify-between px-4 w-full sm:px-6 lg:px-8 text-center items-center border-0">
@@ -20,6 +24,7 @@ export default function ShopWithUs() {
           <Button
             variant="outline"
             className="text-white bg-blue-950 self-start"
+            onClick={() => router.push("/shop")}
           >
             Get Started
           </Button>

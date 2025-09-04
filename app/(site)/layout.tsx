@@ -1,6 +1,5 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header/Header";
-import { Metadata } from "next";
 import { Josefin_Sans } from "next/font/google";
 
 const josefin = Josefin_Sans({

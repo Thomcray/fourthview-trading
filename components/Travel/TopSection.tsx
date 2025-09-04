@@ -26,9 +26,6 @@ export default function TopSection() {
           goods, factory visits, travel guide, and currency exchange.
         </p>
       </div>
-
-      <ServicesOffered />
-      <BookWithUs />
     </div>
   );
 }
