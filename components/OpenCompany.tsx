@@ -1,9 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "./ui/button";
 
 import chineseStatue from "@/public/chineseStatue.png";
+import { useRouter } from "next/navigation";
 
 export default function OpenCompany() {
+  const router = useRouter();
   return (
     <section className="w-full flex items-center border-0 px-8 py-12 sm:px-2 max-sm:px-4 bg-blue-50 pb-12">
       <div className="flex flex-row max-sm:flex-col-reverse space-x-4 mx-auto justify-between px-4 w-full sm:px-6 lg:px-8 text-center items-center border-0">
@@ -30,6 +34,9 @@ export default function OpenCompany() {
           <Button
             variant="outline"
             className="text-white bg-blue-950 self-start"
+            onClick={() => {
+              router.push("/open-a-company");
+            }}
           >
             Get Started
           </Button>

@@ -60,7 +60,7 @@ export default function BookModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <Dropdown purpose={purpose} setPurpose={setPurpose} />
+        <Dropdown purpose={purpose} setPurpose={setPurpose} type="booking" />
 
         {!fDetails && (
           <div className="grid gap-6 px-0 py-4">

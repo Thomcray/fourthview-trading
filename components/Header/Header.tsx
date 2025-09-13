@@ -13,8 +13,8 @@ export default function Header() {
             <Image
               src={fourthviewLogo}
               alt="fourthviewLogo"
-              height="40"
-              width="40"
+              priority
+              className="w-10 h-10 object-cover"
             />
           </Link>
           <h1 className="text-2xl font-bold text-blue-950 flex flex-col max-sm:hidden">

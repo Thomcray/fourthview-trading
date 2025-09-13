@@ -1,9 +1,12 @@
+"use client";
+
 import Image from "next/image";
 
 import nairaCurrency from "@/public/naira-image.png";
 import yuanCurrency from "@/public/yuan-image.png";
 import cryptoTether from "@/public/tether-image.png";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 export default function MoneySection() {
   const currencyImages = [
@@ -11,6 +14,8 @@ export default function MoneySection() {
     { src: yuanCurrency, alt: "Yuan Currency", width: 160, height: 180 },
     { src: cryptoTether, alt: "Crypto Tether", width: 250, height: 250 },
   ];
+
+  const router = useRouter();
 
   return (
     <section className="w-full border-0 px-8 max-sm:px-4 bg-blue-50">
@@ -61,6 +66,7 @@ export default function MoneySection() {
           <Button
             variant="outline"
             className="text-white bg-blue-950 absolute bottom-0 left-0"
+            onClick={() => router.push("/change-money")}
           >
             Get Started
           </Button>

@@ -1,8 +1,8 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header/Header";
-import { Josefin_Sans } from "next/font/google";
+import { Outfit } from "next/font/google";
 
-const josefin = Josefin_Sans({
+const outfit = Outfit({
   subsets: ["latin"],
   display: "swap",
 });
@@ -12,7 +12,7 @@ export default function siteLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div
-      className={`${josefin.className} antialiased flex flex-col min-h-screen`}
+      className={`${outfit.className} antialiased flex flex-col min-h-screen`}
     >
       <Header />
       <div className="w-full flex-1 border-0">

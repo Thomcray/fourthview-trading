@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Josefin_Sans } from "next/font/google";
+import { Geist, Inter } from "next/font/google";
 import "./globals.css";
 
 type CustomMetadata = {
@@ -14,7 +14,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const josefin = Josefin_Sans({
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
 });
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${josefin.className} ${geistSans.variable} antialiased flex flex-col min-h-screen`}
+        className={`${inter.className} antialiased flex flex-col min-h-screen`}
       >
         {children}
       </body>
