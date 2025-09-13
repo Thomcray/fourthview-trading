@@ -43,7 +43,7 @@ export default function page() {
         </h2>
 
         <p className="lg:text-lg leading-8 sm:text-base text-center max-sm:text-center w-full">
-          Unlock access to the world's largest markets. From comapny
+          Unlock access to the world&apos;s largest markets. From comapny
           registration to legal compliance, Our experts team guides you through
           every step of setting up your business in China efficiently,
           transparently, and with full local suppprt.

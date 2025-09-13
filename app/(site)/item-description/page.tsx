@@ -14,7 +14,7 @@ interface Category {
   itemName: string;
   image: StaticImageData;
 }
-export default function page() {
+export default function ItemDescription() {
   const [selectedItem, setSelectedItem] = useState<Category[] | null>(null);
   const [value, setValue] = useState(1);
   const searchParams = useSearchParams();
