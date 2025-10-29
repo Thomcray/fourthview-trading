@@ -42,7 +42,7 @@ export async function verifyEmail(formData: FormData) {
   const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString(); // valid for 10 minutes
 
   // store user in temp location in db
-  const { data, error } = await supabase.from("tempUsers").insert({
+  const { error } = await supabase.from("tempUsers").insert({
     firstName,
     lastName,
     email,
@@ -60,7 +60,7 @@ export async function verifyEmail(formData: FormData) {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "Fourthview <onboarding@resend.dev>",
       to: email,
       subject: "Confirm your email",
@@ -77,7 +77,7 @@ export async function verifyEmail(formData: FormData) {
     }
 
     return { success: true, message: "Verification email sent" };
-  } catch (error) {
+  } catch {
     return { success: false, message: "Could not send email" };
   }
 }

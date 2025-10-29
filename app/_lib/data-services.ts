@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 
 export async function getUserRole(id: number) {
-  let { data: userRole, error } = await supabase
+  const { data: userRole, error } = await supabase
     .from("userRole")
     .select("*")
     .eq("userId", id)
@@ -13,7 +13,7 @@ export async function getUserRole(id: number) {
 }
 
 export async function getTempUserByToken(token: string) {
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from("tempUsers")
     .select("*")
     .eq("token", token)
@@ -25,11 +25,15 @@ export async function getTempUserByToken(token: string) {
 }
 
 export async function getUserByEmail(email: string) {
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from("users")
     .select("*")
     .eq("email", email)
     .single();
+
+  if (error) {
+    throw new Error("Could not fetch user!");
+  }
 
   return data;
 }
@@ -42,14 +46,14 @@ export async function getCountries() {
 
     const countries = await res.json();
     return countries;
-  } catch (error) {
-    return null;
+  } catch {
     // throw new Error("Could not fetch countries");
+    return null;
   }
 }
 
 export async function getCategories() {
-  let { data: categories, error } = await supabase
+  const { data: categories, error } = await supabase
     .from("categories")
     .select("name, image_url")
     .order("name");
@@ -69,7 +73,7 @@ type Category = {
 export async function getCategoryByName(
   name: string
 ): Promise<Category | null> {
-  let { data: category, error } = await supabase
+  const { data: category, error } = await supabase
     .from("categories")
     .select("id, name")
     .eq("name", name)

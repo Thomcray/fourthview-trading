@@ -30,7 +30,7 @@ export default function ProductForm({
         // reset form after product is created
         form.reset();
         // reset error state if error
-        error && setError("");
+        if (error) setError("");
       } catch (error) {
         setError("File must be an image and less than 2MB");
         toast.error((error as Error).message);

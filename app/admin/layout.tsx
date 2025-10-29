@@ -1,4 +1,3 @@
-import FilterSearch from "@/components/FilterSearch";
 import Header from "@/components/Header/Header";
 import AdminSide from "@/components/Sidebar/AdminSide";
 import { Outfit } from "next/font/google";
