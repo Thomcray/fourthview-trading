@@ -39,7 +39,7 @@ export async function createProduct(formData: FormData) {
       target,
       imageUrl: fileUrl,
     });
-  } catch (error) {
+  } catch {
     throw new Error("Could not create product");
   }
 }

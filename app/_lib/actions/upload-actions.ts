@@ -5,7 +5,7 @@ import { supabase } from "../supabase";
 export async function uploadProductImage(file: File) {
   const fileName = `${Date.now()}_${file.name}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("product-images")
     .upload(fileName, file);
 

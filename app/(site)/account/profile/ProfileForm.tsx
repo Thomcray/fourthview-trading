@@ -10,7 +10,7 @@ export default function ProfileForm({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const nameInitial = session?.user.firstName.charAt(0);
   return (

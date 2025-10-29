@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
-import { ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";

@@ -22,7 +22,7 @@ type SideMenu = {
 export default function AdminSide() {
   const pathname = usePathname();
 
-  const sideMenu = [
+  const sideMenu: SideMenu[] = [
     {
       title: "Dashboard",
       link: "/admin",

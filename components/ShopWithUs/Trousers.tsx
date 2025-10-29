@@ -2,11 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
-import { ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
-import AddToCart from "../AddToCart";
 
 export default function Trousers() {
   const pathName = usePathname();
@@ -57,7 +56,7 @@ export default function Trousers() {
                 Purchase
               </Button>
 
-              <AddToCart />
+              {/* <AddToCart /> */}
             </div>
           </div>
         ))}

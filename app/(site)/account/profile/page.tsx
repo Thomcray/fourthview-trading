@@ -5,7 +5,7 @@ import Phone from "@/components/Phone";
 export default async function page() {
   const countries = await getCountries();
 
-  const dialCode =
+  const dialCode: string =
     countries &&
     countries.map((country: any) => country.idd.root + country.idd.suffixes[0]);
 

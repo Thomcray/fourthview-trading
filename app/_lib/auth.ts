@@ -3,6 +3,17 @@ import { getUserByEmail, getUserRole } from "./data-services";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 
+type Helper = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  countryCode: string;
+  phone: string;
+  country: string;
+  userRole: string;
+};
+
 type Credentials = {
   email: string;
   password: string;
@@ -27,7 +38,7 @@ const authConfig: NextAuthOptions = {
         },
       },
 
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         const { email, password } = credentials as Credentials;
 
         const existingUser = await getUserByEmail(email);
@@ -45,7 +56,7 @@ const authConfig: NextAuthOptions = {
         try {
           const userRole = await getUserRole(existingUser.id);
           if (userRole) role = userRole.role;
-        } catch (error) {
+        } catch {
           console.log("Use default user-role");
         }
 
@@ -73,12 +84,12 @@ const authConfig: NextAuthOptions = {
       if (user) {
         token.id = user.id as string;
         token.email = user.email as string;
-        token.firstName = (user as any).firstName;
-        token.lastName = (user as any).lastName;
-        token.countryCode = (user as any).countryCode;
-        token.phone = (user as any).phone;
-        token.country = (user as any).country;
-        token.userRole = (user as any).userRole;
+        token.firstName = (user as Helper).firstName;
+        token.lastName = (user as Helper).lastName;
+        token.countryCode = (user as Helper).countryCode;
+        token.phone = (user as Helper).phone;
+        token.country = (user as Helper).country;
+        token.userRole = (user as Helper).userRole;
       }
       return token;
     },

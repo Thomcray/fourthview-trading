@@ -1,9 +1,8 @@
-import { ChevronRight, ShoppingCart } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
-import AddToCart from "../AddToCart";
 
 export default function OnSale() {
   return (
@@ -45,7 +44,7 @@ export default function OnSale() {
                 Purchase
               </Button>
 
-              <AddToCart />
+              {/* <AddToCart /> */}
             </div>
           </div>
         ))}
