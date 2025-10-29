@@ -12,7 +12,7 @@ export default function MoneySection() {
   const currencyImages = [
     { src: nairaCurrency, alt: "Naira Currency", width: 150, height: 180 },
     { src: yuanCurrency, alt: "Yuan Currency", width: 160, height: 180 },
-    { src: cryptoTether, alt: "Crypto Tether", width: 250, height: 250 },
+    { src: cryptoTether, alt: "Crypto Tether", width: 160, height: 80 },
   ];
 
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function MoneySection() {
   return (
     <section className="w-full border-0 px-8 max-sm:px-4 bg-blue-50">
       <div className="flex flex-row pt-12 space-x-4 max-sm:flex-col-reverse border-0 max-sm:gap-4 justify-between mx-auto">
-        <div className="grid grid-cols-2 border-0 w-1/2 max-sm:w-full px-4 gap-4">
+        <div className="grid grid-cols-2 max-sm:gap-y-2 border-0 w-1/2 max-sm:w-full px-4 gap-4">
           {currencyImages.map((currency, index) =>
             currency.src !== cryptoTether ? (
               <div
@@ -33,11 +33,12 @@ export default function MoneySection() {
                   width={currency.width}
                   height={currency.height}
                   placeholder="blur"
+                  className="w-40 h-40 object-cover"
                 />
               </div>
             ) : (
               <div
-                className="col-span-2 flex justify-center items-center bg-white rounded-md w-1/2 max-sm:h-24 justify-self-center"
+                className="col-span-2 py-1 flex justify-center items-center bg-white rounded-md w-80 max-sm:w-40 max-sm:h-40 justify-self-center"
                 key={index}
               >
                 <Image
@@ -46,6 +47,7 @@ export default function MoneySection() {
                   width={currency.width}
                   height={currency.height}
                   placeholder="blur"
+                  className="w-40 h-40 object-contain border-0"
                 />
               </div>
             )

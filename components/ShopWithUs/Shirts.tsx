@@ -6,6 +6,8 @@ import { ChevronRight, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
+import Link from "next/link";
+import AddToCart from "../AddToCart";
 
 export default function Shirts() {
   const pathName = usePathname();
@@ -37,11 +39,15 @@ export default function Shirts() {
             className="w-full h-full max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
             key={index}
           >
-            <Image
-              src={shoeImage}
-              alt="item-image"
-              className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
-            />
+            <Link
+              href={`/item-description?category=${item.toLowerCase()}&q=${item.toLowerCase()}`}
+            >
+              <Image
+                src={shoeImage}
+                alt="item-image"
+                className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
+              />
+            </Link>
             <p className="px-2 pt-2  text-blue-950 font-semibold">{item}</p>
 
             <p className="px-2 max-sm:px-2  py-0 max-sm:px-o text-blue-950 font-semibold">
@@ -55,9 +61,8 @@ export default function Shirts() {
               >
                 Purchase
               </Button>
-              <Button variant="outline" className="cursor-pointer px-4 w-fit">
-                <ShoppingCart color="#334EAC" />
-              </Button>
+
+              <AddToCart data={{ item, price: 20 }} />
             </div>
           </div>
         ))}

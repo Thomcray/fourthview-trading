@@ -6,6 +6,7 @@ import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
 import { usePathname } from "next/navigation";
+import AddToCart from "../AddToCart";
 
 export default function TopPicks() {
   const pathName = usePathname();
@@ -56,9 +57,8 @@ export default function TopPicks() {
               >
                 Purchase
               </Button>
-              <Button variant="outline" className="cursor-pointer px-4">
-                <ShoppingCart color="#334EAC" />
-              </Button>
+
+              <AddToCart />
             </div>
           </div>
         ))}

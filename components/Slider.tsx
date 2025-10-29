@@ -39,7 +39,7 @@ export default function AppCarousel() {
           {images.map((image, index) => (
             <CarouselItem key={index}>
               <div className="p-1">
-                <Card className="relative w-full h-96 p-0">
+                <Card className="relative flex-1 w-full h-96 p-0">
                   <Image
                     src={image}
                     alt="carousel-images"

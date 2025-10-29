@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
+import AddToCart from "../AddToCart";
 
 export default function OnSale() {
   return (
@@ -43,9 +44,8 @@ export default function OnSale() {
               >
                 Purchase
               </Button>
-              <Button variant="outline" className="cursor-pointer px-4 w-fit">
-                <ShoppingCart color="#334EAC" />
-              </Button>
+
+              <AddToCart />
             </div>
           </div>
         ))}

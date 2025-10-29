@@ -121,11 +121,15 @@
   }
 }
 
+.toast-container {
+  width: max-content !important;
+}
+
 h1,
 h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-geist-sans), sans-serif;
+p,
+li,
+input,
+span {
+  font-family: var(--font-outfit);
 }

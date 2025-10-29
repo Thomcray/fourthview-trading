@@ -6,6 +6,7 @@ import { ChevronRight, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
+import AddToCart from "@/components/AddToCart";
 
 export default function Jewelry() {
   const pathName = usePathname();
@@ -55,9 +56,8 @@ export default function Jewelry() {
               >
                 Purchase
               </Button>
-              <Button variant="outline" className="cursor-pointer px-4 w-fit">
-                <ShoppingCart color="#334EAC" />
-              </Button>
+
+              <AddToCart />
             </div>
           </div>
         ))}

@@ -16,6 +16,7 @@ export default function Banner({
         <Image
           src={banner}
           alt="banner"
+          fill
           placeholder="blur"
           className="w-full h-full object-cover border-0"
           style={{

@@ -1,5 +1,7 @@
-import { Geist, Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
+import { Bounce, ToastContainer } from "react-toastify";
 import "./globals.css";
+import { Providers } from "./providers";
 
 type CustomMetadata = {
   title: {
@@ -9,13 +11,9 @@ type CustomMetadata = {
   description: string;
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
   subsets: ["latin"],
-});
-
-const inter = Inter({
-  subsets: ["latin"],
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -35,9 +33,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} antialiased flex flex-col min-h-screen`}
+        className={`${outfit.className} antialiased flex flex-col min-h-screen`}
       >
-        {children}
+        <Providers>{children}</Providers>
+
+        <ToastContainer
+          position="top-center"
+          theme="dark"
+          rtl={false}
+          draggable
+          pauseOnHover
+          pauseOnFocusLoss
+          transition={Bounce}
+          hideProgressBar
+          autoClose={5000}
+          closeButton={false}
+          className="flex items-center min-w-40 text-sm text-slate-500 rounded-2xl toast-container"
+        />
       </body>
     </html>
   );
