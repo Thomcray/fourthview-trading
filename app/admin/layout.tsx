@@ -1,6 +1,6 @@
 "use client";
 
-import Header from "@/components/Header/Header";
+// import Header from "@/components/Header/Header";
 import AdminSide from "@/components/Sidebar/AdminSide";
 import { Outfit } from "next/font/google";
 
@@ -16,7 +16,7 @@ export default function adminLayout({
     <div
       className={`${outfit.className} antialiasedflex flex-col min-h-screen border-0`}
     >
-      <Header />
+      {/* <Header /> */}
       <div className="w-full flex flex-row gap-4 justify-center px-5 py-5 border-0">
         <AdminSide />
         <main className="flex flex-col px-4 max-sm:px-0 space-y-4 mx-auto flex-1 border-0">

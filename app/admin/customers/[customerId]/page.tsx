@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-export default async function Page({
+export default async function CustomerPage({
   params,
 }: {
   params: Promise<{ customerId: string }>;

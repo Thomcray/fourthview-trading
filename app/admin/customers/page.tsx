@@ -5,7 +5,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { CloudDownload, EllipsisVertical, Search } from "lucide-react";
 import Link from "next/link";
 
-export default function Cuatomers() {
+export default function Customers() {
   const headers = [
     "CustomerId",
     "First Name",
