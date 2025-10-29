@@ -1,4 +1,3 @@
-import { error } from "console";
 import { supabase } from "./supabase";
 
 export async function getUserRole(id: number) {

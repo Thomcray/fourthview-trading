@@ -103,12 +103,12 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log("Error", error);
     return NextResponse.json(
       {
         success: false,
-        message: error?.message || "Internal server error",
+        message: error || "Internal server error",
       },
       { status: 500 }
     );
