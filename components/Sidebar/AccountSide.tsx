@@ -9,7 +9,7 @@ import SignOutButton from "./SignOutButton";
 
 export default function AccountSide() {
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const isAdmin = session?.user.userRole;
 

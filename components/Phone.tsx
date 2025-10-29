@@ -6,9 +6,8 @@ import Selection from "./Selection";
 
 export default function Phone({
   uniqueDialCodes,
-  countries,
 }: {
-  uniqueDialCodes: unknown[];
+  uniqueDialCodes: string[];
   countries: unknown[];
 }) {
   const { data: session } = useSession();
@@ -27,7 +26,7 @@ export default function Phone({
 
       <div className="flex flex-row space-x-1 items-center border-0">
         <Selection defaultValue={defaultCode} width="w-18" name="countryCode">
-          {uniqueDialCodes.map((code: any) => (
+          {uniqueDialCodes.map((code) => (
             <option value={code} key={code}>
               {code}
             </option>

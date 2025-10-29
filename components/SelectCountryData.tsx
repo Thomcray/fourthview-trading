@@ -2,23 +2,32 @@ import Selection from "./Selection";
 import { getCountries } from "@/app/_lib/data-services";
 import { Input } from "./ui/input";
 
+interface Country {
+  name: {
+    common: string;
+    official: string;
+  };
+  idd: {
+    root: string;
+    suffixes: string[];
+  };
+}
+
 export default async function SelectCountryData() {
   const defaultCountry = "Federal Republic of Nigeria";
 
-  const countries = await getCountries();
+  const countries: Country[] = await getCountries();
 
-  const countryCode = countries.find(
+  const defaultCountryData = countries.find(
     (country: any) => country.name.official === defaultCountry
-  ).idd.root;
+  );
 
-  const countryDial = countries.find(
-    (country: any) => country.name.official === defaultCountry
-  ).idd.suffixes[0];
-
+  const countryCode = defaultCountryData?.idd.root || "";
+  const countryDial = defaultCountryData?.idd.suffixes[0] || "";
   const defaultDialCode = countryCode + countryDial;
 
   const dialCode = countries.map(
-    (country: any) => country.idd.root + country.idd.suffixes[0]
+    (country) => country.idd.root + country.idd.suffixes[0]
   );
 
   const uniqueDialCodes = Array.from(new Set(dialCode));
@@ -38,10 +47,8 @@ export default async function SelectCountryData() {
           name="country"
         >
           {countries
-            .sort((a: any, b: any) =>
-              a.name.common.localeCompare(b.name.common)
-            )
-            .map((country: any) => (
+            .sort((a, b) => a.name.common.localeCompare(b.name.common))
+            .map((country) => (
               <option value={country.name.official} key={country.name.official}>
                 {country.name.common}
               </option>
@@ -64,7 +71,7 @@ export default async function SelectCountryData() {
               width="w-32"
               name="countryCode"
             >
-              {uniqueDialCodes.map((code: any) => (
+              {uniqueDialCodes.map((code) => (
                 <option value={code} key={code}>
                   {code}
                 </option>

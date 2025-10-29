@@ -41,7 +41,7 @@ export function Dropdown({
   setSelectedCurr,
 }: Props) {
   function handleCurr(selectedCurr: ExCurr) {
-    setSelectedCurr && setSelectedCurr(selectedCurr);
+    setSelectedCurr!(selectedCurr);
   }
   return (
     <div className={`${type === "booking" ? "w-80" : "w-full"}`}>
@@ -86,7 +86,7 @@ export function Dropdown({
               <DropdownMenuRadioGroup
                 value={currency}
                 onValueChange={(value) => {
-                  setCurrency && setCurrency(value);
+                  setCurrency!(value);
 
                   const selectedRate = exchangerates.find(
                     (r) => r.from + " - " + r.to === value

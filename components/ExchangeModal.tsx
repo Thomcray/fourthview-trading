@@ -15,7 +15,7 @@ import { Dropdown } from "./Dropdown";
 import { useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Label } from "./ui/label";
-import Image from "next/image";
+// import Image from "next/image";
 
 type ExCurr = {
   from: string;
