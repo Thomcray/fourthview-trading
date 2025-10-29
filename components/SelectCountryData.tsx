@@ -19,7 +19,7 @@ export default async function SelectCountryData() {
   const countries: Country[] = await getCountries();
 
   const defaultCountryData = countries.find(
-    (country: any) => country.name.official === defaultCountry
+    (country) => country.name.official === defaultCountry
   );
 
   const countryCode = defaultCountryData?.idd.root || "";
