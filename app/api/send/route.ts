@@ -1,66 +1,80 @@
-"use server";
-
 import { supabase } from "./../../_lib/supabase";
 import { getUserByEmail } from "@/app/_lib/data-services";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
 
-export async function verifyEmail(formData: FormData) {
-  const firstName = formData.get("firstName") as string;
-  const lastName = formData.get("lastName") as string;
-  const email = formData.get("email") as string;
-  const country = formData.get("country") as string;
-  const countryCode = formData.get("countryCode") as string;
-  const phone = formData.get("phone") as string;
-  const password = formData.get("password") as string;
-
-  const token = uuidv4();
-
-  const passwordCheck =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
-
-  if (!passwordCheck.test(password))
-    throw new Error(
-      "Password must be 8-20 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character."
-    );
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  /**
-   * first check if user already exist in db
-   * if already exist, throw Error "User already exists"
-   * else store new user in temp location in db
-   * then send verify token to user email
-   */
-
-  const existingUser = await getUserByEmail(email);
-
-  if (existingUser) throw new Error("User already exists.");
-
-  //convert expiry to iso string to prevent timezone issues
-  const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString(); // valid for 10 minutes
-
-  // store user in temp location in db
-  const { error } = await supabase.from("tempUsers").insert({
-    firstName,
-    lastName,
-    email,
-    country,
-    countryCode,
-    phone,
-    password: hashedPassword,
-    token,
-    tokenExpiry,
-  });
-
-  if (error) throw new Error("Something went wrong.");
-
-  // Send confirmation email conataining token to user
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
+export async function POST(req: Request) {
   try {
-    const { error } = await resend.emails.send({
+    const formData = await req.formData();
+
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const email = formData.get("email") as string;
+    const country = formData.get("country") as string;
+    const countryCode = formData.get("countryCode") as string;
+    const phone = formData.get("phone") as string;
+    const password = formData.get("password") as string;
+
+    const token = uuidv4();
+
+    const passwordCheck =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
+
+    if (!passwordCheck.test(password))
+      NextResponse.json(
+        {
+          success: false,
+          message:
+            "Password must be 8-20 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+        },
+        { status: 400 }
+      );
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    /**
+     * first check if user already exist in db
+     * if already exist, throw Error "User already exists"
+     * else store new user in temp location in db
+     * then send verify token to user email
+     */
+
+    const existingUser = await getUserByEmail(email);
+
+    if (existingUser)
+      return NextResponse.json(
+        { success: false, message: "User already exists." },
+        { status: 400 }
+      );
+
+    //convert expiry to iso string to prevent timezone issues
+    const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString(); // valid for 10 minutes
+
+    // store user in temp location in db
+    const { error } = await supabase.from("tempUsers").insert({
+      firstName,
+      lastName,
+      email,
+      country,
+      countryCode,
+      phone,
+      password: hashedPassword,
+      token,
+      tokenExpiry,
+    });
+
+    if (error)
+      return NextResponse.json(
+        { success: false, message: "Something went wrong." },
+        { status: 500 }
+      );
+
+    // Send confirmation email conataining token to user
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    const { error: mailErr } = await resend.emails.send({
       from: "Fourthview <onboarding@resend.dev>",
       to: email,
       subject: "Confirm your email",
@@ -72,12 +86,31 @@ export async function verifyEmail(formData: FormData) {
       <p>If you did not sign up for this account, please ignore this email.</p>`,
     });
 
-    if (error) {
-      return { success: false, message: "Could not send email" };
+    if (mailErr) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Could not send email",
+        },
+        { status: 500 }
+      );
     }
 
-    return { success: true, message: "Verification email sent" };
-  } catch {
-    return { success: false, message: "Could not send email" };
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Verification email sent",
+      },
+      { status: 500 }
+    );
+  } catch (error: any) {
+    console.log("Error", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: error?.message || "Internal server error",
+      },
+      { status: 500 }
+    );
   }
 }

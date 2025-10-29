@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeClosed } from "lucide-react";
 import { toast } from "react-toastify";
-import { verifyEmail } from "@/app/api/send/route";
 import PasswordValidity from "@/components/PasswordValidity";
 
 type Props = {
@@ -22,16 +21,15 @@ export default function SignupForm({ children }: Props) {
     const formData = new FormData(e.target as HTMLFormElement);
 
     startTransition(async () => {
-      try {
-        const res = await verifyEmail(formData);
-        if (!res.success) {
-          toast.error(res.message);
-        } else {
-          toast.success(res.message);
-        }
-      } catch (error) {
-        toast.error((error as Error).message);
-      }
+      const res = await fetch("/api/send", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) toast.error(data?.message);
+      else toast.success(data?.message);
     });
   };
 

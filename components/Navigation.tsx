@@ -31,8 +31,6 @@ export default function Navigation() {
 
   const cartLen = cart.length;
 
-  console.log(cartLen);
-
   return (
     <nav className="border-0 w-full max-sm:w-full flex flex-row space-x-1.5 justify-end">
       <ul className="flex items-center flex-row space-x-4">

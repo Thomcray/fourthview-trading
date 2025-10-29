@@ -1,3 +1,4 @@
+import { error } from "console";
 import { supabase } from "./supabase";
 
 export async function getUserRole(id: number) {
@@ -29,10 +30,10 @@ export async function getUserByEmail(email: string) {
     .from("users")
     .select("*")
     .eq("email", email)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    throw new Error("Could not fetch user!");
+    throw error;
   }
 
   return data;
