@@ -59,8 +59,8 @@ export async function getCategories() {
     .order("name");
 
   if (error) {
-    console.log(error);
-    throw new Error("Could not fetch categories");
+    // throw new Error("Could not fetch categories");
+    return null;
   }
 
   return categories;
@@ -86,9 +86,16 @@ export async function getCategoryByName(
   return category;
 }
 
+type Colour = {
+  name: string;
+  hex: string;
+};
+
 type Product = {
   name: string;
   description: string;
+  productType: string;
+  colours: Colour[];
   quantity: number;
   price: number;
   discount?: number;

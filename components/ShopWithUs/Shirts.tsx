@@ -8,6 +8,7 @@ import Image from "next/image";
 import shoeImage from "@/public/shoeImage.png";
 import Link from "next/link";
 import AddToCart from "../AddToCart";
+import ProductPrice from "../ProductPrice";
 
 export default function Shirts() {
   const pathName = usePathname();
@@ -48,10 +49,10 @@ export default function Shirts() {
                 className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
               />
             </Link>
-            <p className="px-2 pt-2  text-blue-950 font-semibold">{item}</p>
+            <p className="px-2 pt-2  text-blue-950 font-normal">{item}</p>
 
-            <p className="px-2 max-sm:px-2  py-0 max-sm:px-o text-blue-950 font-semibold">
-              $20
+            <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+              <ProductPrice yuanPrice={20} />
             </p>
 
             <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">

@@ -3,9 +3,14 @@
 import { getCategoryByName, newProduct } from "../data-services";
 import { uploadProductImage } from "./upload-actions";
 
-export async function createProduct(formData: FormData) {
+type Colour = {
+  name: string;
+  hex: string;
+};
+export async function createProduct(formData: FormData, colours: Colour[]) {
   const productName = formData.get("productName") as string;
   const description = formData.get("description") as string;
+  const productType = formData.get("type") as string;
   const file_ = formData.get("productImage") as File;
   const price = parseFloat(formData.get("price") as string);
   const discount = parseFloat(formData.get("discount") as string);
@@ -31,6 +36,8 @@ export async function createProduct(formData: FormData) {
     await newProduct({
       name: productName,
       description,
+      productType,
+      colours,
       quantity: 0,
       price,
       discount,
