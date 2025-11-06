@@ -86,23 +86,18 @@ export async function getCategoryByName(
   return category;
 }
 
-type Colour = {
-  name: string;
-  hex: string;
-};
-
 type Product = {
   name: string;
   description: string;
   productType: string;
-  colours: Colour[];
+  colours: string[];
   quantity: number;
   price: number;
   discount?: number;
   discountType?: string;
   categoryId: number;
   target: string;
-  imageUrl: string;
+  imageUrl: string[];
 };
 
 export async function newProduct(product: Product) {

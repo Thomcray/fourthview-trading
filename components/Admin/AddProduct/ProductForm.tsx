@@ -10,17 +10,13 @@ import Pricing from "./Pricing";
 import OtherInformation from "./OtherInformation";
 import AvailableColours from "./AvailableColours";
 
-type Colour = {
-  name: string;
-  hex: string;
-};
-
 export default function ProductForm({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [colours, setColours] = useState<Colour[]>([]);
+  const [colours, setColours] = useState<string[]>([]);
+  const [images, setImages] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
@@ -32,7 +28,7 @@ export default function ProductForm({
 
     startTransition(async () => {
       try {
-        await createProduct(formData, colours);
+        await createProduct(formData, colours, images);
         toast.success("Product created successfully!");
 
         // reset form after product is created
@@ -70,11 +66,11 @@ export default function ProductForm({
       )}
 
       <div
-        className="w-full lg:h-60 flex flex-row max-sm:flex-col justify-between items-center gap-4 py-4 
+        className="w-full flex flex-col justify-between items-center gap-4 py-4 
             px-4 border rounded-md"
       >
         <GeneralInformation />
-        <ProductMedia />
+        <ProductMedia images={images} setImages={setImages} />
       </div>
 
       <div className="w-full flex flex-row max-sm:flex-col justify-between items-center gap-4 py-4 px-4 border rounded-md">

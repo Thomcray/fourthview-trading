@@ -13,7 +13,12 @@ export default function OtherInformation({
 
       <div className="w-full flex flex-col gap-4 border-0">
         <Label className="text-sm text-slate-500 flex flex-col gap-1 text-left items-baseline font-light">
-          <Selection defaultValue="Select Type" name="type" width="w-full">
+          <Selection
+            defaultValue="Select Type"
+            name="type"
+            width="w-full"
+            required={false}
+          >
             {["Shirt", "Trouser", "Shoes", "Jewelry"]?.map((item) => (
               <option value={item} key={item}>
                 {item}
