@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bell,
   HelpCircle,
   type LucideIcon,
   ShoppingCart,

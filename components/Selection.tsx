@@ -5,7 +5,7 @@ type Props = {
   width?: string;
   margin?: string;
   name: string;
-  required: boolean;
+  required?: boolean;
 };
 
 export default function Selection({
