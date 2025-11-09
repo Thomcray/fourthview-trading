@@ -19,9 +19,9 @@ export async function uploadProductImage(file: File) {
   if (error) throw new Error(error.message);
 
   //   get image path from bucket
-  const { data: publicUrlData } = await supabase.storage
+  const { data } = await supabase.storage
     .from("product-images")
-    .getPublicUrl(fileName);
+    .createSignedUrl(fileName, 60 * 60 * 24 * 365); // expire after 1 year;
 
-  return publicUrlData.publicUrl;
+  return data?.signedUrl;
 }

@@ -3,7 +3,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import React from "react";
 
-export default function GeneralInformation() {
+type GeneralInformationProductType = {
+  product?: {
+    id: number;
+    name: string;
+    description: string;
+    productType: string;
+    colours: string[];
+    price: number;
+    discount: number;
+    discountType: string;
+    categoryId: number;
+    target: string;
+    imageUrl: string[];
+  } | null;
+};
+export default function GeneralInformation({
+  product,
+}: GeneralInformationProductType) {
   return (
     <div className="w-full flex flex-col gap-4 max-sm:px-4">
       <h2 className="text-base text-black">General Information</h2>
@@ -13,6 +30,7 @@ export default function GeneralInformation() {
         <Input
           type="text"
           name="productName"
+          defaultValue={product?.name}
           placeholder="Product name"
           className="py-6 px-4"
           required
@@ -23,6 +41,7 @@ export default function GeneralInformation() {
         Description
         <Textarea
           name="description"
+          defaultValue={product?.description}
           placeholder="Product description"
           className="py-6 px-4"
           required

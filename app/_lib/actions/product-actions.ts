@@ -41,7 +41,7 @@ export async function createProduct(
       throw new Error("File must be less than 2MB!");
 
     const fileURl = await uploadProductImage(file);
-    uploadedImageUrls.push(fileURl);
+    if (fileURl) uploadedImageUrls.push(fileURl);
   }
 
   try {

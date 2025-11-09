@@ -55,7 +55,7 @@ export async function getCountries() {
 export async function getCategories() {
   const { data: categories, error } = await supabase
     .from("categories")
-    .select("name, image_url")
+    .select("id, name, image_url")
     .order("name");
 
   if (error) {
@@ -110,4 +110,48 @@ export async function newProduct(product: Product) {
   }
 
   return data;
+}
+
+export async function updateCurrentProduct(
+  product: Partial<Product>,
+  productId: number
+) {
+  const { data, error } = await supabase
+    .from("products")
+    .update([product])
+    .eq("id", productId);
+
+  if (error) {
+    throw new Error("Could not update product");
+  }
+
+  return data;
+}
+
+export async function getAllProducts() {
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("id, name, description, categoryId, price");
+
+  if (error) {
+    return null;
+  }
+
+  return products;
+}
+
+export async function getProductById(id: number) {
+  const { data: product, error } = await supabase
+    .from("products")
+    .select(
+      "id, name, description, productType, colours, price, discount, discountType, categoryId, target, imageUrl"
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return null;
+  }
+
+  return product;
 }
