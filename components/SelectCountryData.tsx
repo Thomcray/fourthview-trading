@@ -56,7 +56,7 @@ export default async function SelectCountryData() {
         </Selection>
       </div>
 
-      <div>
+      <div className="w-full border-0">
         <label
           htmlFor="phone"
           className="block text-sm font-medium text-gray-700"
@@ -64,18 +64,22 @@ export default async function SelectCountryData() {
           Phone Number
         </label>
 
-        <div className="flex flex-row space-x-1 items-center border-0">
-          <div className="flex flex-row space-x-1 items-center border-0">
+        <div className="w-full flex flex-row space-x-1 items-center border-0">
+          <div className="w-full flex flex-row space-x-1 items-center border-0">
             <Selection
               placeholder={defaultDialCode}
-              width="w-32"
+              defaultValue={defaultDialCode}
+              width="w-fit"
               name="countryCode"
             >
-              {uniqueDialCodes.map((code) => (
-                <option value={code} key={code}>
-                  {code}
-                </option>
-              ))}
+              {uniqueDialCodes.map(
+                (code) =>
+                  code !== "undefined" && (
+                    <option value={code} key={code}>
+                      {code}
+                    </option>
+                  )
+              )}
             </Selection>
 
             <Input

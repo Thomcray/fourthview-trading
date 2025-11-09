@@ -25,12 +25,15 @@ export default function Phone({
       </label>
 
       <div className="flex flex-row space-x-1 items-center border-0">
-        <Selection defaultValue={defaultCode} width="w-18" name="countryCode">
-          {uniqueDialCodes.map((code) => (
-            <option value={code} key={code}>
-              {code}
-            </option>
-          ))}
+        <Selection defaultValue={defaultCode} width="w-fit" name="countryCode">
+          {uniqueDialCodes.map(
+            (code) =>
+              code !== "undefined" && (
+                <option value={code} key={code}>
+                  {code}
+                </option>
+              )
+          )}
         </Selection>
 
         <Input

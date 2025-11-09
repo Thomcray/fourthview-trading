@@ -51,7 +51,7 @@ export default function Pricing({ product }: ProductType) {
             type="number"
             name="discount"
             defaultValue={product?.discount ? product.discount : ""}
-            placeholder="10"
+            placeholder="e.g 10"
             className="py-6 px-4"
           />
         </Label>
