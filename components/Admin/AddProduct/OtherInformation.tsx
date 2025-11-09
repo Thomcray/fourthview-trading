@@ -19,7 +19,7 @@ export default function OtherInformation({
           <Selection
             defaultValue={productType ? productType : "Select Type"}
             name="type"
-            width="w-full"
+            width="w-96 max-sm:w-full"
             required={false}
           >
             {["Shirt", "Trouser", "Shoes", "Jewelry"]?.map((item) => (
