@@ -1,18 +1,31 @@
 "use client";
 
+import { useApp } from "../AppContext";
 import { Button } from "../ui/button";
 import { ChevronRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 
-import shoeImage from "@/public/shoeImage.png";
-import { usePathname } from "next/navigation";
 import ProductPrice from "../ProductPrice";
+import AddToCart from "../AddToCart";
+import Link from "next/link";
 // import AddToCart from "../AddToCart";
 
 export default function TopPicks() {
+  const { allProducts: products } = useApp();
+
   const pathName = usePathname();
 
-  const shopType = pathName === "/shop/men" || pathName === "/shop/women";
+  const shopTypeMap: Record<string, string> = {
+    "/shop/men": "men",
+    "/shop/women": "women",
+  };
+
+  const shopType = shopTypeMap[pathName] || "";
+
+  const productTarget = products.filter((product) =>
+    product.target.toLowerCase().includes(shopType)
+  );
 
   return (
     <div
@@ -22,48 +35,60 @@ export default function TopPicks() {
           : "border-0 px-8 py-4 w-full flex flex-col"
       }
     >
-      <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
-        <h1 className="font-normal text-md w-96 max-sm:w-80 text-white">
-          Top Picks for You
-        </h1>
+      {productTarget.length > 0 && (
+        <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
+          <h1 className="font-normal text-md w-96 max-sm:w-80 text-white">
+            Top Picks for You
+          </h1>
 
-        <ChevronRight
-          color="white"
-          strokeWidth={1.5}
-          className="cursor-pointer"
-        />
-      </div>
+          <ChevronRight
+            color="white"
+            strokeWidth={1.5}
+            className="cursor-pointer"
+          />
+        </div>
+      )}
 
-      <div className="w-full h-fit flex flex-row items-center border-0 max-sm:space-x-4 md:space-x-4 py-2 max-sm:pb-12 px-4 max-sm:px-2 max-sm:overflow-x-scroll">
-        {["Bags", "Shoes", "Socks", "Caps"].map((item, index) => (
-          <div
-            className="w-full h-full bg-white max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
-            key={index}
-          >
-            <Image
-              src={shoeImage}
-              alt="item-image"
-              className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
-            />
-            <p className="px-2 pt-2  text-blue-950 font-normal">{item}</p>
-
-            <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
-              <ProductPrice yuanPrice={20} />
-            </p>
-
-            <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
-              <Button
-                variant="outline"
-                className="bg-[#334EAC] text-white font-semibold cursor-pointer"
+      {productTarget.length > 0 && (
+        <div className="w-full h-fit flex flex-row items-center border-0 max-sm:space-x-4 md:space-x-4 py-2 max-sm:pb-12 px-4 max-sm:px-2 max-sm:overflow-x-scroll">
+          {productTarget.map((item, index) => (
+            <div
+              className="relative w-80 bg-white max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
+              key={index}
+            >
+              <Link
+                href={`/item-description?category=${item.categoryId}&q=${item.name.toLowerCase()}`}
               >
-                Purchase
-              </Button>
+                <Image
+                  src={item.imageUrl[0]}
+                  alt="item-image"
+                  width={200}
+                  height={200}
+                  className=" max-sm:w-40 max-sm:h-20 h-60 w-full object-cover rounded-md max-sm:rounded-none cursor-pointer"
+                />
+                <p className="px-2 pt-2  text-blue-950 font-normal">
+                  {item.name}
+                </p>
 
-              {/* <AddToCart /> */}
+                <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+                  <ProductPrice yuanPrice={item.price} />
+                </p>
+
+                <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
+                  <Button
+                    variant="outline"
+                    className="bg-[#334EAC] text-white font-semibold cursor-pointer"
+                  >
+                    Purchase
+                  </Button>
+
+                  <AddToCart data={item} />
+                </div>
+              </Link>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

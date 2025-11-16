@@ -1,3 +1,6 @@
+"use client";
+
+import { useApp } from "../AppContext";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 
@@ -5,6 +8,8 @@ import shoeImage from "@/public/shoeImage.png";
 import Link from "next/link";
 
 export default function ShopByCategory() {
+  const { allCategories: categories } = useApp();
+
   return (
     <div className="border-0 px-8 py-4 w-full">
       <Link href="/category">
@@ -24,22 +29,29 @@ export default function ShopByCategory() {
         </div>
       </Link>
 
-      <div className="w-full h-fit flex flex-row items-center max-sm:space-x-4 md:space-x-4 py-2 px-4 max-sm:px-2 border-0">
-        {["Bags", "Shoes", "Socks", "Caps"].map((item, index) => (
-          <div
-            className="w-full h-full max-sm:w-full space-x-4 border max-sm:border-0 px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
-            key={index}
-          >
-            <Image
-              src={shoeImage}
-              alt="item-image"
-              className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
-            />
-            <p className="w-full px-2 py-2 max-sm:px-0 text-blue-950 font-semibold">
-              {item}
-            </p>
-          </div>
-        ))}
+      <div className="w-full flex flex-row max-sm:pb-12 space-x-4 py-2 px-4 overflow-x-scroll border-0">
+        {categories.map(
+          (item, index) =>
+            item.image_url && (
+              <div className="flex flex-col gap-y-1 border-0">
+                <div
+                  className="flex-shrink-0 w-40 h-40 max-sm:w-32 max-sm:h-32 relative rounded-md overflow-hidden"
+                  key={index}
+                >
+                  <Image
+                    src={item.image_url}
+                    alt={item.name || "category-image"}
+                    fill
+                    className="object-cover rounded-md max-sm:rounded-none"
+                  />
+                </div>
+
+                <p className="w-full py-2 max-sm:px-0 text-black font-normal text-sm border-0">
+                  {item.name}
+                </p>
+              </div>
+            )
+        )}
       </div>
     </div>
   );

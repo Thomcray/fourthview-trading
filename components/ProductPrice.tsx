@@ -20,7 +20,7 @@ export default function ProductPrice({ yuanPrice }: { yuanPrice: number }) {
   const nairaPrice = convertToNaira(yuanPrice, rate);
 
   return (
-    <span className="text-sm">
+    <span className="text-md font-semibold">
       &#8358;{nairaPrice.toFixed(2).toLocaleString()}
     </span>
   );

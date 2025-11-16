@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { useCart } from "./CartContext";
+import { useApp } from "./AppContext";
 
 type NavType = {
   name: string;
@@ -26,7 +26,7 @@ export default function Navigation() {
   const pathname = usePathname();
 
   const { data: session, status } = useSession();
-  const { cart } = useCart();
+  const { cart } = useApp();
 
   const cartLen = cart.length;
 

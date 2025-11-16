@@ -2,13 +2,23 @@
 
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
-import { useCart } from "./CartContext";
+import { useApp } from "./AppContext";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-toastify";
 
 type AddItem = {
-  item: string;
+  id: number;
+  created_at: string;
+  name: string;
+  description: string;
+  categoryId: number;
   price: number;
+  discount?: number;
+  discountType?: string;
+  target: string;
+  imageUrl: string[];
+  productType: string;
+  colours: string[];
 };
 
 interface Data {
@@ -16,10 +26,10 @@ interface Data {
 }
 
 export default function AddToCart({ data }: Data) {
-  const { cart, setCart } = useCart();
+  const { cart, setCart } = useApp();
 
   const handleCart = () => {
-    const itemExists = cart.some((item) => item.itemName === data.item);
+    const itemExists = cart.some((item) => item.itemName === data.name);
 
     if (itemExists) {
       toast.error("item already exists");
@@ -27,18 +37,16 @@ export default function AddToCart({ data }: Data) {
     }
 
     const newItem = {
-      itemName: data.item,
-      description: "Hello",
+      itemName: data.name,
+      description: data.description,
       quantity: 1,
       price: data.price,
-      discount: 0,
-      categoryId: 2,
+      discount: data.discount,
+      categoryId: data.categoryId,
       productId: uuidv4(),
     };
 
     setCart((prev) => [...prev, newItem]);
-
-    console.log(cart);
   };
 
   return (

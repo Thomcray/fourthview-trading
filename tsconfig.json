@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "components/CartContext.tsx"
+    "components/AppContext.tsx"
   ],
   "exclude": ["node_modules"]
 }

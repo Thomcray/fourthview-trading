@@ -3,13 +3,18 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    qualities: [100],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "vbxppuyvbxojqdnjjnoz.supabase.co",
         port: "",
         pathname: "/storage/v1/object/sign/product-images/**",
+      },
+      {
+        protocol: "https",
+        hostname: "vbxppuyvbxojqdnjjnoz.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/sign/category-images/**",
       },
     ],
   },
