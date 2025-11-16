@@ -24,7 +24,7 @@ export default function Page() {
         bannerText={bannerText}
       />
 
-      <GeneralOverlap />
+      {/* <GeneralOverlap /> */}
       <Shirts />
       <Trousers />
       <Shoes />
