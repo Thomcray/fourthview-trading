@@ -33,8 +33,8 @@ export default function Shirts() {
     <div
       className={
         shopType
-          ? "border-0 px-8 max-sm:px-2 py-4 w-full flex flex-col"
-          : "border-0 px-8 py-4 w-full flex flex-col"
+          ? "border-0 px-8 max-sm:px-0 py-4 w-full flex flex-col"
+          : "border-0 px-8 max-sm:px-0 py-4 w-full flex flex-col"
       }
     >
       {target.length > 0 && (

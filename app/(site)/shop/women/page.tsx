@@ -2,14 +2,13 @@
 
 import React from "react";
 import Banner from "@/components/ShopWithUs/Banner";
-import { usePathname } from "next/navigation";
-
 import womenBanner from "@/public/womenBanner.png";
-// import GeneralOverlap from "@/components/ShopWithUs/GeneralOverlap";
+import GeneralOverlap from "@/components/ShopWithUs/GeneralOverlap";
 import Shirts from "@/components/ShopWithUs/Shirts";
 import Trousers from "@/components/ShopWithUs/Trousers";
 import Jewelry from "@/components/ShopWithUs/Women/Jewelry";
 import Shoes from "@/components/ShopWithUs/Men/Shoes";
+import { usePathname } from "next/navigation";
 
 export default function Page() {
   const pathName = usePathname();
@@ -25,7 +24,7 @@ export default function Page() {
         bannerText={bannerText}
       />
 
-      {/* <GeneralOverlap /> */}
+      <GeneralOverlap />
       <Shirts />
       <Trousers />
       <Jewelry />

@@ -16,8 +16,8 @@ export default function Jewelry() {
     <div
       className={
         shopType
-          ? "border-0 px-8 max-sm:px-2 py-4 w-full flex flex-col"
-          : "border-0 px-8 py-4 w-full flex flex-col"
+          ? "border-0 px-8 max-sm:px-0 py-4 w-full flex flex-col"
+          : "border-0 px-8 max-sm:px-0 py-4 w-full flex flex-col"
       }
     >
       <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">

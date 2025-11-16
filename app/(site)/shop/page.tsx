@@ -10,7 +10,7 @@ export default function page() {
   return (
     <section className="flex flex-col w-full items-center border-0 space-y-4">
       <Banner banner={shopBanner} />
-      {/* <BannerOverlay /> */}
+      <BannerOverlay />
       <ShopByCategory />
       <TopPicks />
       <OnSale />

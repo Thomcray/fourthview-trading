@@ -9,7 +9,7 @@ export default function ShopByCategory() {
   const { allCategories: categories } = useApp();
 
   return (
-    <div className="border-0 px-8 py-4 w-full">
+    <div className="border-0 px-8 max-sm:px-0 py-4 w-full">
       <Link href="/category">
         <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
           <h1 className="font-normal text-md w-96 max-sm:w-80 text-white">

@@ -32,7 +32,7 @@ export default function TopPicks() {
       className={
         shopType
           ? "border-0 px-0 max-sm:px-2 py-4 w-full flex flex-col"
-          : "border-0 px-8 py-4 w-full flex flex-col"
+          : "border-0 px-8 max-sm:px-0 py-4 w-full flex flex-col"
       }
     >
       {productTarget.length > 0 && (
