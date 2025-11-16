@@ -5,7 +5,6 @@ import { useApp } from "../AppContext";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
-import shoeImage from "@/public/shoeImage.png";
 import ProductPrice from "../ProductPrice";
 import AddToCart from "../AddToCart";
 

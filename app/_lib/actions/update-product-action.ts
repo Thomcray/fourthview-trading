@@ -1,10 +1,6 @@
 "use server";
 
-import {
-  getCategoryByName,
-  newProduct,
-  updateCurrentProduct,
-} from "../data-services";
+import { getCategoryByName, updateCurrentProduct } from "../data-services";
 import { supabase } from "../supabase";
 import { uploadProductImage } from "./upload-actions";
 

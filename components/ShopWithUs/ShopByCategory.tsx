@@ -3,8 +3,6 @@
 import { useApp } from "../AppContext";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
-
-import shoeImage from "@/public/shoeImage.png";
 import Link from "next/link";
 
 export default function ShopByCategory() {
@@ -33,11 +31,8 @@ export default function ShopByCategory() {
         {categories.map(
           (item, index) =>
             item.image_url && (
-              <div className="flex flex-col gap-y-1 border-0">
-                <div
-                  className="flex-shrink-0 w-40 h-40 max-sm:w-32 max-sm:h-32 relative rounded-md overflow-hidden"
-                  key={index}
-                >
+              <div className="flex flex-col gap-y-1 border-0" key={index}>
+                <div className="flex-shrink-0 w-40 h-40 max-sm:w-32 max-sm:h-32 relative rounded-md overflow-hidden">
                   <Image
                     src={item.image_url}
                     alt={item.name || "category-image"}
