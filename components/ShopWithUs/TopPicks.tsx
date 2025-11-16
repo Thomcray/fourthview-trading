@@ -28,13 +28,7 @@ export default function TopPicks() {
   );
 
   return (
-    <div
-      className={
-        shopType
-          ? "border-0 px-0 max-sm:px-2 py-4 w-full flex flex-col"
-          : "border-0 px-8 max-sm:px-0 py-4 w-full flex flex-col"
-      }
-    >
+    <div className="border-0 px-8 max-sm:px-2 py-4 w-full flex flex-col">
       {productTarget.length > 0 && (
         <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
           <h1 className="font-normal text-md w-96 max-sm:w-80 text-white">
