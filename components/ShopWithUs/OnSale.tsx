@@ -30,7 +30,7 @@ export default function OnSale() {
       )}
 
       {discountProducts.length > 0 && (
-        <div className="w-full h-fit flex flex-row max-sm:pb-12 space-y-2 items-center max-sm:space-x-4 md:space-x-4 py-2 px-4 max-sm:px-2 max-sm:overflow-x-scroll">
+        <div className="w-full h-fit flex flex-row space-y-2 items-center max-sm:space-x-4 md:space-x-4 py-2 px-4 max-sm:px-2 max-sm:overflow-x-scroll">
           {discountProducts.map((item, index) => (
             <div
               className="w-full h-full max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"

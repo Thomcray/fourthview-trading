@@ -9,25 +9,22 @@ export default function ShopByCategory() {
   const { allCategories: categories } = useApp();
 
   return (
-    <div className="border-0 px-8 max-sm:px-0 py-4 w-full">
+    <div className="border-0 px-8 max-sm:px-2 py-4 w-full">
       <Link href="/category">
         <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
           <h1 className="font-normal text-md w-96 max-sm:w-80 text-white">
             Shop by Categories
           </h1>
 
-          <div className="flex flex-row space-x-2">
-            <p className="text-white underline">view more...</p>
-            <ChevronRight
-              color="white"
-              strokeWidth={1.5}
-              className="cursor-pointer"
-            />
-          </div>
+          <ChevronRight
+            color="white"
+            strokeWidth={1.5}
+            className="cursor-pointer"
+          />
         </div>
       </Link>
 
-      <div className="w-full flex flex-row max-sm:pb-12 space-x-4 py-2 px-4 overflow-x-scroll border-0">
+      <div className="w-full flex flex-row space-x-4 py-2 px-2 overflow-x-scroll border-0">
         {categories.map(
           (item, index) =>
             item.image_url && (
