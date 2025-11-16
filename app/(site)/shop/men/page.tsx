@@ -2,7 +2,7 @@
 
 import React from "react";
 import Banner from "@/components/ShopWithUs/Banner";
-import GeneralOverlap from "@/components/ShopWithUs/GeneralOverlap";
+// import GeneralOverlap from "@/components/ShopWithUs/GeneralOverlap";
 import Shirts from "@/components/ShopWithUs/Shirts";
 import Shoes from "@/components/ShopWithUs/Men/Shoes";
 import Trousers from "@/components/ShopWithUs/Trousers";
