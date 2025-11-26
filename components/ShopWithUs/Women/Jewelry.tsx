@@ -7,11 +7,27 @@ import Image from "next/image";
 
 import shoeImage from "@/public/shoeImage.png";
 import ProductPrice from "@/components/ProductPrice";
+import { useApp } from "@/components/AppContext";
 
 export default function Jewelry() {
+  const { allProducts: products } = useApp();
+
   const pathName = usePathname();
 
-  const shopType = pathName === "/shop/men" || pathName === "/shop/women";
+  const shopTypeMap: Record<string, string> = {
+    "/shop/men": "men",
+    "/shop/women": "women",
+  };
+
+  const shopType = shopTypeMap[pathName] || "";
+
+  const productJewelry = products.filter(
+    (product) => product.productType.toLowerCase() === "jewelry"
+  );
+
+  const target = productJewelry.filter((item) =>
+    item.target.toLowerCase().includes(shopType)
+  );
   return (
     <div className="border-0 px-8 max-sm:px-2 py-4 w-full flex flex-col">
       <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
@@ -26,36 +42,40 @@ export default function Jewelry() {
         />
       </div>
 
-      <div className="w-full h-fit flex flex-row space-y-2 items-center max-sm:space-x-4 md:space-x-4 py-2 px-4 max-sm:px-2 max-sm:overflow-x-scroll">
-        {["Bags", "Shoes", "Socks", "Caps"].map((item, index) => (
-          <div
-            className="w-full h-full max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
-            key={index}
-          >
-            <Image
-              src={shoeImage}
-              alt="item-image"
-              className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
-            />
-            <p className="px-2 pt-2  text-blue-950 font-normal">{item}</p>
+      {target.length > 0 && (
+        <div className="w-full h-fit flex flex-row space-y-2 items-center max-sm:space-x-4 md:space-x-4 py-2 px-4 max-sm:px-2 max-sm:overflow-x-scroll">
+          {target.map((item, index) => (
+            <div
+              className="w-full h-full max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
+              key={index}
+            >
+              <Image
+                src={shoeImage}
+                alt="item-image"
+                className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
+              />
+              <p className="px-2 pt-2  text-blue-950 font-normal">
+                {item.name}
+              </p>
 
-            <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
-              <ProductPrice yuanPrice={10} />
-            </p>
+              <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+                <ProductPrice yuanPrice={item.price} />
+              </p>
 
-            <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
-              <Button
-                variant="outline"
-                className="bg-[#334EAC] text-white font-semibold cursor-pointer"
-              >
-                Purchase
-              </Button>
+              <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
+                <Button
+                  variant="outline"
+                  className="bg-[#334EAC] text-white font-semibold cursor-pointer"
+                >
+                  Purchase
+                </Button>
 
-              {/* <AddToCart /> */}
+                {/* <AddToCart /> */}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

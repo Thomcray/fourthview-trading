@@ -53,7 +53,7 @@ export default function Shirts() {
               key={index}
             >
               <Link
-                href={`/item-description?category=${item.name.toLowerCase()}&q=${item.name.toLowerCase()}`}
+                href={`/item-description?id=${item.id}&name=${item.name.toLowerCase()}`}
               >
                 <Image
                   src={item.imageUrl[0]}

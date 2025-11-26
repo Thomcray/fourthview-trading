@@ -7,6 +7,7 @@ import Image from "next/image";
 import shoeImage from "@/public/shoeImage.png";
 import ProductPrice from "../ProductPrice";
 import { useApp } from "../AppContext";
+import Link from "next/link";
 
 export default function OnSale() {
   const { allProducts: products } = useApp();
@@ -36,29 +37,33 @@ export default function OnSale() {
               className="w-full h-full max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
               key={index}
             >
-              <Image
-                src={shoeImage}
-                alt="item-image"
-                className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
-              />
-              <p className="px-2 pt-2  text-blue-950 font-normal">
-                {item.name}
-              </p>
+              <Link
+                href={`/item-description?id=${item.id}&name=${item.name.toLowerCase()}`}
+              >
+                <Image
+                  src={shoeImage}
+                  alt="item-image"
+                  className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
+                />
+                <p className="px-2 pt-2  text-blue-950 font-normal">
+                  {item.name}
+                </p>
 
-              <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
-                <ProductPrice yuanPrice={item.price} />
-              </p>
+                <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+                  <ProductPrice yuanPrice={item.price} />
+                </p>
 
-              <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
-                <Button
-                  variant="outline"
-                  className="bg-[#334EAC] text-white font-semibold cursor-pointer"
-                >
-                  Purchase
-                </Button>
+                <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
+                  <Button
+                    variant="outline"
+                    className="bg-[#334EAC] text-white font-semibold cursor-pointer"
+                  >
+                    Purchase
+                  </Button>
 
-                {/* <AddToCart /> */}
-              </div>
+                  {/* <AddToCart /> */}
+                </div>
+              </Link>
             </div>
           ))}
         </div>

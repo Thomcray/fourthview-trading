@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header/Header";
 import { Outfit } from "next/font/google";
 import { getAllProducts, getCategories } from "../_lib/data-services";
+import MenuButton from "@/components/Menu/Menu";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -18,12 +19,13 @@ export default async function siteLayout({
 
   return (
     <div
-      className={`${outfit.className} antialiased flex flex-col min-h-screen`}
+      className={`${outfit.className} relative antialiased flex flex-col min-h-screen`}
     >
+      <MenuButton />
       <AppProvider products={products || []} categories={categories || []}>
         <Header />
         <div className="w-full flex-1 border-0">
-          <main className="mx-auto border-0">{children}</main>
+          <main className=" mx-auto border-0">{children}</main>
         </div>
       </AppProvider>
       <Footer />

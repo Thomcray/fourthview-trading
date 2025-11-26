@@ -51,7 +51,7 @@ export default function TopPicks() {
               key={index}
             >
               <Link
-                href={`/item-description?category=${item.categoryId}&q=${item.name.toLowerCase()}`}
+                href={`/item-description?id=${item.id}&name=${item.name.toLowerCase()}`}
               >
                 <Image
                   src={item.imageUrl[0]}
@@ -60,25 +60,25 @@ export default function TopPicks() {
                   height={200}
                   className=" max-sm:w-40 max-sm:h-20 h-60 w-full object-cover rounded-md max-sm:rounded-none cursor-pointer"
                 />
-                <p className="px-2 pt-2  text-blue-950 font-normal">
-                  {item.name}
-                </p>
-
-                <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
-                  <ProductPrice yuanPrice={item.price} />
-                </p>
-
-                <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
-                  <Button
-                    variant="outline"
-                    className="bg-[#334EAC] text-white font-semibold cursor-pointer"
-                  >
-                    Purchase
-                  </Button>
-
-                  <AddToCart data={item} />
-                </div>
               </Link>
+              <p className="px-2 pt-2  text-blue-950 font-normal">
+                {item.name}
+              </p>
+
+              <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+                <ProductPrice yuanPrice={item.price} />
+              </p>
+
+              <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
+                <Button
+                  variant="outline"
+                  className="bg-[#334EAC] text-white font-semibold cursor-pointer"
+                >
+                  Purchase
+                </Button>
+
+                <AddToCart data={item} />
+              </div>
             </div>
           ))}
         </div>

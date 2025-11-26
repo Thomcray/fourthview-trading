@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import ProductPrice from "../ProductPrice";
 import AddToCart from "../AddToCart";
+import Link from "next/link";
 
 export default function Trousers() {
   const { allProducts: products } = useApp();
@@ -50,13 +51,17 @@ export default function Trousers() {
               className="w-80 max-sm:w-40 space-x-4 border px-4 max-sm:px-0 py-4 max-sm:py-0 rounded-md"
               key={index}
             >
-              <Image
-                src={item.imageUrl[0]}
-                alt={item.name || "item-image"}
-                width={200}
-                height={200}
-                className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
-              />
+              <Link
+                href={`/item-description?id=${item.id}&name=${item.name.toLowerCase()}`}
+              >
+                <Image
+                  src={item.imageUrl[0]}
+                  alt={item.name || "item-image"}
+                  width={200}
+                  height={200}
+                  className="max-sm:w-40 max-sm:h-20 h-40 w-full object-cover rounded-md max-sm:rounded-none"
+                />
+              </Link>
               <p className="px-2 pt-2  text-blue-950 font-normal">
                 {item.name}
               </p>

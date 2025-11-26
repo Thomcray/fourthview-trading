@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import UserImage from "@/components/UserImage";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 
 export default function ProfileForm({
   children,
@@ -15,16 +15,7 @@ export default function ProfileForm({
   const nameInitial = session?.user.firstName.charAt(0);
   return (
     <div className="px-5 py-5 border-0 flex flex-col space-y-5">
-      <div className="flex items-center justify-center rounded-full w-40 h-40 border">
-        {session?.user.image ? (
-          <Image src={session.user.image} alt="user-image" className="" />
-        ) : (
-          <div className="w-full flex justify-center bg-white text-center rounded-full">
-            <p className="text-6xl text-blue-900">{nameInitial}</p>
-          </div>
-        )}
-      </div>
-
+      <UserImage nameInitial={nameInitial} session={session} />
       <div className="w-full px-4 py-4 border rounded-md">
         <h1 className="text-base">Contact Details</h1>
 

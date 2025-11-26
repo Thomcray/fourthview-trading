@@ -23,9 +23,10 @@ type AddItem = {
 
 interface Data {
   data: AddItem;
+  quantity?: number;
 }
 
-export default function AddToCart({ data }: Data) {
+export default function AddToCart({ data, quantity }: Data) {
   const { cart, setCart } = useApp();
 
   const handleCart = () => {
@@ -39,7 +40,7 @@ export default function AddToCart({ data }: Data) {
     const newItem = {
       itemName: data.name,
       description: data.description,
-      quantity: 1,
+      quantity: quantity,
       price: data.price,
       discount: data.discount,
       categoryId: data.categoryId,
