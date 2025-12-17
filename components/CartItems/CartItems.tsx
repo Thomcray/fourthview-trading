@@ -43,7 +43,7 @@ export default function CartItems() {
         {cart.map((item) => (
           <div
             key={item.itemName}
-            className="w-5xl max-sm:w-full flex flex-col gap-0.5 border-y-1"
+            className="w-5xl max-sm:w-full flex flex-col gap-0.5 border-y"
           >
             <div className="py-4 px-4 flex flex-row items-center gap-3 bg-white border-0">
               <div className="w-full flex flex-row gap-2 border-0">
