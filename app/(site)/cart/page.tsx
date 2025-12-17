@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Image from "next/image";
 
 import cartEmpty from "@/public/cartEmpty.png";
@@ -34,7 +34,11 @@ export default function Cart() {
           </Link>
         </div>
       ) : (
-        <CartItems />
+        <Suspense
+          fallback={<span className="text-sm font-light">Loading...</span>}
+        >
+          <CartItems />
+        </Suspense>
       )}
     </section>
   );

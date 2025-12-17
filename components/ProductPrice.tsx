@@ -25,7 +25,7 @@ export default function ProductPrice({ yuanPrice }: { yuanPrice: number }) {
 
   const nairaPrice = convertToNaira(yuanPrice, rate);
 
-  // ✅ Fix: Convert to fixed string first, then format
+  // Convert to fixed string first, then format
   const formattedPrice = Number(nairaPrice.toFixed(2)).toLocaleString("en-NG", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

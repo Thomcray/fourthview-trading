@@ -6,7 +6,17 @@ import Image from "next/image";
 import { ShoppingBag, Trash2 } from "lucide-react";
 import ProductPrice from "../ProductPrice";
 import { Button } from "../ui/button";
-import PaystackButton from "../PaystackButton";
+import dynamic from "next/dynamic";
+
+// Dynamically import PaystackButton to avoid window error during SSR
+const PaystackButton = dynamic(() => import("../PaystackButton"), {
+  ssr: false,
+  loading: () => (
+    <Button disabled className="cursor-pointer h-10">
+      Loading...
+    </Button>
+  ),
+});
 
 export default function CartItems() {
   const [isRemoving, setIsRemoving] = useState(false);
