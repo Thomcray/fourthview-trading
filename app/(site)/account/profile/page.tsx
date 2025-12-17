@@ -1,6 +1,8 @@
-import { getCountries } from "@/app/_lib/data-services";
+import { getCountries, getUserByEmail } from "@/app/_lib/data-services";
 import ProfileForm from "./ProfileForm";
 import Phone from "@/components/Phone";
+import Country from "@/components/Country";
+import { getServerSession } from "next-auth";
 
 interface Country {
   idd: {
@@ -10,6 +12,7 @@ interface Country {
 }
 
 export default async function page() {
+  const user = await getServerSession();
   const countries = await getCountries();
 
   const dialCode: string[] | undefined =
@@ -19,9 +22,35 @@ export default async function page() {
     );
 
   const uniqueDialCodes = Array.from(new Set(dialCode));
+
+  const userData = await getUserByEmail(user?.user.email!);
+
+  const {
+    id,
+    firstName,
+    lastName,
+    email,
+    countryCode,
+    phone,
+    country,
+    address,
+  } = userData;
+
   return (
-    <ProfileForm>
-      <Phone uniqueDialCodes={uniqueDialCodes} countries={countries} />
+    <ProfileForm
+      userId={id}
+      firstName={firstName}
+      lastName={lastName}
+      email={email}
+      address={address}
+    >
+      <Phone
+        uniqueDialCodes={uniqueDialCodes}
+        countries={countries}
+        defaultCode={countryCode}
+        phone={phone}
+      />
+      <Country countries={countries} defaultCountry={country} />
     </ProfileForm>
   );
 }

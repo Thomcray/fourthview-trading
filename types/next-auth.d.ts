@@ -14,6 +14,7 @@ declare module "next-auth" {
       countryCode: string;
       phone: string;
       country: string;
+      address: string;
       userRole: string;
     } & DefaultSession["user"];
   }
@@ -27,6 +28,7 @@ interface User {
   countryCode: string;
   phone: string;
   country: string;
+  address: string;
   userRole: string;
 }
 
@@ -41,6 +43,7 @@ declare module "next-auth/jwt" {
     countryCode: string;
     phone: string;
     country: string;
+    address: string;
     userRole: string;
   }
 }

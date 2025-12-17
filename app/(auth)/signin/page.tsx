@@ -36,7 +36,7 @@ export default function Signin() {
 
       if (result?.error) {
         toast.error(result.error);
-        console.log(result.error);
+        // console.log(result.error);
       } else if (result?.ok) {
         toast.success("User logged in succesfully");
 

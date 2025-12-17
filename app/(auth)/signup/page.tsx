@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Dancing_Script } from "next/font/google";
 import SignupForm from "./SignupForm";
 import SelectCountryData from "@/components/SelectCountryData";
+import { Input } from "@/components/ui/input";
 
 export const metadata: Metadata = {
   title: "Sign Up",
@@ -30,6 +31,21 @@ export default function page() {
 
           <SignupForm>
             <SelectCountryData />
+            <div className="w-full">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email Address
+              </label>
+              <Input
+                type="text"
+                id="address"
+                name="address"
+                className="mt-1 block w-full px-3 py-6 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
           </SignupForm>
 
           <p className="text-sm text-center text-gray-600">

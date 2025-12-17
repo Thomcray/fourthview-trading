@@ -40,7 +40,6 @@ export async function updateProduct(
   }
 
   //   fetch current product images from db and merge with the new image(s)
-
   const { data: productData, error: fetchError } = await supabase
     .from("products")
     .select("imageUrl")

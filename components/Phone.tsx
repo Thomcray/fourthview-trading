@@ -1,27 +1,27 @@
 "use client";
 
 import { Input } from "./ui/input";
-import { useSession } from "next-auth/react";
 import Selection from "./Selection";
+import { SquarePen } from "lucide-react";
 
 export default function Phone({
   uniqueDialCodes,
+  defaultCode,
+  phone,
 }: {
   uniqueDialCodes: string[];
   countries: unknown[];
+  defaultCode: string;
+  phone: string;
 }) {
-  const { data: session } = useSession();
-
-  const defaultCode = session?.user.countryCode;
-  const phone = session?.user.phone;
-
   return (
     <div>
       <label
         htmlFor="phone"
-        className="block text-sm font-medium text-gray-700"
+        className="flex flex-row gap-0.5 items-center text-sm font-medium text-gray-700"
       >
         Phone Number
+        <SquarePen size={12} />
       </label>
 
       <div className="flex flex-row space-x-1 items-center border-0">

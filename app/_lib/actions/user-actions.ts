@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getTempUserByToken } from "../data-services";
 import { supabase } from "../supabase";
 
@@ -52,4 +53,22 @@ export async function createUser(token: string) {
   }
 
   return { success: true, message: "User created successfully", data };
+}
+
+export async function updateUserProfile(
+  countryCode: string,
+  phone: string,
+  country: string,
+  address: string,
+  userId: string
+) {
+  const updateData = { phone, country, address, countryCode };
+  const { error } = await supabase
+    .from("users")
+    .update(updateData)
+    .eq("id", userId);
+
+  if (error) throw new Error(`Could not update user: ${error.message}`);
+
+  revalidatePath("/account/profile");
 }

@@ -1,0 +1,24 @@
+import { supabase } from "../supabase";
+
+export async function getOrCreateCart(userId: string) {
+  // Check for existing cart
+  const { data: cart } = await supabase
+    .from("carts")
+    .select("*")
+    .eq("userId", userId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (cart) return cart;
+
+  //   If none exists, create it
+  const { data: newCart, error } = await supabase
+    .from("carts")
+    .insert([{ userId: userId, status: "active" }])
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return newCart;
+}

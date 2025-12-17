@@ -3,7 +3,7 @@
 import AddToCart from "@/components/AddToCart";
 import ProductPrice from "@/components/ProductPrice";
 import { Button } from "@/components/ui/button";
-import { MinusIcon, PlusIcon, ShoppingCart } from "lucide-react";
+import { MinusIcon, PlusIcon } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
@@ -129,7 +129,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
               >
                 Purchase
               </Button>
-              <AddToCart data={selectedItem} quantity={qty} />
+              <AddToCart data={selectedItem} />
             </div>
           </div>
         </div>

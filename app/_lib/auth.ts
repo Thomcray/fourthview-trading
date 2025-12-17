@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import { getUserByEmail, getUserRole } from "./data-services";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -11,6 +11,7 @@ type Helper = {
   countryCode: string;
   phone: string;
   country: string;
+  address: string;
   userRole: string;
 };
 
@@ -19,7 +20,7 @@ type Credentials = {
   password: string;
 };
 
-const authConfig: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -68,10 +69,9 @@ const authConfig: NextAuthOptions = {
           countryCode: existingUser.countryCode,
           phone: existingUser.phone,
           country: existingUser.country,
+          address: existingUser.address,
           userRole: role,
         };
-
-        // console.log("Returning user...", returnUser);
 
         return returnUser;
       },
@@ -89,6 +89,7 @@ const authConfig: NextAuthOptions = {
         token.countryCode = (user as Helper).countryCode;
         token.phone = (user as Helper).phone;
         token.country = (user as Helper).country;
+        token.address = (user as Helper).address;
         token.userRole = (user as Helper).userRole;
       }
       return token;
@@ -103,7 +104,8 @@ const authConfig: NextAuthOptions = {
         session.user.lastName = token.lastName as string;
         session.user.countryCode = token.countryCode as string;
         session.user.phone = token.phone as string;
-        session.user.country = token.phone as string;
+        session.user.country = token.country as string;
+        session.user.address = token.address as string;
         session.user.userRole = token.userRole as string;
       }
 
@@ -116,5 +118,3 @@ const authConfig: NextAuthOptions = {
     newUser: "/signup",
   },
 };
-const handler = NextAuth(authConfig);
-export { handler as GET, handler as POST };

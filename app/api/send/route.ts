@@ -13,6 +13,7 @@ export async function POST(req: Request) {
     const lastName = formData.get("lastName") as string;
     const email = formData.get("email") as string;
     const country = formData.get("country") as string;
+    const address = formData.get("address") as string;
     const countryCode = formData.get("countryCode") as string;
     const phone = formData.get("phone") as string;
     const password = formData.get("password") as string;
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
       lastName,
       email,
       country,
+      address,
       countryCode,
       phone,
       password: hashedPassword,

@@ -3,8 +3,9 @@
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useApp } from "./AppContext";
-import { v4 as uuidv4 } from "uuid";
-import { toast } from "react-toastify";
+// import { v4 as uuidv4 } from "uuid";
+// import { toast } from "react-toastify";
+import { useState } from "react";
 
 type AddItem = {
   id: number;
@@ -23,32 +24,38 @@ type AddItem = {
 
 interface Data {
   data: AddItem;
-  quantity?: number;
 }
 
-export default function AddToCart({ data, quantity }: Data) {
-  const { cart, setCart } = useApp();
+export default function AddToCart({ data }: Data) {
+  const { cart, addToCart } = useApp();
+  const [isAdding, setIsAdding] = useState(false);
 
-  const handleCart = () => {
-    const itemExists = cart.some((item) => item.itemName === data.name);
+  const defaultImage = data.imageUrl[0];
 
-    if (itemExists) {
-      toast.error("item already exists");
-      return;
-    }
-
-    const newItem = {
-      itemName: data.name,
-      description: data.description,
-      quantity: quantity,
-      price: data.price,
-      discount: data.discount,
-      categoryId: data.categoryId,
-      productId: uuidv4(),
-    };
-
-    setCart((prev) => [...prev, newItem]);
+  const newItem = {
+    productId: data.id,
+    itemName: data.name,
+    description: data.description,
+    price: data.price,
+    discount: data.discount,
+    categoryId: data.categoryId,
+    image: defaultImage,
+    // productId: uuidv4(),
   };
+
+  const handleCart = async () => {
+    setIsAdding(true);
+
+    try {
+      await addToCart(newItem);
+    } catch (error) {
+      console.log("Error adding to cart: ", error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const itemInCart = cart.some((item) => item.itemName === data.name);
 
   return (
     <Button
@@ -56,7 +63,8 @@ export default function AddToCart({ data, quantity }: Data) {
       className="cursor-pointer px-4 w-fit"
       onClick={handleCart}
     >
-      <ShoppingCart color="#334EAC" />
+      <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />
+      {isAdding && <span className="ml-2">Adding...</span>}
     </Button>
   );
 }
