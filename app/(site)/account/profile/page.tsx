@@ -3,6 +3,7 @@ import ProfileForm from "./ProfileForm";
 import Phone from "@/components/Phone";
 import Country from "@/components/Country";
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 interface Country {
   idd: {
@@ -12,7 +13,13 @@ interface Country {
 }
 
 export default async function page() {
-  const user = await getServerSession();
+  const session = await getServerSession();
+
+  // Handle unauthenticated users
+  if (!session?.user?.email) {
+    redirect("/login");
+  }
+
   const countries = await getCountries();
 
   const dialCode: string[] | undefined =
@@ -23,7 +30,7 @@ export default async function page() {
 
   const uniqueDialCodes = Array.from(new Set(dialCode));
 
-  const userData = await getUserByEmail(user?.user.email!);
+  const userData = await getUserByEmail(session.user.email!);
 
   const {
     id,
