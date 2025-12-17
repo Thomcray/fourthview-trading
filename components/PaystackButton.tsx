@@ -6,6 +6,15 @@ import { Button } from "./ui/button";
 const PAYSTACK_PUBLIC_KEY = process.env
   .NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY as string;
 
+interface PaystackReference {
+  reference: string;
+  status: string;
+  message: string;
+  trans: string;
+  transaction: string;
+  trxref: string;
+}
+
 export default function PaystackButton({ total }: { total: number }) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +44,9 @@ export default function PaystackButton({ total }: { total: number }) {
         },
       };
 
-      const onSuccess = (reference: any) => {
+      const initializePayment = usePaystackPayment(config);
+
+      const onSuccess = (reference: PaystackReference) => {
         // Implementation for whatever you want to do with reference and after success call
         console.log(reference);
         setIsLoading(false);
@@ -48,7 +59,6 @@ export default function PaystackButton({ total }: { total: number }) {
       };
 
       // Initialize payment
-      const initializePayment = usePaystackPayment(config);
       initializePayment({ onSuccess, onClose });
     } catch (error) {
       console.error("Payment initialization error:", error);
