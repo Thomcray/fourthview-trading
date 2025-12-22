@@ -40,7 +40,8 @@ export default function ProductMedia({
       return;
     }
     setImages((prev) => [...prev, ...files]);
-    e.target.value = isUpdatePage ? "" : e.target.value;
+    e.target.value = ""; // Always set to empty string
+    // e.target.value = isUpdatePage ? "" : e.target.value;
   };
 
   const removeImage = (imageToRemove: File) => {
@@ -82,7 +83,7 @@ export default function ProductMedia({
             className=""
             accept="image/*"
             onChange={handleImageChange}
-            required={isUpdatePage ? false : true}
+            required={isUpdatePage || images.length > 0 ? false : true}
           />
         </div>
       </Label>

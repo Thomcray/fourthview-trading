@@ -98,6 +98,9 @@ type Product = {
   categoryId: number;
   target: string;
   imageUrl: string[];
+  sizes: string[];
+  weight: number;
+  shippingCost: number;
 };
 
 export async function newProduct(product: Product) {
@@ -146,7 +149,7 @@ export async function getProductById(id: number) {
   const { data: product, error } = await supabase
     .from("products")
     .select(
-      "id, name, description, productType, colours, price, discount, discountType, categoryId, target, imageUrl, productType, colours"
+      "id, name, description, productType, colours, price, discount, discountType, categoryId, target, imageUrl, productType, colours, sizes, weight, shippingCost"
     )
     .eq("id", id)
     .single();

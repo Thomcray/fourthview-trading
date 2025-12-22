@@ -13,6 +13,9 @@ export async function updateProduct(
   const productName = formData.get("productName") as string;
   const description = formData.get("description") as string;
   const productType = formData.get("type") as string;
+  const sizes = formData.getAll("sizes") as string[];
+  const weight = parseFloat(formData.get("weight") as string);
+  const shippingCost = parseFloat(formData.get("shippingCost") as string);
   const price = parseFloat(formData.get("price") as string);
   const discount = parseFloat(formData.get("discount") as string);
   const discountType = formData.get("discountType") as string;
@@ -57,6 +60,9 @@ export async function updateProduct(
         name: productName,
         description,
         productType,
+        sizes,
+        weight,
+        shippingCost,
         colours,
         quantity: 0,
         price,

@@ -19,12 +19,17 @@ type Product = {
   categoryId: number;
   target: string;
   imageUrl: string[];
+  sizes: string[];
+  weight: number;
+  shippingCost: number;
 };
 export default async function UpdateProduct({ params }: Params) {
   const getParams = await params;
   const product: Product | null = await getProductById(
     Number(getParams.productId)
   );
+
+  console.log(product);
 
   return (
     <div className="w-full flex flex-col space-y-4 border-0">

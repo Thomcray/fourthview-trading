@@ -79,7 +79,7 @@ export default function ProductForm({
 
       <div className="w-full flex flex-row max-sm:flex-col justify-between items-center gap-4 py-4 px-4 border rounded-md">
         {/* other information */}
-        <OtherInformation>
+        <OtherInformation isUpdatePage={false}>
           <AvailableColours colours={colours} setColours={setColours} />
         </OtherInformation>
       </div>

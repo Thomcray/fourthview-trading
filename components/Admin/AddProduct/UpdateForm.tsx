@@ -23,6 +23,9 @@ type UpdateProductFormProps = {
     categoryId: number;
     target: string;
     imageUrl: string[];
+    sizes: string[];
+    weight: number;
+    shippingCost: number;
   } | null;
   children: React.ReactNode;
 };
@@ -93,9 +96,17 @@ export default function UpdateForm({
 
       <div className="w-full flex flex-row max-sm:flex-col justify-between items-center gap-4 py-4 px-4 border rounded-md">
         {/* other information */}
-        <OtherInformation productType={product?.productType || ""}>
-          <AvailableColours colours={colours} setColours={setColours} />
-        </OtherInformation>
+        {product && (
+          <OtherInformation
+            productType={product?.productType || ""}
+            productWeight={product?.weight.toString()}
+            shippingCost={product?.shippingCost}
+            selectedSizes={product?.sizes}
+            isUpdatePage={true}
+          >
+            <AvailableColours colours={colours} setColours={setColours} />
+          </OtherInformation>
+        )}
       </div>
 
       <div className="w-full lg:h-60 flex flex-row max-sm:flex-col justify-between items-center gap-4 py-4 px-4 border rounded-md">
