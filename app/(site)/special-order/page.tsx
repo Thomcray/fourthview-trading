@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useState, useTransition } from "react";
 import { toast } from "react-toastify";
 
-export default function page() {
+export default function SPecialOrders() {
   const [orderImages, setOrderImages] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -70,7 +70,7 @@ export default function page() {
         <form className="flex flex-col gap-4 border-0" onSubmit={handleOrder}>
           <h1 className="text-4xl text-blue-900 font-semibold text-center">
             For special offers, requests, enquiries, leave a note and your
-            email. We'll get back to you.
+            email. We&apos;ll get back to you.
           </h1>
 
           <div className="w-full flex flex-col gap-4 max-sm:px-4">
