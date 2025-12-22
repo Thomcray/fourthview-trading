@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useState, useTransition } from "react";
 import { toast } from "react-toastify";
 
-export default function SPecialOrders() {
+export default function SpecialOrders() {
   const [orderImages, setOrderImages] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
