@@ -1,5 +1,12 @@
 import { supabase } from "./supabase";
 
+type Orders = {
+  email: string;
+  description: string;
+  userId: string;
+  images: string[];
+};
+
 export async function getUserRole(id: number) {
   const { data: userRole, error } = await supabase
     .from("userRole")
@@ -159,4 +166,16 @@ export async function getProductById(id: number) {
   }
 
   return product;
+}
+
+export async function newSpecialOrders(orders: Orders) {
+  const { data, error } = await supabase.from("specialOrders").insert([orders]);
+
+  if (error) {
+    console.log(error);
+
+    throw new Error("Error placing order. Try again!");
+  }
+
+  return data;
 }

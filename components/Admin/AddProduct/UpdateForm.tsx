@@ -99,7 +99,7 @@ export default function UpdateForm({
         {product && (
           <OtherInformation
             productType={product?.productType || ""}
-            productWeight={product?.weight.toString()}
+            productWeight={product?.weight?.toString()}
             shippingCost={product?.shippingCost}
             selectedSizes={product?.sizes}
             isUpdatePage={true}

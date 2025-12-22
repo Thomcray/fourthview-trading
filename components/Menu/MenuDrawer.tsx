@@ -37,7 +37,7 @@ export function MenuDrawer({ open, setOpen }: DrawerMenu) {
     },
     { title: "Furniture", path: "/furniture", icon: Sofa },
     { title: "Open a Company", path: "/open-a-company", icon: Building2 },
-    { title: "Special Order", path: "", icon: ListOrdered },
+    { title: "Special Order", path: "/special-order", icon: ListOrdered },
   ];
   return (
     <div className="fixed bg-accent flex flex-col top-4 left-4 border-0 rounded-md w-max z-50">

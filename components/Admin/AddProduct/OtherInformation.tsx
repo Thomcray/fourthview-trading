@@ -107,7 +107,7 @@ export default function OtherInformation({
         {availableSizes.length > 0 && (
           <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
             Available Sizes (select multiple)
-            {isUpdatePage && selectedSizes.length > 0 && (
+            {isUpdatePage && selectedSizes?.length > 0 && (
               <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
                 <span className="font-semibold">Current sizes:</span>{" "}
                 {selectedSizes.join(", ")}
@@ -125,7 +125,7 @@ export default function OtherInformation({
                       name="sizes"
                       value={size}
                       defaultChecked={
-                        isUpdatePage && selectedSizes.includes(size)
+                        isUpdatePage && selectedSizes?.includes(size)
                       }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
