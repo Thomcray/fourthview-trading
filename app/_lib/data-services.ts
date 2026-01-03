@@ -106,7 +106,7 @@ type Product = {
   target: string;
   imageUrl: string[];
   sizes: string[];
-  weight: number;
+  weight: string;
   shippingCost: number;
 };
 

@@ -12,7 +12,7 @@ export async function createProduct(
   const description = formData.get("description") as string;
   const productType = formData.get("type") as string;
   const sizes = formData.getAll("sizes") as string[];
-  const weight = parseFloat(formData.get("weight") as string);
+  const weight = formData.get("weight") as string;
   const shippingCost = parseFloat(formData.get("shippingCost") as string);
   const price = parseFloat(formData.get("price") as string);
   const discount = parseFloat(formData.get("discount") as string);

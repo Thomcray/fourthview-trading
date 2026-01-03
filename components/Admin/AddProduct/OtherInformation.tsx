@@ -142,6 +142,7 @@ export default function OtherInformation({
 
         <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
           Weight Range
+          {/* Update */}
           {isUpdatePage &&
             selectedWeight &&
             selectedWeight !== "Select Weight" && (
@@ -150,6 +151,7 @@ export default function OtherInformation({
                 {selectedWeight} kg
               </div>
             )}
+          {/*Update ends here! */}
           <Selection
             defaultValue={productWeight ? productWeight : "Select Weight"}
             name="weight"

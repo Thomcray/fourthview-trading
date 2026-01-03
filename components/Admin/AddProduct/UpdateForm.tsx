@@ -24,7 +24,7 @@ type UpdateProductFormProps = {
     target: string;
     imageUrl: string[];
     sizes: string[];
-    weight: number;
+    weight: string;
     shippingCost: number;
   } | null;
   children: React.ReactNode;
@@ -99,7 +99,7 @@ export default function UpdateForm({
         {product && (
           <OtherInformation
             productType={product?.productType || ""}
-            productWeight={product?.weight?.toString()}
+            productWeight={product?.weight}
             shippingCost={product?.shippingCost}
             selectedSizes={product?.sizes}
             isUpdatePage={true}
