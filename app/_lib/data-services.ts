@@ -142,7 +142,7 @@ export async function getAllProducts() {
   const { data: products, error } = await supabase
     .from("products")
     .select(
-      "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours"
+      "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours, weight, shippingCost"
     );
 
   if (error) {
