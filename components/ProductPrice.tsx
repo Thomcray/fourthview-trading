@@ -14,8 +14,6 @@ export default function ProductPrice({
   const [rate, setRate] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  if (!discount) return;
-
   useEffect(() => {
     setMounted(true);
 
@@ -27,19 +25,22 @@ export default function ProductPrice({
     getRate();
   }, []);
 
-  // Don't render until mounted on client
+  if (!discount) return null;
+
   if (!mounted || !rate) {
     return <span>...</span>;
   }
 
   const nairaPrice = convertToNaira(yuanPrice, rate);
-  const customerDiscount = handleDiscount(yuanPrice, discount);
+  const discountedPrice = handleDiscount(nairaPrice, discount);
 
-  // Convert to fixed string first, then format
-  const formattedPrice = Number(nairaPrice.toFixed(2)).toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formattedPrice = Number(discountedPrice.toFixed(2)).toLocaleString(
+    "en-NG",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  );
 
   return <span className="text-md font-bold">&#8358; {formattedPrice}</span>;
 }
