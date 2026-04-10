@@ -9,6 +9,7 @@ import AvailableColours from "./AvailableColours";
 import Pricing from "./Pricing";
 import { updateProduct } from "@/app/_lib/actions/update-product-action";
 import { toast } from "react-toastify";
+import { ArrowLeft } from "lucide-react";
 
 type UpdateProductFormProps = {
   product: {
@@ -36,7 +37,7 @@ export default function UpdateForm({
   const [colours, setColours] = useState<string[]>(product?.colours || []);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(
-    product?.imageUrl || []
+    product?.imageUrl || [],
   );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -62,16 +63,16 @@ export default function UpdateForm({
   return (
     <form className="flex flex-col gap-4" onSubmit={handleUpdateProduct}>
       <div
-        className="w-full flex flex-row max-sm:flex-col max-sm:items-baseline justify-between lg:items-center 
+        className="w-full flex flex-row max-sm:flex-col max-sm:items-baseline gap-4 lg:items-center 
             md:items-center py-4 px-4 border rounded-md"
       >
-        <h1 className="text-xl text-black text-left">Update Product</h1>
-
         <div className="flex flex-row gap-4">
-          <Button variant="outline" type="submit" disabled={isPending}>
-            {isPending ? "Updating..." : "Update Product"}
+          <Button variant="outline" type="button" className="cursor-pointer">
+            <ArrowLeft /> Back
           </Button>
         </div>
+
+        <h1 className="text-xl text-black text-left">Update Product</h1>
       </div>
 
       {error && (
@@ -112,6 +113,17 @@ export default function UpdateForm({
       <div className="w-full lg:h-60 flex flex-row max-sm:flex-col justify-between items-center gap-4 py-4 px-4 border rounded-md">
         <Pricing product={product} />
         {children}
+      </div>
+
+      <div className="w-full flex flex-row gap-4">
+        <Button
+          variant="outline"
+          type="submit"
+          disabled={isPending}
+          className="w-full h-12 cursor-pointer bg-blue-500 text-white text-md"
+        >
+          {isPending ? "Updating..." : "Update Product"}
+        </Button>
       </div>
     </form>
   );

@@ -105,8 +105,8 @@ export default function CartItems() {
           </div>
         ))}
 
-        <div className="flex flex-col w-80 max-sm:w-full border-y-1 pb-2">
-          <h1 className="w-full border-b-1 py-4 text-center">Cart Summary</h1>
+        <div className="flex flex-col w-80 max-sm:w-full border-y pb-2">
+          <h1 className="w-full border-b py-4 text-center">Cart Summary</h1>
 
           <div className="flex flex-row justify-between mt-4">
             <p className="text-slate-500">Shipping cost</p>

@@ -60,11 +60,17 @@ export default function AddToCart({ data }: Data) {
   return (
     <Button
       variant="outline"
-      className="cursor-pointer px-4 w-fit"
+      className="cursor-pointer px-4 py-5 text-white text-base w-full bg-black"
       onClick={handleCart}
     >
-      <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />
-      {isAdding && <span className="ml-2">Adding...</span>}
+      {isAdding ? (
+        <span className="ml-2">Adding...</span>
+      ) : (
+        <>
+          Add to cart
+          <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />
+        </>
+      )}
     </Button>
   );
 }

@@ -9,6 +9,7 @@ import Image from "next/image";
 import ProductPrice from "../ProductPrice";
 import AddToCart from "../AddToCart";
 import Link from "next/link";
+import handleDiscount from "@/utils/handleDiscount";
 // import AddToCart from "../AddToCart";
 
 export default function TopPicks() {
@@ -65,11 +66,21 @@ export default function TopPicks() {
                 {item.name}
               </p>
 
-              <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
-                <ProductPrice yuanPrice={item.price} />
-              </p>
+              {item.discount && (
+                <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+                  <ProductPrice
+                    yuanPrice={item.price}
+                    discount={item.discount}
+                  />
+                </p>
+              )}
+              {!item.discount && (
+                <p className="px-2 max-sm:px-2 py-0 max-sm:px-o text-blue-950 font-normal">
+                  <ProductPrice yuanPrice={item.price} />
+                </p>
+              )}
 
-              <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
+              {/* <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
                 <Button
                   variant="outline"
                   className="bg-[#334EAC] text-white font-semibold cursor-pointer"
@@ -78,7 +89,7 @@ export default function TopPicks() {
                 </Button>
 
                 <AddToCart data={item} />
-              </div>
+              </div> */}
             </div>
           ))}
         </div>

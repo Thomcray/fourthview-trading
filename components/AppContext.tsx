@@ -23,6 +23,7 @@ type Products = {
   imageUrl: string[];
   productType: string;
   colours: string[];
+  sizes: string[];
   weight: string;
   shippingCost: number;
 };
