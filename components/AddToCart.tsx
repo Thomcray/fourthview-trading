@@ -24,10 +24,10 @@ type AddItem = {
 
 interface Data {
   data: AddItem;
-  selectedSize: string | null;
+  selectedSize?: string | null;
 }
 
-export default function AddToCart({ data, selectedSize }: Data) {
+export default function AddToCart({ data, selectedSize = null }: Data) {
   const { cart, addToCart } = useApp();
   const [isAdding, setIsAdding] = useState(false);
 
