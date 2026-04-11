@@ -17,8 +17,6 @@ export default async function siteLayout({
   const products = data[0];
   const categories = data[1];
 
-  console.log(products);
-
   return (
     <div
       className={`${outfit.className} relative antialiased flex flex-col min-h-screen`}

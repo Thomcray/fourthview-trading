@@ -4,23 +4,28 @@ import { supabase } from "@/app/_lib/supabase";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-export async function DELETE(req: Request) {
-  const body = await req.json();
-  const { itemName } = body;
+export async function PATCH(req: Request) {
+  const { itemName, size } = await req.json();
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
 
-  const cart = await getOrCreateCart(userId);
+  const cart = await getOrCreateCart(session.user.id);
 
-  await supabase
+  const { error } = await supabase
     .from("cartItems")
-    .delete()
+    .update({ size })
     .eq("cartId", cart.id)
     .eq("itemName", itemName);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to update size" },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ success: true });
 }

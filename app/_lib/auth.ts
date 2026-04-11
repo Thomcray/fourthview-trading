@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
 
         const validPassword = await bcrypt.compare(
           password,
-          existingUser.password
+          existingUser.password,
         );
 
         if (!validPassword) return null;
@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
           const userRole = await getUserRole(existingUser.id);
           if (userRole) role = userRole.role;
         } catch {
-          console.log("Use default user-role");
+          // console.log("Use default user-role");
         }
 
         const returnUser = {

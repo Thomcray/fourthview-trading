@@ -1,12 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { useApp } from "../AppContext";
-import Image from "next/image";
-import { ShoppingBag, Trash2 } from "lucide-react";
-import ProductPrice from "../ProductPrice";
+import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
+import { useApp } from "../AppContext";
+import {
+  ArrowLeft,
+  ShoppingBag,
+  Trash2,
+  MinusIcon,
+  PlusIcon,
+} from "lucide-react";
+import ProductPrice from "../ProductPrice";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
 // Dynamically import PaystackButton to avoid window error during SSR
 const PaystackButton = dynamic(() => import("../PaystackButton"), {
@@ -20,15 +27,32 @@ const PaystackButton = dynamic(() => import("../PaystackButton"), {
 
 export default function CartItems() {
   const [isRemoving, setIsRemoving] = useState(false);
-  const { cart, removeFromCart } = useApp();
+  const { cart, removeFromCart, updateQuantity, updateSize } = useApp();
 
   const cartItems = cart.map((item) => item);
 
-  const total = cartItems.reduce((acc, item) => {
+  const router = useRouter();
+
+  const subtotal = cartItems.reduce((acc, item) => {
     const price = Number(item.price) || 0;
     const quantity = Number(item.quantity) || 0;
-    return acc + price * quantity;
+    const discount = Number(item.discount) || 0;
+    const discountedPrice = price - (price * discount) / 100;
+    return acc + discountedPrice * quantity;
   }, 0);
+
+  const totalShipping = cartItems.reduce((acc, item) => {
+    return acc + (Number(item.shippingCost) || 0);
+  }, 0);
+
+  const totalDiscount = cartItems.reduce((acc, item) => {
+    const price = Number(item.price) || 0;
+    const quantity = Number(item.quantity) || 0;
+    const discount = Number(item.discount) || 0;
+    return acc + ((price * discount) / 100) * quantity;
+  }, 0);
+
+  const total = subtotal + totalShipping;
 
   const handleRemove = async (itemName: string) => {
     setIsRemoving(true);
@@ -36,7 +60,7 @@ export default function CartItems() {
     try {
       await removeFromCart(itemName);
     } catch (error) {
-      console.log("Error removing from cart: ", error);
+      console.error("Error removing from cart: ", error);
     } finally {
       setIsRemoving(false);
     }
@@ -44,9 +68,20 @@ export default function CartItems() {
 
   return (
     <div className="w-full border-0 px-4">
-      <div className="flex flex-row gap-0.5 items-center py-2 lg:justify-center">
-        <ShoppingBag size={24} />
-        <h1 className="text-2xl font-semibold">My Cart</h1>
+      <div className="relative flex flex-row items-center py-2">
+        <Button
+          variant="outline"
+          type="button"
+          className="cursor-pointer"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft /> Back
+        </Button>
+
+        <div className="absolute left-1/2 -translate-x-1/2 flex flex-row gap-0.5 items-center">
+          <ShoppingBag size={24} />
+          <h1 className="text-2xl font-semibold">My Cart</h1>
+        </div>
       </div>
 
       <div className="w-full flex flex-row max-sm:flex-col gap-10 border-0">
@@ -74,8 +109,29 @@ export default function CartItems() {
                     <h1 className="text-base font-semibold text-slate-800">
                       {item.itemName}
                     </h1>
-                    {/* <span></span> */}
+                    {item.size && (
+                      <span className="text-xs text-slate-500">
+                        Size: {item.size}
+                      </span>
+                    )}
+
+                    {/* Size selector */}
+                    {item.productSizes && item.productSizes.length > 0 && (
+                      <div className="flex flex-row gap-1 mt-2 flex-wrap">
+                        {item.productSizes.map((size, idx) => (
+                          <button
+                            key={idx}
+                            className={`text-xs border px-2 py-1 cursor-pointer rounded-none
+              ${item.size === size ? "ring-2 ring-blue-400 bg-blue-50" : "bg-accent"}`}
+                            onClick={() => updateSize(item.itemName, size)}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
+
                   <div className="flex flex-col gap-0.5 w-40">
                     <p className="text-sm">Price</p>
                     {item?.price && (
@@ -87,9 +143,29 @@ export default function CartItems() {
 
                   <div className="flex flex-col gap-0.5 w-40 lg:text-center">
                     <p className="text-sm">Quantity</p>
-                    <p className="lg:text-center text-sm font-medium">
-                      {item.quantity}
-                    </p>
+                    <div className="flex flex-row items-center gap-1 lg:justify-center">
+                      <MinusIcon
+                        className="h-6 w-6 text-blue-950 border rounded-md p-1 cursor-pointer bg-white"
+                        onClick={() =>
+                          updateQuantity(
+                            item.itemName,
+                            Math.max(1, (item.quantity || 1) - 1),
+                          )
+                        }
+                      />
+                      <span className="px-2 text-sm font-medium">
+                        {item.quantity}
+                      </span>
+                      <PlusIcon
+                        className="h-6 w-6 text-blue-950 border rounded-md p-1 cursor-pointer bg-white"
+                        onClick={() =>
+                          updateQuantity(
+                            item.itemName,
+                            (item.quantity || 1) + 1,
+                          )
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -110,18 +186,23 @@ export default function CartItems() {
 
           <div className="flex flex-row justify-between mt-4">
             <p className="text-slate-500">Shipping cost</p>
-            <p></p>
+            <ProductPrice yuanPrice={totalShipping} />
           </div>
 
-          <div className="py-2">
+          <div className="flex flex-row justify-between py-2">
             <p className="text-slate-500">Discount</p>
-            <p></p>
+            {totalDiscount > 0 ? (
+              <span className="text-green-600">
+                - <ProductPrice yuanPrice={totalDiscount} />
+              </span>
+            ) : (
+              <p className="text-slate-500">—</p>
+            )}
           </div>
 
-          <div className="flex flex-row gap-2 items-center justify-between py-2">
+          <div className="flex flex-row justify-between py-2">
             <p className="font-bold text-xl text-slate-800">Estimated Total</p>
             <ProductPrice yuanPrice={total} />
-            <p></p>
           </div>
 
           <PaystackButton total={total} />

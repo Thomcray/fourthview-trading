@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const body = await req.json();
+
   const {
     itemName,
     description,
@@ -14,6 +15,9 @@ export async function POST(req: Request) {
     categoryId,
     productId,
     image,
+    size,
+    shippingCost,
+    productSizes,
   } = body;
 
   const session = await getServerSession(authOptions);
@@ -36,7 +40,7 @@ export async function POST(req: Request) {
     // Update quantity
     await supabase
       .from("cartItems")
-      .update({ quantity: existingItem.quantity + 1 })
+      .update({ quantity: existingItem.quantity + 1, size })
       .eq("id", existingItem.id);
   } else {
     // Insert new item
@@ -50,6 +54,9 @@ export async function POST(req: Request) {
         discount,
         description,
         image,
+        size,
+        shippingCost,
+        productSizes,
       },
     ]);
   }

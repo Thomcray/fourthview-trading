@@ -30,7 +30,7 @@ export async function POST(req: Request) {
           message:
             "Password must be 8-20 characters long, include at least one uppercase letter, one lowercase letter, one number, and one special character.",
         },
-        { status: 400 }
+        { status: 400 },
       );
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     if (existingUser)
       return NextResponse.json(
         { success: false, message: "User already exists." },
-        { status: 400 }
+        { status: 400 },
       );
 
     //convert expiry to iso string to prevent timezone issues
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     if (error)
       return NextResponse.json(
         { success: false, message: "Something went wrong." },
-        { status: 500 }
+        { status: 500 },
       );
 
     // Send confirmation email conataining token to user
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Could not send email",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -103,16 +103,16 @@ export async function POST(req: Request) {
         success: true,
         message: "Verification email sent",
       },
-      { status: 500 }
+      { status: 500 },
     );
   } catch (error: unknown) {
-    console.log("Error", error);
+    console.error("Error", error);
     return NextResponse.json(
       {
         success: false,
         message: error || "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -25,22 +25,19 @@ export default function ProductPrice({
     getRate();
   }, []);
 
-  if (!discount) return null;
-
   if (!mounted || !rate) {
     return <span>...</span>;
   }
 
   const nairaPrice = convertToNaira(yuanPrice, rate);
-  const discountedPrice = handleDiscount(nairaPrice, discount);
+  const finalPrice = discount
+    ? handleDiscount(nairaPrice, discount)
+    : nairaPrice;
 
-  const formattedPrice = Number(discountedPrice.toFixed(2)).toLocaleString(
-    "en-NG",
-    {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    },
-  );
+  const formattedPrice = Number(finalPrice.toFixed(2)).toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   return <span className="text-md font-bold">&#8358; {formattedPrice}</span>;
 }

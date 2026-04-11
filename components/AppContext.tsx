@@ -49,11 +49,15 @@ type Cart = {
   discount?: number;
   quantity?: number;
   description?: string;
+  size?: string | null;
+  shippingCost?: number;
+  productSizes?: string[];
 };
 
 interface AppContextType {
   cart: Cart[];
   addToCart: (item: Cart) => Promise<void>;
+  updateSize: (itemName: string, size: string) => Promise<void>;
   removeFromCart: (itemName: string) => Promise<void>;
   updateQuantity: (itemName: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -99,8 +103,8 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         if (existingItem) {
           return prev.map((i) =>
             i.itemName === item.itemName
-              ? { ...i, quantity: (i.quantity || 1) + 1 }
-              : i
+              ? { ...i, quantity: (i.quantity || 1) + 1, size: item.size }
+              : i,
           );
         }
 
@@ -125,6 +129,26 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
       console.error("Failed to add to cart: ", error);
       // Revert to optimistic update on error
       // Might want to fetch cart again here
+    }
+  };
+
+  const updateSize = async (itemName: string, size: string) => {
+    try {
+      setCart((prev) =>
+        prev.map((i) => (i.itemName === itemName ? { ...i, size } : i)),
+      );
+
+      const response = await fetch("/api/cart/update-size", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemName, size }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update size");
+      }
+    } catch (error) {
+      console.error("Failed to update size: ", error);
     }
   };
 
@@ -154,7 +178,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
     try {
       // Optimistic update
       setCart((prev) =>
-        prev.map((i) => (i.itemName === itemName ? { ...i, quantity } : i))
+        prev.map((i) => (i.itemName === itemName ? { ...i, quantity } : i)),
       );
 
       const response = await fetch("/api/cart/update", {
@@ -192,6 +216,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
       value={{
         cart,
         addToCart,
+        updateSize,
         removeFromCart,
         updateQuantity,
         clearCart,

@@ -3,6 +3,11 @@
 import React, { useState } from "react";
 import { usePaystackPayment } from "react-paystack";
 import { Button } from "./ui/button";
+import { convertToNaira } from "@/utils/toNaira";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { useSession } from "next-auth/react";
+import { useApp } from "./AppContext";
+import { useRouter } from "next/navigation";
 
 const PAYSTACK_PUBLIC_KEY = process.env
   .NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY as string;
@@ -18,23 +23,44 @@ interface PaystackReference {
 
 export default function PaystackButton({ total }: { total: number }) {
   const [isLoading, setIsLoading] = useState(false);
+  const { rate, isLoading: rateLoading } = useExchangeRate();
+  const { data: session } = useSession();
+
+  const user = session?.user;
+  const nairaTotal = rate ? convertToNaira(total, rate) : 0;
+
+  const { cart, clearCart } = useApp();
+  const router = useRouter();
 
   const config = {
     reference: new Date().getTime().toString(),
-    email: "ternathompson2@gmail.com",
-    amount: Math.round(total * 100),
+    email: user?.email ?? "",
+    amount: Math.round(nairaTotal * 100),
     publicKey: PAYSTACK_PUBLIC_KEY,
     metadata: {
       custom_fields: [
         {
           display_name: "Customer Name",
           variable_name: "customer_name",
-          value: "Terna Nanev",
+          value: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
         },
         {
           display_name: "Phone Number",
           variable_name: "phone",
-          value: "+2348128909551",
+          value:
+            user?.countryCode && user?.phone
+              ? `${user.countryCode}${user.phone}`
+              : "",
+        },
+        {
+          display_name: "Address",
+          variable_name: "address",
+          value: user?.address ?? "",
+        },
+        {
+          display_name: "Country",
+          variable_name: "country",
+          value: user?.country ?? "",
         },
       ],
     },
@@ -45,13 +71,28 @@ export default function PaystackButton({ total }: { total: number }) {
   const handlePayment = () => {
     setIsLoading(true);
 
-    const onSuccess = (reference: PaystackReference) => {
-      console.log(reference);
-      setIsLoading(false);
+    const onSuccess = async (reference: PaystackReference) => {
+      try {
+        await fetch("/api/orders/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reference: reference.reference,
+            total: nairaTotal,
+            items: cart,
+          }),
+        });
+
+        await clearCart();
+        router.push("/account/purchased-items");
+      } catch (error) {
+        console.error("Failed to save order:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     const onClose = () => {
-      console.log("Closed");
       setIsLoading(false);
     };
 
@@ -62,10 +103,10 @@ export default function PaystackButton({ total }: { total: number }) {
     <Button
       type="button"
       onClick={handlePayment}
-      disabled={isLoading}
+      disabled={isLoading || rateLoading || !user}
       className="cursor-pointer h-10"
     >
-      {isLoading ? "Loading" : "Checkout"}
+      {isLoading ? "Processing..." : "Checkout"}
     </Button>
   );
 }

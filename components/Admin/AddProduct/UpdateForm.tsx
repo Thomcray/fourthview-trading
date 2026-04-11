@@ -10,6 +10,7 @@ import Pricing from "./Pricing";
 import { updateProduct } from "@/app/_lib/actions/update-product-action";
 import { toast } from "react-toastify";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type UpdateProductFormProps = {
   product: {
@@ -42,6 +43,8 @@ export default function UpdateForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
+  const router = useRouter();
+
   const handleUpdateProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -67,7 +70,12 @@ export default function UpdateForm({
             md:items-center py-4 px-4 border rounded-md"
       >
         <div className="flex flex-row gap-4">
-          <Button variant="outline" type="button" className="cursor-pointer">
+          <Button
+            variant="outline"
+            type="button"
+            className="cursor-pointer"
+            onClick={() => router.back()}
+          >
             <ArrowLeft /> Back
           </Button>
         </div>

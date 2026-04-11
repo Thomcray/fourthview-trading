@@ -48,7 +48,7 @@ export async function getUserByEmail(email: string) {
 export async function getCountries() {
   try {
     const res = await fetch(
-      "https://restcountries.com/v3.1/all?fields=name,flag,idd"
+      "https://restcountries.com/v3.1/all?fields=name,flag,idd",
     );
 
     const countries = await res.json();
@@ -78,7 +78,7 @@ type Category = {
   name: string;
 };
 export async function getCategoryByName(
-  name: string
+  name: string,
 ): Promise<Category | null> {
   const { data: category, error } = await supabase
     .from("categories")
@@ -114,7 +114,7 @@ export async function newProduct(product: Product) {
   const { data, error } = await supabase.from("products").insert([product]);
 
   if (error) {
-    console.log(error);
+    console.error(error);
 
     throw new Error("Could not create product");
   }
@@ -124,7 +124,7 @@ export async function newProduct(product: Product) {
 
 export async function updateCurrentProduct(
   product: Partial<Product>,
-  productId: number
+  productId: number,
 ) {
   const { data, error } = await supabase
     .from("products")
@@ -142,7 +142,7 @@ export async function getAllProducts() {
   const { data: products, error } = await supabase
     .from("products")
     .select(
-      "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours, sizes, weight, shippingCost"
+      "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours, sizes, weight, shippingCost",
     );
 
   if (error) {
@@ -156,7 +156,7 @@ export async function getProductById(id: number) {
   const { data: product, error } = await supabase
     .from("products")
     .select(
-      "id, name, description, productType, colours, price, discount, discountType, categoryId, target, imageUrl, productType, colours, sizes, weight, shippingCost"
+      "id, name, description, productType, colours, price, discount, discountType, categoryId, target, imageUrl, productType, colours, sizes, weight, shippingCost",
     )
     .eq("id", id)
     .single();
@@ -172,7 +172,7 @@ export async function newSpecialOrders(orders: Orders) {
   const { data, error } = await supabase.from("specialOrders").insert([orders]);
 
   if (error) {
-    console.log(error);
+    console.error(error);
 
     throw new Error("Error placing order. Try again!");
   }

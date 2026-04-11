@@ -29,10 +29,10 @@ export default function ItemClient() {
         if (getCategory) {
           setCategoryItems(getCategory);
         } else {
-          console.log("Category not found");
+          // console.log("Category not found");
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
   }, [category]);

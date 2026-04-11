@@ -3,8 +3,6 @@
 import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useApp } from "./AppContext";
-// import { v4 as uuidv4 } from "uuid";
-// import { toast } from "react-toastify";
 import { useState } from "react";
 
 type AddItem = {
@@ -20,17 +18,22 @@ type AddItem = {
   imageUrl: string[];
   productType: string;
   colours: string[];
+  sizes: string[];
+  shippingCost: number;
 };
 
 interface Data {
   data: AddItem;
+  selectedSize: string | null;
 }
 
-export default function AddToCart({ data }: Data) {
+export default function AddToCart({ data, selectedSize }: Data) {
   const { cart, addToCart } = useApp();
   const [isAdding, setIsAdding] = useState(false);
 
   const defaultImage = data.imageUrl[0];
+  const hasSizes = data.sizes?.length > 0;
+  const itemInCart = cart.some((item) => item.itemName === data.name);
 
   const newItem = {
     productId: data.id,
@@ -40,37 +43,37 @@ export default function AddToCart({ data }: Data) {
     discount: data.discount,
     categoryId: data.categoryId,
     image: defaultImage,
-    // productId: uuidv4(),
+    size: selectedSize,
+    shippingCost: data.shippingCost,
+    productSizes: data.sizes,
   };
 
   const handleCart = async () => {
     setIsAdding(true);
-
     try {
       await addToCart(newItem);
     } catch (error) {
-      console.log("Error adding to cart: ", error);
+      console.error("Error adding to cart: ", error);
     } finally {
       setIsAdding(false);
     }
   };
 
-  const itemInCart = cart.some((item) => item.itemName === data.name);
+  const buttonLabel = () => {
+    if (isAdding) return "Adding...";
+    if (hasSizes && !selectedSize) return "Select a size";
+    return "Add to cart";
+  };
 
   return (
     <Button
       variant="outline"
-      className="cursor-pointer px-4 py-5 text-white text-base w-full bg-black"
+      className="cursor-pointer px-4 py-5 text-white text-base w-full bg-black disabled:opacity-50"
       onClick={handleCart}
+      disabled={isAdding || (hasSizes && !selectedSize)}
     >
-      {isAdding ? (
-        <span className="ml-2">Adding...</span>
-      ) : (
-        <>
-          Add to cart
-          <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />
-        </>
-      )}
+      {buttonLabel()}
+      {!isAdding && <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />}
     </Button>
   );
 }

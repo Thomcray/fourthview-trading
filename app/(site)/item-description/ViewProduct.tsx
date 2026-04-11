@@ -32,26 +32,48 @@ type ViewProductProps = {
   selectedItem: SelectedItem;
 };
 export default function ViewProduct({ selectedItem }: ViewProductProps) {
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [sizeUpdated, setSizeUpdated] = useState(false);
   const [imageIdx, setImageIdx] = useState(0);
   const [qty, setQty] = useState(1);
 
-  const { cart, updateQuantity } = useApp();
+  const { cart, updateQuantity, updateSize } = useApp();
 
   const inCart = cart.find((item) => item.itemName === selectedItem?.name);
 
-  // Reset imageIdx when a new product is loaded to avoid stale indexes
+  // Reset imageIdx, and selected size when a new product is loaded to avoid stale indexes
   useEffect(() => {
     setImageIdx(0);
+    setSelectedSize(null);
+    setSizeUpdated(false);
   }, [selectedItem?.id]);
+
+  // Sync selectedSize with cart item's current size
+  useEffect(() => {
+    if (inCart?.size) {
+      setSelectedSize(inCart.size);
+    } else if (!inCart) {
+      setSelectedSize(null); // reset when item leaves cart
+    }
+  }, [inCart?.size, inCart]);
 
   const handleImageColour = (idx: number) => {
     if (!selectedItem) return;
 
     const safeIdx = Math.min(
       idx,
-      Math.max(0, selectedItem.imageUrl.length - 1)
+      Math.max(0, selectedItem.imageUrl.length - 1),
     );
     setImageIdx(safeIdx);
+  };
+
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+    if (inCart) {
+      updateSize(selectedItem!.name, size);
+      setSizeUpdated(true);
+      setTimeout(() => setSizeUpdated(false), 2000);
+    }
   };
 
   const handleQuantityChange = (newQty: number) => {
@@ -154,16 +176,32 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
             <div className="w-full flex flex-col gap-1 py-2 max-sm:px-2 border-0">
               {selectedItem?.sizes && (
                 <div className="flex flex-col py-1 gap-1 border-0">
-                  <h1 className="font-normal text-base">Available Size(s)</h1>
+                  <div className="flex flex-row items-center gap-2">
+                    <h1 className="font-normal text-base">
+                      {inCart ? "Change Size" : "Available Size(s)"}
+                    </h1>
+                    {sizeUpdated && (
+                      <span className="text-xs text-green-600 font-medium animate-pulse">
+                        ✓ Size updated in cart
+                      </span>
+                    )}
+                  </div>
 
                   <div className="flex flex-row gap-1">
                     {selectedItem.sizes.map((size, idx) => (
                       <Button
                         variant="outline"
                         key={idx}
-                        className="text-sm border px-2 py-2 cursor-pointer rounded-none bg-accent"
+                        className={`text-sm border px-2 py-2 cursor-pointer rounded-none bg-accent relative
+            ${selectedSize === size ? "ring-2 ring-blue-400 bg-blue-50" : ""}`}
+                        onClick={() => handleSizeChange(size)}
                       >
                         {size}
+                        {selectedSize === size && (
+                          <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                            ✓
+                          </span>
+                        )}
                       </Button>
                     ))}
                   </div>
@@ -187,9 +225,11 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
               )}
             </div>
 
-            <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
-              <AddToCart data={selectedItem} />
-            </div>
+            {!inCart && (
+              <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
+                <AddToCart data={selectedItem} selectedSize={selectedSize} />
+              </div>
+            )}
           </div>
         </div>
         <div className="w-full border px-4 max-sm:px-2 rounded-md bg-white max-sm:pb-4 overflow-y-auto">
