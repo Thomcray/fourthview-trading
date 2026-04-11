@@ -6,11 +6,9 @@ type Children = {
 
 export default function AccountLayout({ children }: Children) {
   return (
-    <div className="grid grid-cols-[16rem_1fr] h-full gap-12 border max-w-5xl mx-auto">
-      {/* Sidebar */}
+    <div className="flex flex-col lg:flex-row min-h-full border">
       <AccountSide />
-
-      {children}
+      <div className="w-full min-w-0 py-2">{children}</div>
     </div>
   );
 }

@@ -22,16 +22,14 @@ type DrawerMenu = {
 
 export function MenuDrawer({ open, setOpen }: DrawerMenu) {
   const { data: session } = useSession();
-
   const nameInitial = session?.user.firstName?.charAt(0);
-
   const pathname = usePathname();
 
   const menuList = [
     { title: "Change Money with Us", path: "/change-money", icon: DollarSign },
     { title: "Shop with Us", path: "/shop", icon: ShoppingBag },
     {
-      title: "Travel Guide/Factory Visit",
+      title: "Travel Guide / Factory Visit",
       path: "/travel",
       icon: PlaneTakeoff,
     },
@@ -39,49 +37,63 @@ export function MenuDrawer({ open, setOpen }: DrawerMenu) {
     { title: "Open a Company", path: "/open-a-company", icon: Building2 },
     { title: "Special Order", path: "/special-order", icon: ListOrdered },
   ];
-  return (
-    <div className="fixed bg-accent flex flex-col top-4 left-4 border-0 rounded-md w-max z-50">
-      <div className="relative flex flex-col space-y-2 bg-blue-950 py-4 px-4 items-center justify-center">
-        <X
-          className="text-white absolute right-4 top-2 cursor-pointer"
-          size={24}
-          strokeWidth={2}
-          onClick={() => setOpen(!open)}
-        />
-        <div className="w-fit">
-          <UserImage
-            nameInitial={nameInitial}
-            session={session}
-            width="w-28"
-            height="h-28"
-          />
-        </div>
 
-        <div className="text-center">
-          <h1 className="text-white font-bold text-2xl">
-            {session?.user.firstName}
-          </h1>
-          <p className="text-white font-normal text-sm">
-            {session?.user.email}
-          </p>
-        </div>
+  return (
+    <div className="absolute top-12 left-0 z-50 w-72 rounded-xl shadow-2xl overflow-hidden border border-slate-200 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
+      {/* User profile section */}
+      <div className="flex flex-col items-center gap-3 bg-blue-950 py-6 px-4 relative">
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute right-3 top-3 text-white/70 hover:text-white transition-colors cursor-pointer"
+          aria-label="Close menu"
+        >
+          <X size={20} strokeWidth={2} />
+        </button>
+
+        <UserImage
+          nameInitial={nameInitial}
+          session={session}
+          width="w-20"
+          height="h-20"
+        />
+
+        {session ? (
+          <div className="text-center">
+            <h1 className="text-white font-semibold text-lg leading-tight">
+              {session.user.firstName} {session.user.lastName}
+            </h1>
+            <p className="text-blue-300 text-xs mt-0.5">{session.user.email}</p>
+          </div>
+        ) : (
+          <p className="text-blue-300 text-sm">Welcome, Guest</p>
+        )}
       </div>
-      <nav className="border-0 bg-accent py-4 px-4 w-full max-sm:w-full flex flex-row space-x-1.5 justify-start">
-        <ul className="flex flex-col space-y-2">
-          {menuList.map((item) => (
-            <li key={item.title} className="inline-block relative">
-              <Link
-                href={item.path}
-                className={`text-slate-500 border-0 p-2 hover:text-white hover:bg-blue-900 font-light text-base flex flex-row gap-x-1 items-center
-                ${pathname === item.path ? "text-blue-900 font-normal" : ""}`}
-              >
-                <div className="flex flex-row justify-between font-normal space-x-4 items-center">
-                  <item.icon className="w-5 h-5" />
-                  <h1>{item.title}</h1>
-                </div>
-              </Link>
-            </li>
-          ))}
+
+      {/* Nav links */}
+      <nav className="py-2 px-2">
+        <ul className="flex flex-col">
+          {menuList.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <li key={item.title}>
+                <Link
+                  href={item.path}
+                  onClick={() => setOpen(false)}
+                  className={`flex flex-row items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-light transition-colors
+                    ${
+                      isActive
+                        ? "bg-blue-50 text-blue-900 font-medium"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                >
+                  <item.icon
+                    className={`w-4 h-4 shrink-0 ${isActive ? "text-blue-700" : "text-slate-400"}`}
+                  />
+                  {item.title}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </div>

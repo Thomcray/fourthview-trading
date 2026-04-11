@@ -13,12 +13,12 @@ export default function AdminButton() {
 
   return (
     <Button
-      className="flex items-center w-full gap-2 px-5 py-5 font-normal bg-red-500 
-    text-white cursor-pointer"
+      className="flex items-center w-full gap-2 px-2 lg:px-5 py-5 font-normal bg-red-500 
+  text-white cursor-pointer justify-center"
       onClick={loginAdmin}
     >
-      <Lock className="w-5 h-5 text-primary-600" />
-      <span className="text-base">Admin</span>
+      <Lock className="w-5 h-5 shrink-0" />
+      <span className="hidden lg:inline text-base">Admin</span>
     </Button>
   );
 }

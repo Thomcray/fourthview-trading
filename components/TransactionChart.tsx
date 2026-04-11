@@ -1,7 +1,6 @@
 "use client";
 
 import { Bar, BarChart, XAxis } from "recharts";
-
 import {
   ChartContainer,
   ChartTooltip,
@@ -9,60 +8,18 @@ import {
 } from "@/components/ui/chart";
 
 const chartConfig = {
-  trend: {
-    label: "Transaction",
-    color: "#2563eb",
-  },
+  trend: { label: "Transaction", color: "#2563eb" },
 };
 
-const chartData = [
-  {
-    month: "January",
-    value: 35000,
-  },
-  {
-    month: "February",
-    value: 15000,
-  },
-  {
-    month: "March",
-    value: 25000,
-  },
-  {
-    month: "April",
-    value: 45000,
-  },
-  {
-    month: "May",
-    value: 50000,
-  },
-  {
-    month: "June",
-    value: 35000,
-  },
-  {
-    month: "July",
-    value: 15000,
-  },
-  {
-    month: "August",
-    value: 25000,
-  },
-  {
-    month: "September",
-    value: 45000,
-  },
-  {
-    month: "October",
-    value: 50000,
-  },
-];
+type Props = {
+  data: { month: string; value: number }[];
+};
 
-export function TransactionChart() {
+export function TransactionChart({ data }: Props) {
   return (
     <ChartContainer config={chartConfig}>
-      <BarChart accessibilityLayer data={chartData}>
-        <Bar dataKey="value" radius={4} fill="var(--color-blue-500)" />
+      <BarChart accessibilityLayer data={data}>
+        <Bar dataKey="value" radius={4} fill="#2563eb" />
         <ChartTooltip content={<ChartTooltipContent />} />
         <XAxis
           dataKey="month"

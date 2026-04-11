@@ -54,7 +54,7 @@ export default function PurchasedPage() {
           className="cursor-pointer"
           onClick={() => router.back()}
         >
-          <ArrowLeft /> Back
+          <ArrowLeft />
         </Button>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex flex-row gap-0.5 items-center">
@@ -83,8 +83,8 @@ export default function PurchasedPage() {
               className="border rounded-md p-4 flex flex-col gap-4"
             >
               {/* Order Header */}
-              <div className="flex flex-row justify-between items-center border-b pb-2">
-                <div className="flex flex-col gap-0.5">
+              <div className="flex flex-row justify-between items-start gap-2 border-b pb-2">
+                <div className="flex flex-col gap-0.5 min-w-0">
                   <p className="text-xs text-slate-500">
                     {new Date(order.created_at).toLocaleDateString("en-NG", {
                       year: "numeric",
@@ -92,11 +92,11 @@ export default function PurchasedPage() {
                       day: "numeric",
                     })}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 truncate">
                     Ref: {order.reference}
                   </p>
                 </div>
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium capitalize">
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium capitalize shrink-0">
                   {order.status}
                 </span>
               </div>
@@ -106,7 +106,7 @@ export default function PurchasedPage() {
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex flex-row gap-3 items-center">
                     {item.image && (
-                      <div className="w-16 h-16 border rounded-md overflow-hidden shrink-0">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 border rounded-md overflow-hidden shrink-0">
                         <Image
                           src={item.image}
                           alt={item.itemName}
@@ -116,8 +116,8 @@ export default function PurchasedPage() {
                         />
                       </div>
                     )}
-                    <div className="flex flex-col gap-0.5 flex-1">
-                      <p className="text-sm font-semibold text-slate-800">
+                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">
                         {item.itemName}
                       </p>
                       {item.size && (
@@ -129,7 +129,11 @@ export default function PurchasedPage() {
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    {item.price && <ProductPrice yuanPrice={item.price} />}
+                    {item.price && (
+                      <div className="shrink-0">
+                        <ProductPrice yuanPrice={item.price} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

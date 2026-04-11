@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRoundCog, WalletCards } from "lucide-react";
+import { UserRoundCog, WalletCards, LogOut } from "lucide-react";
 import { useSession } from "next-auth/react";
 import AdminButton from "./AdminButton";
 import SignOutButton from "./SignOutButton";
@@ -13,54 +13,71 @@ export default function AccountSide() {
 
   const isAdmin = session?.user.userRole;
 
+  const links = [
+    {
+      href: "/account/profile",
+      label: "Account",
+      icon: <UserRoundCog className="w-5 h-5" />,
+    },
+    {
+      href: "/account/purchased-items",
+      label: "Purchased items",
+      icon: <WalletCards className="w-5 h-5" />,
+    },
+  ];
+
   return (
-    <aside className="px-5 py-5 h-96 border-r flex flex-col justify-between">
-      <nav className="flex flex-col space-y-2">
+    <aside
+      className="flex flex-row lg:flex-col justify-between border-b lg:border-b-0 lg:border-r px-4 
+      py-3 lg:px-5 lg:py-5 w-full lg:w-64 max-sm:overflow-x-scroll"
+    >
+      <nav className="flex flex-row lg:flex-col gap-2 lg:space-y-2">
         <div className="flex flex-col space-y-1">
-          <h1 className="text-base text-slate-500 font-medium">GENERAL</h1>
+          <h1 className="text-xs text-slate-500 font-medium hidden lg:block">
+            GENERAL
+          </h1>
           <ul>
-            <li className="text-base text-slate-500 cursor-pointer">
+            <li>
               <Link
                 href="/account/profile"
-                className={`hover:bg-blue-50 px-4 py-2 rounded-md hover:text-blue-500 transition-colors flex 
-                items-center gap-2 font-light ${
-                  pathname === "/account/profile"
-                    ? "text-blue-900 border rounded-md font-normal"
-                    : ""
-                }`}
+                title="Account"
+                className={`hover:bg-blue-50 px-3 lg:px-4 py-2 rounded-md hover:text-blue-500 transition-colors 
+              flex items-center gap-2 font-light
+              ${pathname === "/account/profile" ? "text-blue-900 border rounded-md font-normal" : "text-slate-500"}`}
               >
-                <UserRoundCog className="w-5 h-5" />
-                Account
+                <UserRoundCog className="w-5 h-5 shrink-0" />
+                <span className="text-sm lg:text-base whitespace-nowrap">
+                  Account
+                </span>
               </Link>
             </li>
           </ul>
         </div>
 
         <div className="flex flex-col space-y-1">
-          <h1 className="text-base text-slate-500 font-medium border-0">
+          <h1 className="text-xs text-slate-500 font-medium hidden lg:block">
             OTHER
           </h1>
-          <ul className="border-0">
-            <li className="text-base text-slate-500 cursor-pointer">
+          <ul>
+            <li>
               <Link
                 href="/account/purchased-items"
-                className={`hover:bg-blue-50 px-4 py-2 rounded-md hover:text-blue-500 transition-colors flex 
-                items-center gap-2 font-light ${
-                  pathname === "/account/purchased-items"
-                    ? "text-blue-900 border rounded-md font-normal"
-                    : ""
-                }`}
+                title="Purchased items"
+                className={`hover:bg-blue-50 px-3 lg:px-4 py-2 rounded-md hover:text-blue-500 transition-colors 
+              flex items-center gap-2 font-light
+              ${pathname === "/account/purchased-items" ? "text-blue-900 border rounded-md font-normal" : "text-slate-500"}`}
               >
-                <WalletCards className="w-5 h-5" />
-                Purchased items
+                <WalletCards className="w-5 h-5 shrink-0" />
+                <span className="text-sm lg:text-base whitespace-nowrap">
+                  Purchased items
+                </span>
               </Link>
             </li>
           </ul>
         </div>
       </nav>
 
-      {/* Signout and Admin button */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-row lg:flex-col gap-2">
         {isAdmin === "admin" && <AdminButton />}
         <SignOutButton />
       </div>
