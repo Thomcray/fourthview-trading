@@ -1,9 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "./ui/button";
 
 import furnitureImage from "@/public/furnitureImage.png";
+import { useRouter } from "next/navigation";
 
 export default function FurnitureSection() {
+  const router = useRouter();
   return (
     <section className="w-full flex items-center border-0 px-8 py-12 sm:px-2 max-sm:px-4 bg-blue-50">
       <div className="flex flex-row max-sm:flex-col mx-auto justify-between space-x-4 px-4 w-full sm:px-6 lg:px-8 text-center items-center border-0">
@@ -21,6 +25,7 @@ export default function FurnitureSection() {
           <Button
             variant="outline"
             className="text-white bg-blue-950 self-start"
+            onClick={() => router.push("/furniture")}
           >
             Get Started
           </Button>

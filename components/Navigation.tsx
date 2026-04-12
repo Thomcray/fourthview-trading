@@ -24,60 +24,60 @@ export default function Navigation() {
   ];
 
   const pathname = usePathname();
-
   const { data: session, status } = useSession();
   const { cart } = useApp();
 
-  const cartLen = cart.length;
-
   return (
-    <nav className="border-0 w-full max-sm:w-full flex flex-row space-x-1.5 justify-end">
-      <ul className="flex items-center flex-row space-x-4">
-        {navList.map((item, index) => (
-          <li key={index} className="inline-block relative">
+    <nav className="flex flex-row items-center gap-2">
+      <ul className="flex items-center flex-row gap-2">
+        {navList.map((item) => (
+          <li key={item.name} className="relative">
             <Link
               href={item.href}
-              className={`text-slate-500 border rounded-full p-2 hover:text-blue-800 font-light text-base flex flex-row gap-x-1 items-center
-                ${pathname === item.href ? "text-blue-900 font-normal" : ""}`}
+              className={`flex items-center justify-center w-9 h-9 rounded-full border transition-colors
+                ${
+                  pathname === item.href
+                    ? "border-blue-200 bg-blue-50 text-blue-900"
+                    : "border-slate-200 text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+                }`}
             >
-              {item.name === "cart" && status === "authenticated" ? (
-                <>
-                  <item.icon className="w-5 h-5" />
-                  {cart.length > 0 && (
-                    <div
-                      className=" bg-red-500 text-white text-sm font-medium absolute -top-2 -right-2 border rounded-full
-                     w-max px-2 py-2.5 h-4 flex items-center justify-center"
-                    >
-                      {cartLen}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <item.icon className="w-5 h-5" />
-              )}
+              <item.icon className="w-4 h-4" />
+
+              {/* Cart badge */}
+              {item.name === "cart" &&
+                status === "authenticated" &&
+                cart.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {cart.length > 9 ? "9+" : cart.length}
+                  </span>
+                )}
             </Link>
           </li>
         ))}
 
         {status === "unauthenticated" && (
-          <li className="inline-block">
+          <li>
             <Link
               href="/signin"
-              className="text-blue-950 hover:text-blue-800 font-normal text-base flex flex-row gap-x-1 items-center"
+              className="text-sm font-medium text-white bg-blue-950 hover:bg-blue-800 transition-colors px-4 py-2 rounded-full"
             >
-              Register
+              Sign in
             </Link>
           </li>
         )}
 
         {status === "authenticated" && (
-          <li className="inline-block rounded-xl px-4 py-2 border">
+          <li>
             <Link
               href="/account/profile"
-              className="text-slate-500 hover:text-blue-800 font-medium text-base flex flex-row gap-x-1 
-              items-center  cursor-pointer"
+              className={`flex flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors text-sm font-medium
+                ${
+                  pathname.startsWith("/account")
+                    ? "border-blue-200 bg-blue-50 text-blue-900"
+                    : "border-slate-200 text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+                }`}
             >
-              <UserRound className="w-5 h-5" />
+              <UserRound className="w-4 h-4" />
               {session?.user?.firstName}
             </Link>
           </li>

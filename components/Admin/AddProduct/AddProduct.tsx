@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Category from "./Category";
 import ProductForm from "./ProductForm";
@@ -7,7 +9,7 @@ export default function AddProduct() {
   return (
     <div className="w-full flex flex-col space-y-4 border-0">
       <ProductForm>
-        <Category />
+        {(productType: string) => <Category productType={productType} />}
       </ProductForm>
 
       <Link href="/admin/view-products">

@@ -141,7 +141,13 @@ export default function PurchasedPage() {
               {/* Order Total */}
               <div className="flex flex-row justify-between items-center border-t pt-2">
                 <p className="text-sm font-semibold text-slate-800">Total</p>
-                <ProductPrice yuanPrice={order.total} />
+                <span className="text-md font-bold">
+                  &#8358;
+                  {Number(order.total.toFixed(2)).toLocaleString("en-NG", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </div>
             </div>
           ))}

@@ -1,9 +1,10 @@
 export const queryKeys = {
+  cart: ["cart"],
+  orders: ["orders"],
+  bookings: ["bookings"],
   dashboard: ["dashboard"],
   customers: ["customers"],
-  customer: (id: string) => ["customers", id],
-  bookings: ["bookings"],
-  orders: ["orders"],
-  cart: ["cart"],
+  categories: ["categories"],
   exchangeRate: ["exchange-rate"],
+  customer: (id: string) => ["customers", id],
 };

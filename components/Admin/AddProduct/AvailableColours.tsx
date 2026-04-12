@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 
 interface ColourInterface {
   colours: string[];
@@ -18,11 +18,12 @@ const definedColours = [
   { name: "Purple", hex: "#9900FF" },
   { name: "Magenta", hex: "#FF00FF" },
 ];
+
 export default function AvailableColours({
   colours,
   setColours,
 }: ColourInterface) {
-  const addColour = (hex: string) => {
+  const toggleColour = (hex: string) => {
     if (colours.includes(hex)) {
       setColours(colours.filter((c) => c !== hex));
     } else {
@@ -31,38 +32,65 @@ export default function AvailableColours({
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 border-0">
-      <div className="w-max grid grid-cols-6 gap-4 items-center border-0">
-        {definedColours.map((colour) => (
-          <Button
-            variant="outline"
-            type="button"
-            style={{ backgroundColor: colour.hex }}
-            className={`w-8 h-8 text-sm cursor-pointer ${colours.includes(colour.hex) ? "scale-110 border-black" : "border-gray-300"}`}
-            onClick={() => addColour(colour.hex)}
-            key={colour.hex}
-            title={colour.name}
-          />
-        ))}
+    <div className="flex flex-col gap-4">
+      {/* Colour swatches */}
+      <div className="flex flex-row flex-wrap gap-3">
+        {definedColours.map((colour) => {
+          const isSelected = colours.includes(colour.hex);
+          const isLight = ["#FFFFFF", "#FFFF00", "#00FFFF"].includes(
+            colour.hex,
+          );
+
+          return (
+            <button
+              type="button"
+              key={colour.hex}
+              title={colour.name}
+              onClick={() => toggleColour(colour.hex)}
+              style={{ backgroundColor: colour.hex }}
+              className={`relative w-8 h-8 rounded-full border-2 cursor-pointer transition-all
+                ${
+                  isSelected
+                    ? "border-blue-500 scale-110 shadow-md"
+                    : "border-slate-200 hover:border-slate-400 hover:scale-105"
+                }`}
+            >
+              {isSelected && (
+                <Check
+                  className={`absolute inset-0 m-auto w-4 h-4 ${isLight ? "text-slate-700" : "text-white"}`}
+                  strokeWidth={3}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="w-full flex flex-wrap gap-2">
-        {colours.length < 0 ? (
-          <p className="text-sm text-slate-500">No colour selected yet!</p>
-        ) : (
-          <div className="flex flex-row gap-2">
-            {colours.length > 0 && <span>Added:</span>}
-            {colours.map((colour) => (
-              <div key={colour} className="flex flex-row items-center gap-1">
+      {/* Selected colours preview */}
+      {colours.length > 0 ? (
+        <div className="flex flex-row items-center gap-2 flex-wrap">
+          <span className="text-xs text-slate-400">Selected:</span>
+          {colours.map((hex) => {
+            const match = definedColours.find((c) => c.hex === hex);
+            return (
+              <div
+                key={hex}
+                className="flex flex-row items-center gap-1.5 bg-slate-50 border rounded-full px-2 py-1"
+              >
                 <span
-                  className="w-5 h-5 rounded-full border"
-                  style={{ backgroundColor: colour }}
-                ></span>
+                  className="w-3 h-3 rounded-full border border-slate-200"
+                  style={{ backgroundColor: hex }}
+                />
+                <span className="text-xs text-slate-600">
+                  {match?.name ?? hex}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-xs text-slate-400">No colours selected yet</p>
+      )}
     </div>
   );
 }

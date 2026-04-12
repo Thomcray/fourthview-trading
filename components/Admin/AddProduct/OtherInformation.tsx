@@ -1,3 +1,5 @@
+"use client";
+
 import Selection from "@/components/Selection";
 import React, { useState } from "react";
 
@@ -7,6 +9,7 @@ type OtherInformationProps = {
   shippingCost?: number;
   selectedSizes?: string[];
   isUpdatePage?: boolean;
+  onTypeChange?: (type: string) => void;
   children: React.ReactNode;
 };
 
@@ -41,7 +44,23 @@ const SIZE_OPTIONS = {
     "13 (EU 46)",
   ],
   Jewelry: ["One Size", "Adjustable", "Small", "Medium", "Large"],
+  Furniture: [
+    "Single (90x190cm)",
+    "Double (135x190cm)",
+    "Queen (150x200cm)",
+    "King (180x200cm)",
+    "1 Seater",
+    "2 Seater",
+    "3 Seater",
+    "L-Shape",
+    "Small (60x60cm)",
+    "Medium (80x80cm)",
+    "Large (100x100cm)",
+    "Extra Large (120x120cm)",
+  ],
 };
+
+const PRODUCT_TYPES = ["Shirt", "Trouser", "Shoes", "Jewelry", "Furniture"];
 
 const WEIGHT_OPTIONS = [
   { value: "0-0.5", label: "0 - 0.5 kg (Light items)" },
@@ -53,72 +72,125 @@ const WEIGHT_OPTIONS = [
   { value: "20+", label: "20+ kg (Extra heavy)" },
 ];
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm font-medium text-slate-700">{children}</p>;
+}
+
+function HintText({ children }: { children: React.ReactNode }) {
+  return <span className="text-xs text-slate-400">{children}</span>;
+}
+
+function CurrentValueBadge({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-2 bg-blue-50 border border-blue-100 rounded-md text-xs text-blue-700">
+      <span className="font-medium">{label}:</span> {value}
+    </div>
+  );
+}
+
 export default function OtherInformation({
   productType,
   productWeight,
   shippingCost,
   selectedSizes = [],
   isUpdatePage = false,
+  onTypeChange,
   children,
 }: OtherInformationProps) {
   const [selectedType, setSelectedType] = useState(productType || "");
   const [selectedWeight, setSelectedWeight] = useState(productWeight || "");
   const [cost, setCost] = useState(shippingCost?.toString() || "");
 
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedType(e.target.value);
-  };
-
-  const handleWeightChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedWeight(e.target.value);
-  };
-
-  const handleCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCost(e.target.value);
-  };
-
   const availableSizes =
     selectedType && SIZE_OPTIONS[selectedType as keyof typeof SIZE_OPTIONS]
       ? SIZE_OPTIONS[selectedType as keyof typeof SIZE_OPTIONS]
       : [];
 
-  return (
-    <div className="w-full flex flex-col gap-4 px-4">
-      <h2 className="text-base text-black">Other Information</h2>
+  const isFurniture = selectedType === "Furniture";
 
-      <div className="w-full flex flex-col gap-4 border-0">
-        <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
-          Product Type
+  return (
+    <div className="w-full flex flex-col gap-6 px-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-medium text-slate-800">
+          Other Information
+        </h2>
+        <p className="text-xs text-slate-400">
+          Specify product type, sizing, weight and shipping details
+        </p>
+      </div>
+
+      <div className="w-full flex flex-col gap-5">
+        {/* Product Type */}
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Product Type</SectionLabel>
           <Selection
-            defaultValue={productType ? productType : "Select Type"}
+            defaultValue={productType || "Select Type"}
             name="type"
             width="w-96 max-sm:w-full"
-            onChange={handleTypeChange}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+              setSelectedType(e.target.value);
+              onTypeChange?.(e.target.value);
+            }}
             required={false}
           >
-            {["Shirt", "Trouser", "Shoes", "Jewelry"].map((item) => (
+            {PRODUCT_TYPES.map((item) => (
               <option value={item} key={item}>
                 {item}
               </option>
             ))}
           </Selection>
-        </label>
+          <HintText>
+            Determines available size options for this product
+          </HintText>
+        </div>
 
+        {/* Furniture style */}
+        {isFurniture && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Furniture Style</SectionLabel>
+            <Selection
+              defaultValue="Select Style"
+              name="target"
+              width="w-96 max-sm:w-full"
+              required={false}
+            >
+              {["Modern Style", "Antique", "Chinese Style"].map((style) => (
+                <option value={style} key={style}>
+                  {style}
+                </option>
+              ))}
+            </Selection>
+            <HintText>
+              Determines which section this product appears in on the furniture
+              page
+            </HintText>
+          </div>
+        )}
+
+        {/* Sizes */}
         {availableSizes.length > 0 && (
-          <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
-            Available Sizes (select multiple)
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>
+              {isFurniture
+                ? "Available Dimensions / Configurations"
+                : "Available Sizes"}
+            </SectionLabel>
+
             {isUpdatePage && selectedSizes?.length > 0 && (
-              <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                <span className="font-semibold">Current sizes:</span>{" "}
-                {selectedSizes.join(", ")}
-              </div>
+              <CurrentValueBadge
+                label="Current sizes"
+                value={selectedSizes.join(", ")}
+              />
             )}
-            <div className="w-96 max-sm:w-full mt-1 p-4 border rounded-md shadow-sm bg-white">
-              <div className="grid grid-cols-3 gap-2">
+
+            <div className="w-96 max-sm:w-full p-4 border rounded-lg bg-white">
+              <div
+                className={`grid gap-1 ${isFurniture ? "grid-cols-2" : "grid-cols-3"}`}
+              >
                 {availableSizes.map((size) => (
                   <label
                     key={size}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -129,34 +201,37 @@ export default function OtherInformation({
                       }
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm">{size}</span>
+                    <span className="text-xs text-slate-600">{size}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <span className="text-xs text-gray-400 mt-1">
-              Select all sizes that are available for this product
-            </span>
-          </label>
+            <HintText>
+              {isFurniture
+                ? "Select all dimensions or configurations available for this product"
+                : "Select all sizes available for this product"}
+            </HintText>
+          </div>
         )}
 
-        <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
-          Weight Range
-          {/* Update */}
+        {/* Weight */}
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Weight Range</SectionLabel>
           {isUpdatePage &&
             selectedWeight &&
             selectedWeight !== "Select Weight" && (
-              <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                <span className="font-semibold">Current weight:</span>{" "}
-                {selectedWeight} kg
-              </div>
+              <CurrentValueBadge
+                label="Current weight"
+                value={`${selectedWeight} kg`}
+              />
             )}
-          {/*Update ends here! */}
           <Selection
-            defaultValue={productWeight ? productWeight : "Select Weight"}
+            defaultValue={productWeight || "Select Weight"}
             name="weight"
             width="w-96 max-sm:w-full"
-            onChange={handleWeightChange}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setSelectedWeight(e.target.value)
+            }
             required={false}
           >
             {WEIGHT_OPTIONS.map((option) => (
@@ -165,41 +240,45 @@ export default function OtherInformation({
               </option>
             ))}
           </Selection>
-        </label>
+          <HintText>Used to calculate shipping cost at checkout</HintText>
+        </div>
 
+        {/* Shipping cost */}
         {selectedWeight && selectedWeight !== "Select Weight" && (
-          <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
-            Shipping Cost for {selectedWeight} kg
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Shipping Cost ({selectedWeight} kg)</SectionLabel>
             {isUpdatePage && cost && (
-              <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                <span className="font-semibold">Current shipping cost:</span> $
-                {cost}
-              </div>
+              <CurrentValueBadge
+                label="Current shipping cost"
+                value={`¥${cost}`}
+              />
             )}
-            <div className="flex items-center rounded-sm border shadow h-12.25 mt-1 w-96 max-sm:w-full">
-              <span className="px-3 text-gray-600 font-medium">&yen;</span>
+            <div className="flex items-center rounded-lg border bg-white shadow-sm h-11 w-96 max-sm:w-full overflow-hidden">
+              <span className="px-3 text-slate-500 font-medium border-r h-full flex items-center bg-slate-50">
+                ¥
+              </span>
               <input
                 type="number"
                 name="shippingCost"
                 value={cost}
-                onChange={handleCostChange}
+                onChange={(e) => setCost(e.target.value)}
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                className="flex-1 px-2 py-3 border-0 focus:outline-none text-sm"
+                className="flex-1 px-3 py-2 border-0 focus:outline-none text-sm text-slate-800"
               />
             </div>
-            <span className="text-xs text-gray-400 mt-1">
-              This cost will be added to cart based on item weight
-            </span>
-          </label>
+            <HintText>This cost will be added to the cart at checkout</HintText>
+          </div>
         )}
 
-        <div className="w-full">
-          <label className="text-sm text-slate-500 flex flex-col gap-1 text-left font-light">
-            Available Colours
-            {children}
-          </label>
+        {/* Colours */}
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Available Colours</SectionLabel>
+          {children}
+          <HintText>
+            Each colour should correspond to a product image of that colour
+          </HintText>
         </div>
       </div>
     </div>

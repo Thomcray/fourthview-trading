@@ -3,8 +3,7 @@
 import { deleteExistingImage } from "@/app/_lib/actions/update-product-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState, useTransition } from "react";
@@ -17,6 +16,7 @@ type ImageType = {
   setExistingImages?: React.Dispatch<React.SetStateAction<string[]>>;
   productId?: number;
 };
+
 export default function ProductMedia({
   images,
   setImages,
@@ -31,7 +31,6 @@ export default function ProductMedia({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
-
     const imageExists = images.some((image) => image.name === files[0]?.name);
 
     if (imageExists) {
@@ -40,8 +39,7 @@ export default function ProductMedia({
       return;
     }
     setImages((prev) => [...prev, ...files]);
-    e.target.value = ""; // Always set to empty string
-    // e.target.value = isUpdatePage ? "" : e.target.value;
+    e.target.value = "";
   };
 
   const removeImage = (imageToRemove: File) => {
@@ -50,9 +48,7 @@ export default function ProductMedia({
 
   const removeExistingImage = (url: string) => {
     if (!setExistingImages) return;
-
     setDeletingImage(url);
-
     startTransition(async () => {
       try {
         await deleteExistingImage(url, productId);
@@ -66,95 +62,114 @@ export default function ProductMedia({
     });
   };
 
+  const totalImages = existingImages.length + images.length;
+
   return (
-    <div className="w-full max-sm:w-full flex lg:h-full flex-col gap-4 px-4 border-0">
-      <h2 className="text-base text-black">Product Media</h2>
-      <p className="text-orange-500 text-base font-light">
-        <span className="font-bold">Note:</span> Image must be less than 2MB
-      </p>
-      <Label className="text-sm text-slate-500 flex flex-col gap-1 text-left items-baseline font-light">
-        Image (Add multiple...)
-        <div className="py-8 px-4 flex items-center border border-dashed rounded-md">
-          <Input
-            type="file"
-            multiple
-            name="productImages"
-            placeholder="Upload"
-            className=""
-            accept="image/*"
-            onChange={handleImageChange}
-            required={isUpdatePage || images.length > 0 ? false : true}
-          />
-        </div>
-      </Label>
+    <div className="w-full flex flex-col gap-4 px-4">
+      {/* Header */}
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-medium text-slate-800">Product Media</h2>
+        <p className="text-xs text-slate-400">
+          Upload clear product images. Each image must be under 2MB.
+        </p>
+      </div>
 
-      {/* Preview Images */}
-
-      {existingImages?.length > 0 && (
-        <div>
-          <p className="text-sm text-slate-500 mb-2">
-            {existingImages.length > 1 ? "Existing Images" : "Existing Image"}
+      {/* Upload area */}
+      <label
+        className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-200 
+        rounded-xl py-10 px-4 cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-colors"
+      >
+        <div className="flex flex-col items-center gap-2 text-center">
+          <ImagePlus className="w-8 h-8 text-slate-300" />
+          <p className="text-sm font-medium text-slate-600">
+            Click to upload images
           </p>
-          <div className="grid grid-cols-4 gap-2 w-full">
-            {existingImages?.map((url, index) => (
+          <p className="text-xs text-slate-400">
+            PNG, JPG, WEBP, AVIF — max 2MB each
+          </p>
+        </div>
+        <Input
+          type="file"
+          multiple
+          name="productImages"
+          accept="image/*"
+          onChange={handleImageChange}
+          required={isUpdatePage || images.length > 0 ? false : true}
+          className="hidden"
+        />
+      </label>
+
+      {/* Image count */}
+      {totalImages > 0 && (
+        <p className="text-xs text-slate-400">
+          {totalImages} image{totalImages > 1 ? "s" : ""} added
+        </p>
+      )}
+
+      {/* Existing images */}
+      {existingImages?.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-500">
+            Existing {existingImages.length > 1 ? "Images" : "Image"}
+          </p>
+          <div className="grid grid-cols-4 max-sm:grid-cols-3 gap-2">
+            {existingImages.map((url, index) => (
               <div
                 key={index}
-                className="relative flex flex-row gap-2 w-full aspect-square rounded-md overflow-hidden"
+                className="relative aspect-square rounded-lg overflow-hidden border bg-slate-50"
               >
                 <Image
                   src={url}
-                  alt={`Preview ${url}`}
+                  alt={`Existing image ${index + 1}`}
                   fill
                   className="object-cover"
                 />
-
-                <Button
-                  variant="ghost"
-                  className="absolute right-0 bg-white/50 hover:white text-black w-max cursor-pointer border"
+                <button
+                  type="button"
                   onClick={() => removeExistingImage(url)}
+                  className="absolute top-1 right-1 bg-white/80 hover:bg-white rounded-full w-6 h-6 flex items-center justify-center shadow cursor-pointer transition-colors"
                 >
                   {deletingImage === url ? (
-                    "Deleting..."
+                    <span className="text-[8px] text-slate-500">...</span>
                   ) : (
-                    <X size={14} className="text-black hover:text-black" />
+                    <X size={12} className="text-slate-700" />
                   )}
-                </Button>
+                </button>
               </div>
             ))}
           </div>
         </div>
       )}
 
+      {/* New images */}
       {images.length > 0 && (
-        <div>
-          <p className="text-sm text-slate-500 mb-2">
-            {images.length > 1 ? "New Images" : "New Image"}
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-slate-500">
+            New {images.length > 1 ? "Images" : "Image"}
           </p>
-          <div className="grid grid-cols-4 gap-2 w-full">
+          <div className="grid grid-cols-4 max-sm:grid-cols-3 gap-2">
             {images.map((image, index) => (
               <div
                 key={index}
-                className="relative flex flex-row gap-2 w-full aspect-square rounded-md overflow-hidden"
+                className="relative aspect-square rounded-lg overflow-hidden border bg-slate-50"
               >
                 <Image
                   src={URL.createObjectURL(image)}
-                  alt={`Preview ${image} - {index}`}
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
+                  alt={`New image ${index + 1}`}
+                  fill
+                  className="object-cover"
                 />
-                <span className="text-slate-500 text-xs absolute">
-                  {/* convert to bytes */}
+                {/* File size badge */}
+                <span className="absolute bottom-1 left-1 bg-black/50 text-white text-[9px] px-1.5 py-0.5 rounded-full">
                   {parseFloat((image.size / (1024 * 1024)).toFixed(2))} MB
                 </span>
-
-                <Button
-                  variant="ghost"
-                  className="absolute right-0 bg-white/50 hover:white text-black w-max cursor-pointer border"
+                <button
+                  type="button"
                   onClick={() => removeImage(image)}
+                  className="absolute top-1 right-1 bg-white/80 hover:bg-white rounded-full w-6 h-6 flex items-center justify-center shadow cursor-pointer transition-colors"
                 >
-                  <X size={14} className="text-black hover:text-black" />
-                </Button>
+                  <X size={12} className="text-slate-700" />
+                </button>
               </div>
             ))}
           </div>

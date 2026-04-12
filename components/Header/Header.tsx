@@ -14,33 +14,39 @@ const dancingScript = Dancing_Script({
 
 export default function Header() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   return (
     <header
-      className={`border-0 py-4 px-8 max-sm:px-4 shadow-xl ${pathname !== "/" ? "bg-white" : "bg-blue-50"}`}
+      className={`w-full py-3 px-8 max-sm:px-4 border-b transition-colors ${
+        isHome ? "bg-blue-50 border-blue-100" : "bg-white border-slate-100"
+      } shadow-sm`}
     >
-      <div className="w-full mx-auto flex flex-row justify-between items-center border-0">
-        <div className="w-full flex items-center gap-1 border-0 max-sm:w-fit">
-          <Link href="/">
-            <Image
-              src={fourthviewLogo}
-              alt="fourthviewLogo"
-              width={50}
-              height={50}
-              priority
-              className="object-cover border-0"
-            />
-          </Link>
-          <h2
-            className={`text-5xl font-extrabold text-blue-950 flex flex-col
-              ${dancingScript.className}`}
-          >
-            fourthview
-            <span className="text-base font-bold block">
+      <div className="w-full max-w-7xl mx-auto flex flex-row justify-between items-center">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex flex-row items-center gap-2 hover:opacity-90 transition-opacity"
+        >
+          <Image
+            src={fourthviewLogo}
+            alt="FourthView Logo"
+            width={44}
+            height={44}
+            priority
+            className="object-contain shrink-0"
+          />
+          <div className="flex flex-col">
+            <h2
+              className={`${dancingScript.className} text-3xl max-sm:text-2xl font-bold text-blue-950 leading-tight`}
+            >
+              fourthview
+            </h2>
+            <span className="text-[10px] max-sm:text-[9px] font-semibold text-blue-900 tracking-widest uppercase leading-none">
               Trading Company. Ltd
             </span>
-          </h2>
-        </div>
+          </div>
+        </Link>
 
         <Navigation />
       </div>

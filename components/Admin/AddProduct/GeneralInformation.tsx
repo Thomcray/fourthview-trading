@@ -18,35 +18,53 @@ type GeneralInformationProductType = {
     imageUrl: string[];
   } | null;
 };
+
 export default function GeneralInformation({
   product,
 }: GeneralInformationProductType) {
   return (
-    <div className="w-full flex flex-col gap-4 max-sm:px-4">
-      <h2 className="text-base text-black">General Information</h2>
+    <div className="w-full flex flex-col gap-6 max-sm:px-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-base font-medium text-slate-800">
+          General Information
+        </h2>
+        <p className="text-xs text-slate-400">
+          Basic details about your product
+        </p>
+      </div>
 
-      <Label className="text-sm text-slate-500 flex flex-col gap-1 text-left items-baseline font-light">
-        Product Name
-        <Input
-          type="text"
-          name="productName"
-          defaultValue={product?.name}
-          placeholder="Product name"
-          className="py-6 px-4"
-          required
-        />
-      </Label>
+      <div className="w-full flex flex-col gap-4">
+        <Label className="text-sm text-slate-500 flex flex-col gap-1.5 text-left font-light">
+          Product Name
+          <span className="text-red-400 text-xs">* Required</span>
+          <Input
+            type="text"
+            name="productName"
+            defaultValue={product?.name}
+            placeholder="e.g. Nike Air Force 1, Modern Sofa Set..."
+            className="py-6 px-4 text-slate-800 placeholder:text-slate-300"
+            required
+          />
+          <span className="text-xs text-slate-400">
+            Use a clear, descriptive name that customers can easily search for
+          </span>
+        </Label>
 
-      <Label className="text-sm text-slate-500 flex flex-col gap-1 text-left items-baseline font-light">
-        Description
-        <Textarea
-          name="description"
-          defaultValue={product?.description}
-          placeholder="Product description"
-          className="py-6 px-4"
-          required
-        />
-      </Label>
+        <Label className="text-sm text-slate-500 flex flex-col gap-1.5 text-left font-light">
+          Description
+          <span className="text-red-400 text-xs">* Required</span>
+          <Textarea
+            name="description"
+            defaultValue={product?.description}
+            placeholder="Describe the product — materials, features, dimensions, use case..."
+            className="min-h-32 px-4 py-3 text-slate-800 placeholder:text-slate-300 resize-y"
+            required
+          />
+          <span className="text-xs text-slate-400">
+            A good description helps customers make informed purchase decisions
+          </span>
+        </Label>
+      </div>
     </div>
   );
 }

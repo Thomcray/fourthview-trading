@@ -40,3 +40,9 @@ export const fetchExchangeRate = async () => {
   if (!res.ok) throw new Error("Failed to fetch exchange rate");
   return res.json();
 };
+
+export const fetchCategories = async () => {
+  const res = await fetch("/api/categories");
+  if (!res.ok) throw new Error("Failed to fetch categories");
+  return res.json();
+};
