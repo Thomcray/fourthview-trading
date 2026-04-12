@@ -123,6 +123,8 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
       }
 
       const data = await response.json();
+      console.log("API response:", data);
+
       // Update with server response in case of any server-side changes
       setCart(data.cart);
     } catch (error) {

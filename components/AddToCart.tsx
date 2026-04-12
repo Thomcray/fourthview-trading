@@ -4,6 +4,8 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useApp } from "./AppContext";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 type AddItem = {
   id: number;
@@ -25,11 +27,17 @@ type AddItem = {
 interface Data {
   data: AddItem;
   selectedSize?: string | null;
+  disableIfNoSize?: boolean;
 }
 
-export default function AddToCart({ data, selectedSize = null }: Data) {
+export default function AddToCart({
+  data,
+  selectedSize = null,
+  disableIfNoSize = false,
+}: Data) {
   const { cart, addToCart } = useApp();
   const [isAdding, setIsAdding] = useState(false);
+  const router = useRouter();
 
   const defaultImage = data.imageUrl[0];
   const hasSizes = data.sizes?.length > 0;
@@ -44,25 +52,30 @@ export default function AddToCart({ data, selectedSize = null }: Data) {
     categoryId: data.categoryId,
     image: defaultImage,
     size: selectedSize,
-    shippingCost: data.shippingCost,
-    productSizes: data.sizes,
+    shippingCost: data.shippingCost ?? 0,
+    productSizes: data.sizes ?? [],
   };
 
   const handleCart = async () => {
+    // Navigate to product page to select size first
+    if (hasSizes && !selectedSize) {
+      if (disableIfNoSize) return;
+
+      router.push(
+        `/item-description?id=${data.id}&name=${data.name.toLowerCase()}`,
+      );
+      return;
+    }
+
     setIsAdding(true);
     try {
       await addToCart(newItem);
+      toast.success(`${data.name} added to cart!`);
     } catch (error) {
-      console.error("Error adding to cart: ", error);
+      toast.error((error as Error).message || "Failed to add to cart.");
     } finally {
       setIsAdding(false);
     }
-  };
-
-  const buttonLabel = () => {
-    if (isAdding) return "Adding...";
-    if (hasSizes && !selectedSize) return "Select a size";
-    return "Add to cart";
   };
 
   return (
@@ -70,9 +83,9 @@ export default function AddToCart({ data, selectedSize = null }: Data) {
       variant="outline"
       className="cursor-pointer px-4 py-5 text-white text-base w-full bg-black disabled:opacity-50"
       onClick={handleCart}
-      disabled={isAdding || (hasSizes && !selectedSize)}
+      disabled={isAdding || (disableIfNoSize && hasSizes && !selectedSize)}
     >
-      {buttonLabel()}
+      {isAdding ? "Adding..." : "Add to cart"}
       {!isAdding && <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />}
     </Button>
   );

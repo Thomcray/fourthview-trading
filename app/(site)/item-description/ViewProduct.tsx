@@ -4,7 +4,7 @@ import AddToCart from "@/components/AddToCart";
 import { useApp } from "@/components/AppContext";
 import ProductPrice from "@/components/ProductPrice";
 import { Button } from "@/components/ui/button";
-import { MinusIcon, PlusIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, ShoppingCart, Truck, Weight } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
@@ -31,6 +31,7 @@ type SelectedItem = Item | undefined | null;
 type ViewProductProps = {
   selectedItem: SelectedItem;
 };
+
 export default function ViewProduct({ selectedItem }: ViewProductProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [sizeUpdated, setSizeUpdated] = useState(false);
@@ -38,28 +39,25 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
   const [qty, setQty] = useState(1);
 
   const { cart, updateQuantity, updateSize } = useApp();
-
   const inCart = cart.find((item) => item.itemName === selectedItem?.name);
+  const hasSizes = (selectedItem?.sizes?.length ?? 0) > 0;
 
-  // Reset imageIdx, and selected size when a new product is loaded to avoid stale indexes
   useEffect(() => {
     setImageIdx(0);
     setSelectedSize(null);
     setSizeUpdated(false);
   }, [selectedItem?.id]);
 
-  // Sync selectedSize with cart item's current size
   useEffect(() => {
     if (inCart?.size) {
       setSelectedSize(inCart.size);
     } else if (!inCart) {
-      setSelectedSize(null); // reset when item leaves cart
+      setSelectedSize(null);
     }
   }, [inCart?.size, inCart]);
 
   const handleImageColour = (idx: number) => {
     if (!selectedItem) return;
-
     const safeIdx = Math.min(
       idx,
       Math.max(0, selectedItem.imageUrl.length - 1),
@@ -78,178 +76,189 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
 
   const handleQuantityChange = (newQty: number) => {
     if (!inCart || !selectedItem) return;
-
-    // Ensure quantity is at least 1
-    const validQty = Math.max(1, newQty);
-    updateQuantity(selectedItem.name, validQty);
-  };
-
-  const handleIncrement = () => {
-    if (inCart) {
-      handleQuantityChange((inCart.quantity || 1) + 1);
-    } else {
-      setQty((prev) => prev + 1);
-    }
-  };
-
-  const handleDecrement = () => {
-    if (inCart) {
-      handleQuantityChange((inCart.quantity || 1) - 1);
-    } else {
-      setQty((prev) => (prev > 1 ? prev - 1 : 1));
-    }
+    updateQuantity(selectedItem.name, Math.max(1, newQty));
   };
 
   if (!selectedItem) return null;
+
   return (
-    <div className="flex flex-col px-12 py-10 w-full h-full max-sm:h-full max-sm:px-0 space-y-4 border-0 md:px-4">
-      <div
-        className="w-full h-full flex flex-row space-x-10 lg:flex-row max-sm:flex-col md:flex-col justify-center border-0 max-sm:space-x-0 max-sm:space-y-4
-        md:space-x-4 max-sm:px-2 max-sm:items-center"
-      >
-        <div
-          className="w-full max-sm:w-full flex flex-row max-sm:flex-col max-sm:gap-y-10 space-x-4 bg-linear-to-r from-[#E4E8F6] to-[#B6C1E7]
-          pr-8 max-sm:pr-0 border-0"
-        >
-          <div className="w-96 flex flex-col gap-4 md:w-64 h-full rounded-md max-sm:w-full max-sm:h-60 border-0 px-4 py-4">
-            {selectedItem?.imageUrl && (
-              <div className="flex items-center justify-center">
-                <div className="w-56 h-56 max-sm:w-full  bg-accent overflow-hidden border-0">
-                  <Image
-                    src={
-                      selectedItem?.imageUrl[imageIdx] ??
-                      selectedItem.imageUrl[0]
-                    }
-                    alt={selectedItem?.name}
-                    width={200}
-                    height={200}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </div>
-            )}
+    <div className="w-full px-8 max-sm:px-2 py-8 flex flex-col lg:flex-row gap-8">
+      {/* Left — image + colour swatches */}
+      <div className="flex flex-col gap-4 lg:w-2/5">
+        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-[#E4E8F6] to-[#B6C1E7]">
+          <Image
+            src={selectedItem.imageUrl[imageIdx] ?? selectedItem.imageUrl[0]}
+            alt={selectedItem.name}
+            fill
+            className="object-cover"
+          />
+          {selectedItem.discount && (
+            <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              -{selectedItem.discount}% OFF
+            </span>
+          )}
+        </div>
 
-            {selectedItem?.colours && (
-              <div className="flex flex-row gap-2">
-                {selectedItem.colours.map((colour, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outline"
-                    style={{ backgroundColor: colour }}
-                    className={`w-10 cursor-pointer border ${imageIdx === idx ? "ring-2 ring-blue-400 shadow-lg" : ""}`}
-                    onClick={() => handleImageColour(idx)}
-                  ></Button>
-                ))}
-              </div>
-            )}
+        {selectedItem.colours?.length > 0 && (
+          <div className="flex flex-row gap-2 flex-wrap">
+            {selectedItem.colours.map((colour, idx) => (
+              <button
+                key={idx}
+                style={{ backgroundColor: colour }}
+                onClick={() => handleImageColour(idx)}
+                className={`w-8 h-8 rounded-full border-2 cursor-pointer transition-all
+                  ${imageIdx === idx ? "border-blue-500 scale-110 shadow-md" : "border-slate-200"}`}
+              />
+            ))}
           </div>
+        )}
+      </div>
 
-          <div className="w-full flex flex-col space-y-4 py-4 px-0 border-0">
-            <div className="w-full flex flex-col space-y-1 pb-1.5 border-b max-sm:px-4 border-slate-200">
-              <h2 className="font-light text-lg text-black">
-                {selectedItem?.name}
-              </h2>
-
-              {/* <p className="text-sm">Product code: </p> */}
-              {selectedItem?.price && (
-                <p className="text-xl">
-                  <ProductPrice yuanPrice={selectedItem?.price} />
-                </p>
-              )}
-            </div>
-
-            {selectedItem?.weight && (
-              <div className="w-fit max-sm:w-full flex flex-row items-center gap-0.5 py-0.5 px-2 border-0">
-                <div className="w-fit flex flex-row items-center gap-0.5 py-0.5 px-2 rounded-xl bg-black">
-                  <p className="text-xs text-white">product weigh</p>
-                  <span className="font-normal text-xs text-white border-0">
-                    {selectedItem.weight} kg
-                  </span>
-                </div>
-                <p className="text-xs text-black w-fit">
-                  + shipping{" "}
-                  <ProductPrice yuanPrice={selectedItem.shippingCost} />
-                </p>
-              </div>
-            )}
-
-            <div className="w-full flex flex-col gap-1 py-2 max-sm:px-2 border-0">
-              {selectedItem?.sizes && (
-                <div className="flex flex-col py-1 gap-1 border-0">
-                  <div className="flex flex-row items-center gap-2">
-                    <h1 className="font-normal text-base">
-                      {inCart ? "Change Size" : "Available Size(s)"}
-                    </h1>
-                    {sizeUpdated && (
-                      <span className="text-xs text-green-600 font-medium animate-pulse">
-                        ✓ Size updated in cart
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-row gap-1">
-                    {selectedItem.sizes.map((size, idx) => (
-                      <Button
-                        variant="outline"
-                        key={idx}
-                        className={`text-sm border px-2 py-2 cursor-pointer rounded-none bg-accent relative
-            ${selectedSize === size ? "ring-2 ring-blue-400 bg-blue-50" : ""}`}
-                        onClick={() => handleSizeChange(size)}
-                      >
-                        {size}
-                        {selectedSize === size && (
-                          <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center">
-                            ✓
-                          </span>
-                        )}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {inCart && (
-                <div className="w-fit flex flex-row space-x-1 items-center">
-                  <MinusIcon
-                    className="h-6 w-6 text-blue-950 border rounded-md p-1 cursor-pointer bg-white"
-                    onClick={handleDecrement}
+      {/* Right — product info */}
+      <div className="flex flex-col gap-5 flex-1">
+        {/* Name + price */}
+        <div className="flex flex-col gap-1 pb-4 border-b">
+          <h2 className="text-2xl font-semibold text-slate-800">
+            {selectedItem.name}
+          </h2>
+          <div className="flex flex-row items-center gap-3 mt-1">
+            {selectedItem.discount ? (
+              <>
+                <span className="text-xl font-bold text-red-500">
+                  <ProductPrice
+                    yuanPrice={selectedItem.price}
+                    discount={selectedItem.discount}
                   />
-                  <span className="px-2">
-                    {inCart.quantity ? inCart.quantity : qty}
-                  </span>
-                  <PlusIcon
-                    className="h-6 w-6 text-blue-950 border rounded-md p-1 cursor-pointer bg-white"
-                    onClick={handleIncrement}
-                  />
-                </div>
-              )}
-            </div>
-
-            {!inCart && (
-              <div className="w-full flex flex-row space-x-2 py-2 max-sm:px-2 border-0">
-                <AddToCart data={selectedItem} selectedSize={selectedSize} />
-              </div>
+                </span>
+                <span className="text-base text-slate-400 line-through">
+                  <ProductPrice yuanPrice={selectedItem.price} />
+                </span>
+              </>
+            ) : (
+              <span className="text-xl font-bold text-blue-950">
+                <ProductPrice yuanPrice={selectedItem.price} />
+              </span>
             )}
           </div>
         </div>
-        <div className="w-full border px-4 max-sm:px-2 rounded-md bg-white max-sm:pb-4 overflow-y-auto">
-          <h1 className="font-semibold text-lg py-4">Product Description</h1>
 
-          <div className="border-0 px-2 py-2">
-            <p className="text-base font-light text-black leading-7 mb-4">
-              {selectedItem?.description}
-            </p>
+        {/* Weight + shipping */}
+        {selectedItem.weight && (
+          <div className="flex flex-row gap-4 flex-wrap">
+            <div className="flex flex-row items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
+              <Weight className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-xs text-slate-600">
+                {selectedItem.weight} kg
+              </span>
+            </div>
+            <div className="flex flex-row items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
+              <Truck className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-xs text-slate-600">
+                Shipping: <ProductPrice yuanPrice={selectedItem.shippingCost} />
+              </span>
+            </div>
           </div>
+        )}
 
-          <p className="text-base font-normal text-black leading-7">
+        {/* Sizes */}
+        {hasSizes && (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-row items-center gap-2">
+              <p className="text-sm font-medium text-slate-700">
+                {inCart ? "Change Size" : "Select Size"}
+              </p>
+              {sizeUpdated && (
+                <span className="text-xs text-green-600 font-medium animate-pulse">
+                  ✓ Size updated in cart
+                </span>
+              )}
+            </div>
+            <div className="flex flex-row gap-2 flex-wrap">
+              {selectedItem.sizes.map((size, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSizeChange(size)}
+                  className={`relative text-sm px-3 py-1.5 border cursor-pointer transition-all rounded
+                    ${
+                      selectedSize === size
+                        ? "border-blue-500 bg-blue-50 text-blue-900 font-medium"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-blue-300"
+                    }`}
+                >
+                  {size}
+                  {selectedSize === size && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Quantity (only if in cart) */}
+        {inCart && (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-slate-700">Quantity</p>
+            <div className="flex flex-row items-center gap-2 w-fit border rounded-md overflow-hidden">
+              <button
+                className="px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer"
+                onClick={() => handleQuantityChange((inCart.quantity || 1) - 1)}
+              >
+                <MinusIcon className="w-4 h-4 text-blue-950" />
+              </button>
+              <span className="px-4 text-sm font-semibold">
+                {inCart.quantity}
+              </span>
+              <button
+                className="px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer"
+                onClick={() => handleQuantityChange((inCart.quantity || 1) + 1)}
+              >
+                <PlusIcon className="w-4 h-4 text-blue-950" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Add to cart */}
+        {!inCart && (
+          <div className="w-full max-w-xs flex flex-col gap-2">
+            {hasSizes && !selectedSize && (
+              <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                ⚠️ Please select a size to add to cart
+              </p>
+            )}
+            <AddToCart
+              data={selectedItem}
+              selectedSize={selectedSize}
+              disableIfNoSize
+            />
+          </div>
+        )}
+
+        {inCart && (
+          <div className="flex flex-row items-center gap-2 text-green-600 text-sm font-medium">
+            <ShoppingCart className="w-4 h-4" />
+            <span>Added to cart</span>
+          </div>
+        )}
+
+        {/* Description */}
+        <div className="flex flex-col gap-2 pt-4 border-t">
+          <h3 className="font-semibold text-base text-slate-800">
+            Product Description
+          </h3>
+          <p className="text-sm font-light text-slate-600 leading-7">
+            {selectedItem.description}
+          </p>
+          <p className="text-sm text-slate-500 leading-7">
             For special orders, please note that a special shipping fee will
             apply to ensure expedited processing and delivery.
           </p>
-
-          <p className="pt-4 text-base font-normal text-black leading-7">
-            If you have any questions or require further assistance with your
-            order, feel free to contact our customer support team. Enjoy your
-            shopping experience with Fourth View.
+          <p className="text-sm text-slate-500 leading-7">
+            If you have any questions or require further assistance, feel free
+            to contact our customer support team.
           </p>
         </div>
       </div>

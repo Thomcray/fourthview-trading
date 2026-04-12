@@ -8,41 +8,46 @@ import Link from "next/link";
 export default function ShopByCategory() {
   const { allCategories: categories } = useApp();
 
+  if (categories.length === 0) return null;
+
   return (
-    <div className="border-0 px-8 max-sm:px-2 py-4 w-full">
+    <div className="px-8 max-sm:px-2 py-4 w-full flex flex-col gap-3">
+      {/* Header */}
       <Link href="/category">
-        <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between">
-          <h1 className="font-normal text-md w-96 max-sm:w-80 text-white">
+        <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between items-center hover:bg-[#2a3f8f] transition-colors">
+          <h1 className="font-normal text-base text-white">
             Shop by Categories
           </h1>
-
-          <ChevronRight
-            color="white"
-            strokeWidth={1.5}
-            className="cursor-pointer"
-          />
+          <ChevronRight color="white" strokeWidth={1.5} />
         </div>
       </Link>
 
-      <div className="w-full flex flex-row space-x-4 py-2 px-2 overflow-x-scroll border-0">
+      {/* Categories */}
+      <div className="flex flex-row gap-3 overflow-x-auto pb-2">
         {categories.map(
           (item, index) =>
             item.image_url && (
-              <div className="flex flex-col gap-y-1 border-0" key={index}>
-                <div className="flex-shrink-0 w-40 h-40 max-sm:w-32 max-sm:h-32 relative rounded-md overflow-hidden">
+              <Link
+                key={index}
+                href={`/category/${item.id}`}
+                className="shrink-0 flex flex-col gap-2 group"
+              >
+                <div className="w-36 h-36 max-sm:w-28 max-sm:h-28 relative rounded-xl overflow-hidden border shadow-sm group-hover:shadow-md transition-shadow">
                   <Image
                     src={item.image_url}
                     alt={item.name || "category-image"}
                     fill
-                    className="object-cover rounded-md max-sm:rounded-none"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                  {/* Overlay with name */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                    <p className="text-white text-xs font-medium leading-tight">
+                      {item.name}
+                    </p>
+                  </div>
                 </div>
-
-                <p className="w-full py-2 max-sm:px-0 text-black font-normal text-sm border-0">
-                  {item.name}
-                </p>
-              </div>
-            )
+              </Link>
+            ),
         )}
       </div>
     </div>

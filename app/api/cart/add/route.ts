@@ -27,6 +27,7 @@ export async function POST(req: Request) {
   const userId = session.user.id;
 
   const cart = await getOrCreateCart(userId);
+  console.log("userId:", userId, "cartId:", cart.id);
 
   //   Check if item already exists
   const { data: existingItem } = await supabase
@@ -44,21 +45,32 @@ export async function POST(req: Request) {
       .eq("id", existingItem.id);
   } else {
     // Insert new item
-    await supabase.from("cartItems").insert([
-      {
-        cartId: cart.id,
-        productId,
-        quantity: 1,
-        itemName,
-        price,
-        discount,
-        description,
-        image,
-        size,
-        shippingCost,
-        productSizes,
-      },
-    ]);
+    const { data: insertData, error: insertError } = await supabase
+      .from("cartItems")
+      .insert([
+        {
+          cartId: cart.id,
+          productId,
+          quantity: 1,
+          itemName,
+          price,
+          discount,
+          description,
+          image,
+          size,
+          shippingCost,
+          productSizes,
+        },
+      ])
+      .select();
+
+    console.log("Insert result:", insertData);
+    console.log("Insert error:", insertError);
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    }
   }
 
   //   Return updated cart
@@ -67,5 +79,6 @@ export async function POST(req: Request) {
     .select("*")
     .eq("cartId", cart.id);
 
+  console.log("Items:", items);
   return NextResponse.json({ cart: items });
 }
