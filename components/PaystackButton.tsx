@@ -1,4 +1,3 @@
-// components/PaystackButton.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -29,28 +28,9 @@ export default function PaystackButton({ total }: { total: number }) {
   const router = useRouter();
 
   const user = session?.user;
-
-  // Convert total from CNY to NGN
   const nairaTotal = convertPrice(total);
 
-  // Show loading state while currency rates are loading
-  if (currencyLoading) {
-    return (
-      <Button type="button" disabled className="cursor-pointer h-10">
-        Loading rates...
-      </Button>
-    );
-  }
-
-  // Paystack only accepts NGN - show message if not in NGN
-  if (currency.code !== "NGN") {
-    return (
-      <Button disabled className="cursor-pointer h-10">
-        Please switch to NGN to checkout
-      </Button>
-    );
-  }
-
+  // Must be called before any early returns
   const config = {
     reference: new Date().getTime().toString(),
     email: user?.email ?? "",
@@ -87,6 +67,23 @@ export default function PaystackButton({ total }: { total: number }) {
 
   const initializePayment = usePaystackPayment(config);
 
+  // Early returns after all hooks
+  if (currencyLoading) {
+    return (
+      <Button type="button" disabled className="cursor-pointer h-10">
+        Loading rates...
+      </Button>
+    );
+  }
+
+  if (currency.code !== "NGN") {
+    return (
+      <Button disabled className="cursor-pointer h-10">
+        Please switch to NGN to checkout
+      </Button>
+    );
+  }
+
   const handlePayment = () => {
     setIsLoading(true);
 
@@ -101,7 +98,6 @@ export default function PaystackButton({ total }: { total: number }) {
             items: cart,
           }),
         });
-
         await clearCart();
         router.push("/account/purchased-items");
       } catch (error) {
@@ -111,9 +107,7 @@ export default function PaystackButton({ total }: { total: number }) {
       }
     };
 
-    const onClose = () => {
-      setIsLoading(false);
-    };
+    const onClose = () => setIsLoading(false);
 
     initializePayment({ onSuccess, onClose });
   };

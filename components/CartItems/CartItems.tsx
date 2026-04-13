@@ -150,7 +150,7 @@ export default function CartItems() {
             Your cart is empty
           </h2>
           <p className="text-gray-500 mb-6">
-            Looks like you haven't added any items yet
+            Looks like you haven&apos;t added any items yet
           </p>
           <Button
             onClick={() => router.push("/shop")}

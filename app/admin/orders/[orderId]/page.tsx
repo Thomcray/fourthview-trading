@@ -7,12 +7,32 @@ import { ArrowLeft, Package, User, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
+type OrderItem = {
+  id: number;
+  itemName: string;
+  quantity: number;
+  price: number;
+  size?: string;
+  image?: string;
+};
+
+type Order = {
+  id: number;
+  reference: string;
+  created_at: string;
+  status: string;
+  customerName: string;
+  customerEmail: string;
+  total: number;
+  items: OrderItem[];
+};
+
 export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params.orderId;
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading } = useQuery<Order>({
     queryKey: ["order", orderId],
     queryFn: async () => {
       const res = await fetch(`/api/orders/${orderId}`);
@@ -120,23 +140,22 @@ export default function OrderDetailPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {Array.isArray(order.items) &&
-                      order.items.map((item: any) => (
-                        <tr key={item.id}>
-                          <td className="px-4 py-3 text-sm text-gray-700">
-                            {item.itemName}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">
-                            {item.quantity}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">
-                            ₦{item.price?.toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-800">
-                            ₦{(item.price * item.quantity).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
+                    {order.items.map((item: OrderItem) => (
+                      <tr key={item.id}>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {item.itemName}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {item.quantity}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          ₦{item.price?.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-800">
+                          ₦{(item.price * item.quantity).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                   <tfoot className="bg-gray-50">
                     <tr>

@@ -51,7 +51,7 @@ export default function Cart() {
               </h1>
 
               <p className="text-gray-500 text-sm mb-6">
-                You haven't added any items to your cart yet.
+                You haven&apos;t added any items to your cart yet.
               </p>
 
               <div className="flex flex-col space-y-3">
