@@ -1,14 +1,14 @@
-// app/api/refunds/[id]/route.ts
 import { NextResponse } from "next/server";
 import { supabase } from "@/app/_lib/supabase";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const { status } = await request.json();
-    const refundId = parseInt(params.id);
+    const refundId = parseInt(id);
 
     const { data, error } = await supabase
       .from("refunds")
@@ -22,7 +22,6 @@ export async function PATCH(
 
     if (error) throw error;
 
-    // If refund is completed, update order status
     if (status === "completed") {
       await supabase
         .from("orders")
@@ -42,10 +41,11 @@ export async function PATCH(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const refundId = parseInt(params.id);
+    const { id } = await params;
+    const refundId = parseInt(id);
 
     const { data, error } = await supabase
       .from("refunds")
