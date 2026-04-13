@@ -192,7 +192,7 @@ export default function OpenCompanyPage() {
             Start your Business Journey in China
           </h1>
           <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto drop-shadow-md">
-            Unlock access to the world's largest markets. From company
+            Unlock access to the world&apos;s largest markets. From company
             registration to legal compliance, our expert team guides you through
             every step.
           </p>
@@ -436,7 +436,7 @@ export default function OpenCompanyPage() {
           {/* Help Text */}
           <p className="text-center text-sm text-gray-500 mt-6">
             By submitting this form, you agree to our terms and conditions.
-            We'll contact you within 24 hours.
+            We&apos;ll contact you within 24 hours.
           </p>
         </div>
       </section>

@@ -386,8 +386,8 @@ export default function BookModal() {
                     Ready to Book!
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    Click the button below to submit your booking request. We'll
-                    get back to you within 24 hours.
+                    Click the button below to submit your booking request.
+                    We&apos;ll get back to you within 24 hours.
                   </p>
                 </div>
               )}

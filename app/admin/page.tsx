@@ -114,7 +114,8 @@ export default function AdminDashboard() {
                 Admin Dashboard
               </h1>
               <p className="text-gray-500 mt-1">
-                Welcome back! Here's what's happening with your store today.
+                Welcome back! Here&apos;s what&apos;s happening with your store
+                today.
               </p>
             </div>
             <div className="flex items-center gap-3">

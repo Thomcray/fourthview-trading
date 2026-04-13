@@ -1,12 +1,12 @@
-// components/UserImage.tsx
 "use client";
 
 import Image from "next/image";
 import { User } from "lucide-react";
+import { Session } from "next-auth";
 
 interface UserImageProps {
   nameInitial?: string;
-  session: any;
+  session: Session | null;
   width?: string;
   height?: string;
   imageUrl?: string;

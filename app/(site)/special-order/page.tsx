@@ -151,8 +151,8 @@ export default function SpecialOrders() {
             Special Orders & Enquiries
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Have a special request? Let us know and we'll get back to you within
-            24 hours
+            Have a special request? Let us know and we&apos;ll get back to you
+            within 24 hours
           </p>
         </div>
 
@@ -336,7 +336,8 @@ export default function SpecialOrders() {
 
             {/* Help Text */}
             <p className="text-center text-xs text-gray-500 pt-4 border-t">
-              We'll review your request and get back to you within 24-48 hours
+              We&apos;ll review your request and get back to you within 24-48
+              hours
             </p>
           </form>
         </div>

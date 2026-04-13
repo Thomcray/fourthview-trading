@@ -142,9 +142,9 @@ export default function MoneySection() {
 
             <p className="text-base sm:text-lg leading-relaxed text-gray-700">
               Experience hassle-free currency exchange at your finger tips.
-              Whether you're traveling abroad, sending money to loved ones, or
-              managing international payments, we offer fast, transparent, and
-              secure transactions.
+              Whether you&apos;re traveling abroad, sending money to loved ones,
+              or managing international payments, we offer fast, transparent,
+              and secure transactions.
             </p>
 
             {/* Features */}

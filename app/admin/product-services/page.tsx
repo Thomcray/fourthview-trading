@@ -99,7 +99,7 @@ export default function ProductServicesPage() {
                     Currency Exchange Management
                   </h3>
                   <p className="text-gray-500 max-w-md mx-auto mb-6">
-                    This feature is coming soon. You'll be able to manage
+                    This feature is coming soon. You&apos;ll be able to manage
                     exchange rates and currency pairs.
                   </p>
                   <button className="text-blue-600 text-sm font-medium hover:text-blue-700">

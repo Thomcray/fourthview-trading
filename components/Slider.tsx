@@ -1,4 +1,3 @@
-// components/Slider/AppCarousel.tsx
 "use client";
 
 import Autoplay from "embla-carousel-autoplay";
@@ -9,10 +8,10 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
-import { Card } from "@/components/ui/card";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 
 import slideImage1 from "@/public/slides/slideImage1.jpg";
 import slideImage2 from "@/public/slides/slideImage2.jpg";
@@ -57,6 +56,7 @@ const slides = [
 export default function AppCarousel() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
 
   const autoplayPlugin = Autoplay({
     delay: 4000,
@@ -73,6 +73,12 @@ export default function AppCarousel() {
     setIsPlaying(!isPlaying);
   };
 
+  const handleDotClick = (index: number) => {
+    if (carouselApi) {
+      carouselApi.scrollTo(index);
+    }
+  };
+
   return (
     <div className="relative w-full">
       <Carousel
@@ -83,6 +89,7 @@ export default function AppCarousel() {
           loop: true,
         }}
         setApi={(api) => {
+          setCarouselApi(api);
           if (api) {
             api.on("select", () => {
               setCurrentIndex(api.selectedScrollSnap());
@@ -147,10 +154,7 @@ export default function AppCarousel() {
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => {
-              const api = document.querySelector("[data-carousel-api]") as any;
-              if (api) api.scrollTo(index);
-            }}
+            onClick={() => handleDotClick(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
               currentIndex === index
                 ? "w-8 bg-white"
