@@ -17,12 +17,13 @@ export default function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // default true to avoid SSR flash
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) setSidebarOpen(false);
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(false);
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -43,21 +44,20 @@ export default function AdminLayout({
       >
         <AdminHeader />
 
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden fixed bottom-4 right-4 z-50">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-          >
-            {sidebarOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
-        </div>
+        {/* Mobile menu toggle — bottom right FAB */}
+        <button
+          onClick={() => setSidebarOpen((p) => !p)}
+          className="lg:hidden fixed bottom-4 right-4 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+          aria-label="Toggle menu"
+        >
+          {sidebarOpen ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <Menu className="w-5 h-5" />
+          )}
+        </button>
 
-        {/* Mobile overlay */}
+        {/* Mobile backdrop */}
         <AnimatePresence>
           {sidebarOpen && isMobile && (
             <motion.div
@@ -71,23 +71,25 @@ export default function AdminLayout({
         </AnimatePresence>
 
         <div className="flex min-h-[calc(100vh-64px)]">
-          {/* Sidebar — fixed on mobile, in normal flow on desktop */}
-          <div
-            className={`
-              shrink-0 h-[calc(100vh-64px)] sticky top-16
-              transition-transform duration-300
-              ${
-                isMobile
-                  ? `fixed top-16 left-0 z-40 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`
-                  : "relative translate-x-0"
-              }
-            `}
-          >
-            <AdminSide />
-          </div>
+          {/* Sidebar */}
+          {isMobile ? (
+            // Mobile: fixed overlay, slides in/out
+            <div
+              className={`fixed top-16 left-0 z-40 h-[calc(100vh-64px)] transition-transform duration-300 ${
+                sidebarOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
+            >
+              <AdminSide />
+            </div>
+          ) : (
+            // Desktop: sticky in normal flow, pushes content naturally
+            <div className="shrink-0 sticky top-16 h-[calc(100vh-64px)]">
+              <AdminSide />
+            </div>
+          )}
 
-          {/* Main content — naturally fills remaining space */}
-          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+          {/* Main content */}
+          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 w-full">
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>
         </div>
