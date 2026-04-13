@@ -97,7 +97,8 @@ export default function CustomerPage({
             Customer Not Found
           </h2>
           <p className="text-gray-500 mb-6">
-            The customer you're looking for doesn't exist or has been removed.
+            The customer you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Button
             onClick={() => router.push("/admin/customers")}
@@ -291,7 +292,7 @@ export default function CustomerPage({
                   <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">No orders yet</p>
                   <p className="text-sm text-gray-400 mt-1">
-                    This customer hasn't placed any orders
+                    This customer hasn&apos;t placed any orders
                   </p>
                 </div>
               ) : (

@@ -10,11 +10,8 @@ import {
   EllipsisVertical,
   Search,
   Users,
-  UserPlus,
-  Filter,
   ChevronLeft,
   ChevronRight,
-  ArrowUpDown,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -51,6 +48,7 @@ const headers = [
 
 type SortField = "id" | "firstName" | "lastName" | "email" | "created_at";
 type SortOrder = "asc" | "desc";
+type StatusFilter = "all" | "verified" | "unverified";
 
 export default function Customers() {
   const [search, setSearch] = useState("");
@@ -58,9 +56,7 @@ export default function Customers() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortField, setSortField] = useState<SortField>("id");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "verified" | "unverified"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.customers,
@@ -93,10 +89,10 @@ export default function Customers() {
       filtered = filtered.filter((c) => !c.isVerified);
     }
 
-    // Sort
+    // Sort - properly typed without 'any'
     filtered.sort((a, b) => {
-      let aVal: any = a[sortField];
-      let bVal: any = b[sortField];
+      let aVal: string | number = a[sortField];
+      let bVal: string | number = b[sortField];
 
       if (sortField === "created_at") {
         aVal = new Date(a.created_at).getTime();
@@ -191,6 +187,20 @@ export default function Customers() {
         date.getFullYear() === now.getFullYear()
       );
     }).length,
+  };
+
+  const handleStatusFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setStatusFilter(e.target.value as StatusFilter);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
   };
 
   if (isLoading) {
@@ -305,10 +315,7 @@ export default function Customers() {
             <div className="flex flex-wrap gap-2">
               <select
                 value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value as any);
-                  setCurrentPage(1);
-                }}
+                onChange={handleStatusFilterChange}
                 className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
               >
                 <option value="all">All Status</option>
@@ -318,10 +325,7 @@ export default function Customers() {
 
               <select
                 value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
+                onChange={handleItemsPerPageChange}
                 className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
               >
                 <option value={10}>10 per page</option>
@@ -344,7 +348,7 @@ export default function Customers() {
 
         {/* Customers Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {filtered.length === 0 ? (
+          {paginatedCustomers.length === 0 ? (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No customers found</p>
@@ -360,17 +364,19 @@ export default function Customers() {
                   caption="A list of customers"
                   sortable={true}
                   onSort={(column, direction) => {
-                    console.log(`Sort by ${column} ${direction}`);
-                    // Handle sorting in parent component
+                    handleSort(column as SortField);
                   }}
                   emptyMessage="No customers found"
                 >
-                  {filtered.map((customer) => (
-                    <TableRow
+                  {paginatedCustomers.map((customer, index) => (
+                    <motion.tr
                       key={customer.id}
-                      className="text-slate-500 text-sm font-light"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-gray-800">
                         {customer.id}
                       </TableCell>
                       <TableCell>{customer.firstName}</TableCell>
@@ -384,18 +390,16 @@ export default function Customers() {
                       </TableCell>
                       <TableCell>{customer.country}</TableCell>
                       <TableCell>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${customer.isVerified ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-                        >
-                          {customer.isVerified ? "Verified" : "Unverified"}
-                        </span>
+                        {getStatusBadge(customer.isVerified)}
                       </TableCell>
                       <TableCell>
                         <Link href={`/admin/customers/${customer.id}`}>
-                          <EllipsisVertical className="w-4 h-4 text-slate-500 cursor-pointer hover:text-blue-600 transition-colors" />
+                          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <EllipsisVertical className="w-4 h-4 text-gray-500 hover:text-blue-600" />
+                          </button>
                         </Link>
                       </TableCell>
-                    </TableRow>
+                    </motion.tr>
                   ))}
                 </AdminTable>
               </div>
@@ -423,7 +427,7 @@ export default function Customers() {
                       {Array.from(
                         { length: Math.min(5, totalPages) },
                         (_, i) => {
-                          let pageNum;
+                          let pageNum: number;
                           if (totalPages <= 5) {
                             pageNum = i + 1;
                           } else if (currentPage <= 3) {
