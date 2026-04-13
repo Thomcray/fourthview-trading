@@ -73,7 +73,6 @@ export default function AdminLayout({
         <div className="flex min-h-[calc(100vh-64px)]">
           {/* Sidebar */}
           {isMobile ? (
-            // Mobile: fixed overlay, slides in/out
             <div
               className={`fixed top-16 left-0 z-40 h-[calc(100vh-64px)] transition-transform duration-300 ${
                 sidebarOpen ? "translate-x-0" : "-translate-x-full"

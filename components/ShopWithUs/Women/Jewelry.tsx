@@ -100,20 +100,20 @@ export default function Jewelry() {
 
                     {item.discount ? (
                       <div className="mt-2">
-                        <p className="text-xs text-gray-400 line-through">
+                        <div className="text-xs text-gray-400 line-through">
                           <ProductPrice yuanPrice={item.price} />
-                        </p>
-                        <p className="text-lg font-bold text-red-600">
+                        </div>
+                        <div className="text-lg font-bold text-red-600">
                           <ProductPrice
                             yuanPrice={item.price}
                             discount={item.discount}
                           />
-                        </p>
+                        </div>
                       </div>
                     ) : (
-                      <p className="mt-2 text-lg font-bold text-amber-700">
+                      <div className="mt-2 text-lg font-bold text-amber-700">
                         <ProductPrice yuanPrice={item.price} />
-                      </p>
+                      </div>
                     )}
                   </div>
                 </Link>

@@ -10,6 +10,7 @@ import { Dancing_Script } from "next/font/google";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import CurrencySwitcher from "../CurrencySwitcher";
 
 const dancingScript = Dancing_Script({
   subsets: ["latin"],
@@ -92,8 +93,9 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:block">
+          {/* Desktop Navigation - Added CurrencySwitcher here */}
+          <div className="hidden lg:flex lg:items-center lg:gap-4">
+            <CurrencySwitcher />
             <Navigation />
           </div>
 
@@ -158,6 +160,11 @@ export default function Header() {
                   >
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
+                </div>
+
+                {/* Currency Switcher for Mobile */}
+                <div className="mb-6">
+                  <CurrencySwitcher />
                 </div>
 
                 {/* Mobile Navigation */}

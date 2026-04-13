@@ -1,6 +1,7 @@
 export const queryKeys = {
   cart: ["cart"],
   orders: ["orders"],
+  refunds: ["refunds"],
   bookings: ["bookings"],
   dashboard: ["dashboard"],
   customers: ["customers"],

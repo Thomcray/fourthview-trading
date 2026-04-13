@@ -1,43 +1,72 @@
 "use client";
 
-import handleDiscount from "@/utils/handleDiscount";
-import { convertToNaira } from "@/utils/toNaira";
-import { useEffect, useState } from "react";
+import { useCurrency } from "./CurrencyContext";
 
 export default function ProductPrice({
   yuanPrice,
   discount,
+  showOriginal = false,
 }: {
   yuanPrice: number;
   discount?: number;
+  showOriginal?: boolean;
 }) {
-  const [rate, setRate] = useState<number | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const { formatPrice, currency, isLoading, error } = useCurrency();
 
-  useEffect(() => {
-    setMounted(true);
-
-    async function getRate() {
-      const res = await fetch("/api/exchange-rate");
-      const data = await res.json();
-      setRate(data.NGN);
-    }
-    getRate();
-  }, []);
-
-  if (!mounted || !rate) {
-    return <span>...</span>;
+  if (isLoading) {
+    return (
+      <span className="animate-pulse bg-gray-200 rounded w-20 h-5 inline-block" />
+    );
   }
 
-  const nairaPrice = convertToNaira(yuanPrice, rate);
-  const finalPrice = discount
-    ? handleDiscount(nairaPrice, discount)
-    : nairaPrice;
+  const discountedYuanPrice = discount
+    ? yuanPrice - (yuanPrice * discount) / 100
+    : yuanPrice;
 
-  const formattedPrice = Number(finalPrice.toFixed(2)).toLocaleString("en-NG", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  if (error) {
+    return (
+      <span className="flex flex-col">
+        <span className="text-md font-bold">
+          ¥{discountedYuanPrice.toFixed(2)} CNY
+        </span>
+        {discount && (
+          <span className="text-xs text-gray-400 line-through">
+            ¥{yuanPrice.toFixed(2)} CNY
+          </span>
+        )}
+        <span className="text-xs text-red-500">Rates unavailable</span>
+      </span>
+    );
+  }
 
-  return <span className="text-md font-bold">&#8358; {formattedPrice}</span>;
+  if (discount) {
+    return (
+      <span className="flex flex-col">
+        <span className="flex items-center gap-2">
+          <span className="text-md font-bold text-red-600">
+            {formatPrice(discountedYuanPrice)}
+          </span>
+          <span className="text-xs text-gray-400 line-through">
+            {formatPrice(yuanPrice)}
+          </span>
+        </span>
+        {showOriginal && currency.code !== "CNY" && (
+          <span className="text-xs text-gray-400">
+            ≈ ¥{discountedYuanPrice.toFixed(2)} CNY
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex flex-col">
+      <span className="text-md font-bold">{formatPrice(yuanPrice)}</span>
+      {showOriginal && currency.code !== "CNY" && (
+        <span className="text-xs text-gray-400">
+          ≈ ¥{yuanPrice.toFixed(2)} CNY
+        </span>
+      )}
+    </span>
+  );
 }

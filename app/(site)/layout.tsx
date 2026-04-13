@@ -11,11 +11,11 @@ export default function SiteLayout({
     <div className="flex flex-col min-h-screen">
       <Header />
       {/* Menu Button Bar */}
-      <div className="sticky top-0 z-40 bg-blue-50 px-4 py-2">
+      <div className="sticky top-0 z-40 px-4 py-2">
         <MenuButton />
       </div>
       {/* Main Content */}
-      <main className="bg-blue-50 flex-1 w-full px-4 sm:px-6">{children}</main>
+      <main className="flex-1 w-full">{children}</main>
       <Footer />
     </div>
   );

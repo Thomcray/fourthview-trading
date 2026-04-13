@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  HelpCircle,
   LayoutDashboard,
   Settings,
   Store,
@@ -14,6 +13,7 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";

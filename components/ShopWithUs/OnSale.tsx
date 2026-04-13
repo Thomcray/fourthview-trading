@@ -81,30 +81,19 @@ export default function OnSale() {
 
                     <div className="mt-2">
                       <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-400 line-through">
+                        <div className="text-xs text-gray-400 line-through">
                           <ProductPrice yuanPrice={item.price} />
-                        </p>
+                        </div>
                         <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
                           -{item.discount}%
                         </span>
                       </div>
-                      <p className="text-lg font-bold text-red-600 mt-1">
+                      <div className="text-lg font-bold text-red-600 mt-1">
                         <ProductPrice
                           yuanPrice={item.price}
                           discount={item.discount}
                         />
-                      </p>
-                    </div>
-
-                    {/* Savings indicator */}
-                    <div className="mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-xs text-green-600">
-                        Save ₦
-                        {(
-                          (item.price * (item.discount || 0)) /
-                          100
-                        ).toLocaleString()}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </Link>

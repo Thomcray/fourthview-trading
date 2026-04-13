@@ -1,13 +1,13 @@
+// components/PaystackButton.tsx
 "use client";
 
 import React, { useState } from "react";
 import { usePaystackPayment } from "react-paystack";
 import { Button } from "./ui/button";
-import { convertToNaira } from "@/utils/toNaira";
-import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { useSession } from "next-auth/react";
 import { useApp } from "./AppContext";
 import { useRouter } from "next/navigation";
+import { useCurrency } from "./CurrencyContext";
 
 const PAYSTACK_PUBLIC_KEY = process.env
   .NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY as string;
@@ -23,14 +23,33 @@ interface PaystackReference {
 
 export default function PaystackButton({ total }: { total: number }) {
   const [isLoading, setIsLoading] = useState(false);
-  const { rate, isLoading: rateLoading } = useExchangeRate();
+  const { convertPrice, currency, isLoading: currencyLoading } = useCurrency();
   const { data: session } = useSession();
-
-  const user = session?.user;
-  const nairaTotal = rate ? convertToNaira(total, rate) : 0;
-
   const { cart, clearCart } = useApp();
   const router = useRouter();
+
+  const user = session?.user;
+
+  // Convert total from CNY to NGN
+  const nairaTotal = convertPrice(total);
+
+  // Show loading state while currency rates are loading
+  if (currencyLoading) {
+    return (
+      <Button type="button" disabled className="cursor-pointer h-10">
+        Loading rates...
+      </Button>
+    );
+  }
+
+  // Paystack only accepts NGN - show message if not in NGN
+  if (currency.code !== "NGN") {
+    return (
+      <Button disabled className="cursor-pointer h-10">
+        Please switch to NGN to checkout
+      </Button>
+    );
+  }
 
   const config = {
     reference: new Date().getTime().toString(),
@@ -103,10 +122,12 @@ export default function PaystackButton({ total }: { total: number }) {
     <Button
       type="button"
       onClick={handlePayment}
-      disabled={isLoading || rateLoading || !user}
+      disabled={isLoading || !user}
       className="cursor-pointer h-10"
     >
-      {isLoading ? "Processing..." : "Checkout"}
+      {isLoading
+        ? "Processing..."
+        : `Pay ₦${Math.round(nairaTotal).toLocaleString()}`}
     </Button>
   );
 }

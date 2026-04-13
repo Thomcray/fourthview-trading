@@ -6,6 +6,7 @@ import { getAllProducts, getCategories } from "./_lib/data-services";
 import QueryProvider from "./_lib/providers/QueryProvider";
 import { AppProvider } from "@/components/AppContext";
 import "./globals.css";
+import { CurrencyProvider } from "@/components/CurrencyContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -36,7 +37,9 @@ export default async function RootLayout({
       <body className={`${outfit.className} antialiased`}>
         <QueryProvider>
           <AppProvider products={products || []} categories={categories || []}>
-            <Providers>{children}</Providers>
+            <CurrencyProvider>
+              <Providers>{children}</Providers>
+            </CurrencyProvider>
 
             <ToastContainer
               position="top-center"

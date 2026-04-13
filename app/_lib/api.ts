@@ -1,4 +1,3 @@
-// app/_lib/api.ts
 export const fetchDashboard = async () => {
   const res = await fetch("/api/admin/dashboard");
   if (!res.ok) throw new Error("Failed to fetch dashboard");
@@ -44,5 +43,42 @@ export const fetchExchangeRate = async () => {
 export const fetchCategories = async () => {
   const res = await fetch("/api/categories");
   if (!res.ok) throw new Error("Failed to fetch categories");
+  return res.json();
+};
+
+export const fetchRefunds = async () => {
+  const res = await fetch("/api/refunds");
+  if (!res.ok) throw new Error("Failed to fetch refunds");
+  return res.json();
+};
+
+// Create refund
+export const createRefund = async (refundData: {
+  orderId: number;
+  customerId: number;
+  customerName: string;
+  customerEmail: string;
+  amount: number;
+  reason: string;
+  refundMethod: string;
+  originalTotal: number;
+}) => {
+  const res = await fetch("/api/refunds", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(refundData),
+  });
+  if (!res.ok) throw new Error("Failed to create refund");
+  return res.json();
+};
+
+// Update refund status
+export const updateRefundStatus = async (refundId: number, status: string) => {
+  const res = await fetch(`/api/refunds/${refundId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error("Failed to update refund status");
   return res.json();
 };

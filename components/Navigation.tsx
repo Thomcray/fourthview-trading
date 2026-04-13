@@ -103,7 +103,7 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
             <Link
               href="/signin"
               onClick={handleLinkClick}
-              className="mx-4 mt-2 text-center bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="mx-4 mt-2 text-center bg-blue-900 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
               Sign In
             </Link>
@@ -133,7 +133,7 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
                 <span>My Account</span>
               </Link>
               <Link
-                href="/account/orders"
+                href="/account/purchased-items"
                 onClick={handleLinkClick}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
@@ -218,7 +218,7 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
               }
             `}
           >
-            <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+            <div className="w-7 h-7 bg-gradient-to-br from-blue-900 to-blue-600 rounded-full flex items-center justify-center">
               <span className="text-white text-xs font-medium">
                 {userInitial}
               </span>
@@ -251,7 +251,7 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
                 My Account
               </Link>
               <Link
-                href="/account/orders"
+                href="/account/purchased-items"
                 onClick={handleLinkClick}
                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               >
