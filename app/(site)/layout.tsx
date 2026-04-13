@@ -1,41 +1,21 @@
-import { AppProvider } from "@/components/AppContext";
-import Footer from "@/components/Footer";
 import Header from "@/components/Header/Header";
-import { Outfit } from "next/font/google";
-import { getAllProducts, getCategories } from "../_lib/data-services";
+import Footer from "@/components/Footer";
 import MenuButton from "@/components/Menu/Menu";
-import QueryProvider from "../_lib/providers/QueryProvider";
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  display: "swap",
-});
-
-export default async function siteLayout({
+export default function SiteLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
-  const data = await Promise.all([getAllProducts(), getCategories()]);
-  const products = data[0];
-  const categories = data[1];
-
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div
-      className={`${outfit.className} antialiased flex flex-col min-h-screen`}
-    >
-      <QueryProvider>
-        <AppProvider products={products || []} categories={categories || []}>
-          <Header />
-
-          {/* MenuButton bar sits below header */}
-          <div className="relative border-0 px-4 py-2">
-            <MenuButton />
-          </div>
-
-          <div className="w-full flex-1 lg:px-10 max-sm:px-2">
-            <main className="">{children}</main>
-          </div>
-        </AppProvider>
-      </QueryProvider>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      {/* Menu Button Bar */}
+      <div className="sticky top-0 z-40 bg-blue-50 px-4 py-2">
+        <MenuButton />
+      </div>
+      {/* Main Content */}
+      <main className="bg-blue-50 flex-1 w-full px-4 sm:px-6">{children}</main>
       <Footer />
     </div>
   );

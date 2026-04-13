@@ -16,36 +16,42 @@ interface Country {
 
 export default function Country({
   countries,
-  defaultCountry,
+  value,
+  onChange,
 }: {
   countries: Country[];
   defaultCountry: string;
+  value: string; // Controlled - value prop required
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Controlled - onChange required
 }) {
   return (
-    <div>
+    <div className="w-full">
       <label
         htmlFor="country"
-        className="flex flex-row gap-0.5 items-center text-sm font-medium text-gray-700"
+        className="flex flex-row gap-0.5 items-center text-sm font-medium text-gray-700 mb-1"
       >
         Country
         <SquarePen size={12} />
       </label>
 
-      <div className="flex flex-row space-x-1 items-center border-0">
-        <Selection defaultValue={defaultCountry} width="w-full" name="country">
-          {countries
-            .sort((a, b) => a.name.common.localeCompare(b.name.common))
-            .map((country) => (
-              <option
-                value={country.name.official}
-                key={country.name.official}
-                className="border"
-              >
-                {country.name.common}
-              </option>
-            ))}
-        </Selection>
-      </div>
+      <Selection
+        value={value} // Only use value
+        onChange={onChange} // Must provide onChange
+        width="w-full"
+        name="country"
+      >
+        {countries
+          .sort((a, b) => a.name.common.localeCompare(b.name.common))
+          .map((country) => (
+            <option
+              value={country.name.official}
+              key={country.name.official}
+              className="border"
+            >
+              {country.name.common}
+            </option>
+          ))}
+      </Selection>
     </div>
   );
 }

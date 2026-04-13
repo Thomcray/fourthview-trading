@@ -1,9 +1,11 @@
+// components/ShopByCategory.tsx
 "use client";
 
 import { useApp } from "../AppContext";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Grid3X3 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function ShopByCategory() {
   const { allCategories: categories } = useApp();
@@ -11,45 +13,68 @@ export default function ShopByCategory() {
   if (categories.length === 0) return null;
 
   return (
-    <div className="px-8 max-sm:px-2 py-4 w-full flex flex-col gap-3">
-      {/* Header */}
-      <Link href="/category">
-        <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between items-center hover:bg-[#2a3f8f] transition-colors">
-          <h1 className="font-normal text-base text-white">
-            Shop by Categories
-          </h1>
-          <ChevronRight color="white" strokeWidth={1.5} />
-        </div>
-      </Link>
+    <section className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl mx-auto">
+      <div className="flex flex-col gap-5">
+        {/* Header */}
+        <Link href="/category" className="group">
+          <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center hover:from-blue-800 hover:to-blue-700 transition-all duration-300 shadow-md">
+            <div className="flex items-center gap-2">
+              <Grid3X3 className="w-5 h-5 text-white" />
+              <h1 className="font-semibold text-lg text-white">
+                Shop by Categories
+              </h1>
+            </div>
+            <ChevronRight
+              color="white"
+              strokeWidth={2}
+              className="group-hover:translate-x-1 transition-transform duration-300"
+            />
+          </div>
+        </Link>
 
-      {/* Categories */}
-      <div className="flex flex-row gap-3 overflow-x-auto pb-2">
-        {categories.map(
-          (item, index) =>
-            item.image_url && (
-              <Link
-                key={index}
-                href={`/category/${item.id}`}
-                className="shrink-0 flex flex-col gap-2 group"
-              >
-                <div className="w-36 h-36 max-sm:w-28 max-sm:h-28 relative rounded-xl overflow-hidden border shadow-sm group-hover:shadow-md transition-shadow">
-                  <Image
-                    src={item.image_url}
-                    alt={item.name || "category-image"}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {/* Overlay with name */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
-                    <p className="text-white text-xs font-medium leading-tight">
-                      {item.name}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ),
-        )}
+        {/* Categories Grid - Horizontal Scroll */}
+        <div className="relative">
+          <div className="flex flex-row gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            {categories.map(
+              (item, index) =>
+                item.image_url && (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ y: -5 }}
+                    className="shrink-0"
+                  >
+                    <Link href={`/category/${item.id}`} className="block group">
+                      <div className="w-40 h-40 sm:w-44 sm:h-44 relative rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300">
+                        <Image
+                          src={item.image_url}
+                          alt={item.name || "category-image"}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          sizes="(max-width: 640px) 160px, 176px"
+                        />
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                        {/* Category Name */}
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <p className="text-white font-semibold text-sm text-center">
+                            {item.name}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ),
+            )}
+          </div>
+
+          {/* Scroll Indicator */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

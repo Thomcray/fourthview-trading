@@ -18,13 +18,19 @@ export async function POST(req: Request) {
     const phone = formData.get("phone") as string;
     const password = formData.get("password") as string;
 
+    // NEW
+    const streetAddress = formData.get("streetAddress") as string;
+    const apartment = formData.get("apartment") as string;
+    const city = formData.get("city") as string;
+    const zipCode = formData.get("zipCode") as string;
+
     const token = uuidv4();
 
     const passwordCheck =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
 
-    if (!passwordCheck.test(password))
-      NextResponse.json(
+    if (!passwordCheck.test(password)) {
+      return NextResponse.json(
         {
           success: false,
           message:
@@ -32,6 +38,7 @@ export async function POST(req: Request) {
         },
         { status: 400 },
       );
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -44,36 +51,44 @@ export async function POST(req: Request) {
 
     const existingUser = await getUserByEmail(email);
 
-    if (existingUser)
+    if (existingUser) {
       return NextResponse.json(
         { success: false, message: "User already exists." },
         { status: 400 },
       );
+    }
 
     //convert expiry to iso string to prevent timezone issues
     const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString(); // valid for 10 minutes
 
-    // store user in temp location in db
+    // store user in temp location in db - ADD the new fields here
     const { error } = await supabase.from("tempUsers").insert({
       firstName,
       lastName,
       email,
       country,
-      address,
+      address, // Keep original for compatibility
       countryCode,
       phone,
       password: hashedPassword,
       token,
       tokenExpiry,
+      // NEW
+      streetAddress,
+      apartment,
+      city,
+      zipCode,
     });
 
-    if (error)
+    if (error) {
+      console.error("Supabase error:", error);
       return NextResponse.json(
         { success: false, message: "Something went wrong." },
         { status: 500 },
       );
+    }
 
-    // Send confirmation email conataining token to user
+    // Send confirmation email containing token to user
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const { error: mailErr } = await resend.emails.send({
@@ -103,7 +118,7 @@ export async function POST(req: Request) {
         success: true,
         message: "Verification email sent",
       },
-      { status: 500 },
+      { status: 200 },
     );
   } catch (error: unknown) {
     console.error("Error", error);

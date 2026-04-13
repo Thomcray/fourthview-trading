@@ -51,11 +51,15 @@ export async function getCountries() {
       "https://restcountries.com/v3.1/all?fields=name,flag,idd",
     );
 
+    if (!res.ok) {
+      throw new Error(`Failed to fetch countries: ${res.status}`);
+    }
+
     const countries = await res.json();
     return countries;
-  } catch {
-    // throw new Error("Could not fetch countries");
-    return null;
+  } catch (error) {
+    console.error("Error fetching countries:", error);
+    throw new Error("Could not fetch countries"); // Throw error instead of returning null
   }
 }
 

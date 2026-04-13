@@ -9,7 +9,7 @@ export async function createUser(token: string) {
 
   /**
    * check if token exists in temp location containing user token
-   * if email with token exists and token isn&apos;t expired, create user
+   * if email with token exists and token isn't expired, create user
    * else if expired token, return token expired
    * then, delete user in temp user table after user is created
    */
@@ -21,10 +21,20 @@ export async function createUser(token: string) {
   const now = Date.now();
   const expiry = new Date(record.tokenExpiry).getTime();
 
-  //  if current time is greater than expiry, token is expired
+  // if current time is greater than expiry, token is expired
   if (now > expiry) return { success: false, message: "Token expired" };
 
-  // proceed to create user
+  // Create full address from components for backward compatibility
+  const addressParts = [
+    record.streetAddress,
+    record.apartment,
+    record.city,
+    record.zipCode,
+  ].filter((part) => part && part.trim() !== "");
+
+  const fullAddress = addressParts.join(", ");
+
+  // proceed to create user with all address fields
   const { data, error } = await supabase
     .from("users")
     .insert({
@@ -36,11 +46,17 @@ export async function createUser(token: string) {
       phone: record.phone,
       password: record.password,
       isVerified: true,
+      // Address fields
+      address: record.address || fullAddress, // Keep original for compatibility
+      streetAddress: record.streetAddress,
+      apartment: record.apartment,
+      city: record.city,
+      zipCode: record.zipCode,
     })
     .select()
     .single();
 
-  if (error) throw new Error("User could not be created.");
+  if (error) throw new Error(`User could not be created: ${error.message}`);
 
   // delete user in temp location in db after user is created
   const { error: deleteError } = await supabase
@@ -60,9 +76,23 @@ export async function updateUserProfile(
   phone: string,
   country: string,
   address: string,
-  userId: string
+  userId: string,
+  streetAddress?: string,
+  apartment?: string,
+  city?: string,
+  zipCode?: string,
 ) {
-  const updateData = { phone, country, address, countryCode };
+  const updateData: any = {
+    phone,
+    country,
+    address,
+    countryCode,
+    streetAddress,
+    apartment,
+    city,
+    zipCode,
+  };
+
   const { error } = await supabase
     .from("users")
     .update(updateData)

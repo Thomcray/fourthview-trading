@@ -1,6 +1,7 @@
 type Props = {
   children: React.ReactNode;
   defaultValue?: string;
+  value?: string;
   placeholder?: string;
   width?: string;
   margin?: string;
@@ -12,21 +13,30 @@ type Props = {
 export default function Selection({
   children,
   defaultValue,
+  value,
+  placeholder,
   width,
   name,
   onChange,
   required = false,
 }: Props) {
   return (
-    <div className="w-max flex items-center rounded-sm border h-12.25 mt-1 shadow">
+    <div
+      className={`flex items-center rounded-sm border h-12.25 mt-1 shadow ${width}`}
+    >
       <select
         name={name}
         required={required}
-        defaultValue={defaultValue}
-        onChange={onChange}
-        className={`${width} cursor-pointer px-2 py-6 mt-1 rounded-md border-0 focus:outline-none shadow-none text-sm leading-tight`}
+        {...(value !== undefined && onChange !== undefined
+          ? { value, onChange }
+          : { defaultValue })}
+        className="w-full cursor-pointer px-2 py-6 rounded-md border-0 focus:outline-none shadow-none text-sm leading-tight"
       >
-        <option value={defaultValue}>{defaultValue}</option>
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
         {children}
       </select>
     </div>

@@ -1,8 +1,11 @@
-import Selection from "./Selection";
-import { getCountries } from "@/app/_lib/data-services";
-import { Input } from "./ui/input";
+// components/SelectCountryData.tsx
+"use client";
 
-interface Country {
+import { useEffect, useState } from "react";
+import Country from "./Country";
+import Phone from "./Phone";
+
+interface CountryType {
   name: {
     common: string;
     official: string;
@@ -11,87 +14,144 @@ interface Country {
     root: string;
     suffixes: string[];
   };
+  flag?: string;
 }
 
-export default async function SelectCountryData() {
-  const defaultCountry = "Federal Republic of Nigeria";
+interface CountryWithCode extends CountryType {
+  dialCode: string;
+}
 
-  const countries: Country[] = await getCountries();
+export default function SelectCountryData() {
+  const [countries, setCountries] = useState<CountryWithCode[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [dialCode, setDialCode] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [uniqueDialCodes, setUniqueDialCodes] = useState<string[]>([]);
 
-  const defaultCountryData = countries.find(
-    (country) => country.name.official === defaultCountry
-  );
+  useEffect(() => {
+    async function fetchCountries() {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/countries");
 
-  const countryCode = defaultCountryData?.idd.root || "";
-  const countryDial = defaultCountryData?.idd.suffixes[0] || "";
-  const defaultDialCode = countryCode + countryDial;
+        if (!response.ok) {
+          throw new Error("Failed to fetch countries");
+        }
 
-  const dialCode = countries.map(
-    (country) => country.idd.root + country.idd.suffixes[0]
-  );
+        const data = await response.json();
 
-  const uniqueDialCodes = Array.from(new Set(dialCode));
+        if (!data.countries || !Array.isArray(data.countries)) {
+          throw new Error("Invalid countries data");
+        }
 
-  return (
-    <div className="flex flex-col items-center gap-4 w-full border-0">
-      <div className="w-full border-0">
-        <label
-          htmlFor="phone"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Country
-        </label>
-        <Selection
-          placeholder="Select your country..."
-          width="w-full"
-          name="country"
-        >
-          {countries
-            .sort((a, b) => a.name.common.localeCompare(b.name.common))
-            .map((country) => (
-              <option value={country.name.official} key={country.name.official}>
-                {country.name.common}
-              </option>
-            ))}
-        </Selection>
+        // Map countries to include dial code
+        const countriesWithCodes: CountryWithCode[] = data.countries
+          .map((country: CountryType) => {
+            const root = country.idd?.root || "";
+            const suffix = country.idd?.suffixes?.[0] || "";
+            const dialCode = root + suffix;
+
+            return {
+              ...country,
+              dialCode: dialCode && dialCode !== "undefined" ? dialCode : "",
+            };
+          })
+          .filter((country: CountryWithCode) => country.dialCode);
+
+        setCountries(countriesWithCodes);
+
+        // Create unique dial codes
+        const unique = Array.from(
+          new Set(countriesWithCodes.map((c) => c.dialCode)),
+        ).filter((code) => code !== "undefined");
+        setUniqueDialCodes(unique);
+
+        // Set default country (Nigeria)
+        const defaultCountry = countriesWithCodes.find(
+          (country: CountryWithCode) =>
+            country.name.official === "Federal Republic of Nigeria",
+        );
+
+        if (defaultCountry) {
+          setSelectedCountry(defaultCountry.name.official);
+          setDialCode(defaultCountry.dialCode);
+        } else if (countriesWithCodes.length > 0) {
+          setSelectedCountry(countriesWithCodes[0].name.official);
+          setDialCode(countriesWithCodes[0].dialCode);
+        }
+
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+        setError("Failed to load countries. Please refresh the page.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCountries();
+  }, []);
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryName = e.target.value;
+    const country = countries.find((c) => c.name.official === countryName);
+
+    setSelectedCountry(countryName);
+    if (country) {
+      setDialCode(country.dialCode); // Update dial code when country changes
+    }
+  };
+
+  const handleDialCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDialCode = e.target.value;
+    setDialCode(newDialCode);
+
+    // Find the first country with this dial code
+    const country = countries.find((c) => c.dialCode === newDialCode);
+    if (country) {
+      setSelectedCountry(country.name.official); // Update country when dial code changes
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 w-full">
+        <div className="w-full h-20 bg-gray-100 animate-pulse rounded"></div>
+        <div className="w-full h-20 bg-gray-100 animate-pulse rounded"></div>
       </div>
+    );
+  }
 
-      <div className="w-full border-0">
-        <label
-          htmlFor="phone"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Phone Number
-        </label>
-
-        <div className="w-full flex flex-row space-x-1 items-center border-0">
-          <div className="w-full flex flex-row space-x-1 items-center border-0">
-            <Selection
-              placeholder={defaultDialCode}
-              defaultValue={defaultDialCode}
-              width="w-fit"
-              name="countryCode"
-            >
-              {uniqueDialCodes.map(
-                (code) =>
-                  code !== "undefined" && (
-                    <option value={code} key={code}>
-                      {code}
-                    </option>
-                  )
-              )}
-            </Selection>
-
-            <Input
-              type="tel"
-              id="phone"
-              name="phone"
-              className="mt-1 block w-full px-3 py-6 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
+  if (error) {
+    return (
+      <div className="flex flex-col gap-4 w-full">
+        <div className="w-full p-4 bg-red-50 border border-red-200 rounded text-red-600">
+          {error}
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 w-full">
+      <Country
+        countries={countries}
+        defaultCountry="Federal Republic of Nigeria"
+        value={selectedCountry} // Pass value
+        onChange={handleCountryChange} // Pass onChange
+      />
+
+      <Phone
+        uniqueDialCodes={uniqueDialCodes}
+        countries={countries}
+        phone=""
+        value={dialCode} // Pass value
+        onChange={handleDialCodeChange} // Pass onChange
+      />
+
+      {/* Hidden input to ensure dial code is submitted */}
+      <input type="hidden" name="countryCode" value={dialCode} />
     </div>
   );
 }
