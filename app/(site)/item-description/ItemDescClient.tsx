@@ -23,7 +23,8 @@ export default function ItemDescriptionClient() {
             Product Not Found
           </h2>
           <p className="text-gray-500 mt-2">
-            The product you're looking for doesn't exist or has been removed.
+            The product you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
         </div>
       </section>
