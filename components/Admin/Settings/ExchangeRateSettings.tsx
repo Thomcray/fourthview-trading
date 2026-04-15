@@ -60,8 +60,8 @@ export default function ExchangeRateSettings() {
       const data: ExchangeRates = await res.json();
       setRates(data);
       setLastUpdated(new Date().toLocaleString());
-    } catch (error) {
-      console.error("Failed to fetch rates:", error);
+    } catch (err) {
+      console.error("Failed to fetch rates:", err);
       toast.error("Failed to fetch exchange rates");
     }
   };
@@ -76,7 +76,8 @@ export default function ExchangeRateSettings() {
       setRates(data);
       setLastUpdated(new Date().toLocaleString());
       toast.success("Exchange rates updated successfully!");
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to update rates:", err);
       toast.error("Failed to update exchange rates");
     } finally {
       setIsLoading(false);
@@ -91,14 +92,18 @@ export default function ExchangeRateSettings() {
       localStorage.setItem("exchangeRateSettings", JSON.stringify(settings));
       toast.success("Settings saved!");
       setIsDirty(false);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to save settings:", err);
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (
+    key: string,
+    value: string | number | boolean,
+  ) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
     setIsDirty(true);
   };
@@ -160,7 +165,7 @@ export default function ExchangeRateSettings() {
 
         {rates ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {Object.entries(CURRENCY_LABELS).map(([code, { name, symbol }]) => {
+            {Object.entries(CURRENCY_LABELS).map(([code, { name }]) => {
               const rate = rates[code as keyof ExchangeRates];
               const effective = getEffectiveRate(rate);
               return (
@@ -172,7 +177,6 @@ export default function ExchangeRateSettings() {
                     <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
                       {code}
                     </span>
-                    <span className="text-xs text-gray-400">{symbol}</span>
                   </div>
                   <p className="text-lg font-bold text-blue-900">
                     {rate.toFixed(4)}
@@ -300,7 +304,7 @@ export default function ExchangeRateSettings() {
                   Effective Rates with {settings.rateMargin}% margin
                 </p>
                 <div className="mt-2 space-y-1">
-                  {Object.entries(CURRENCY_LABELS).map(([code, { symbol }]) => (
+                  {Object.keys(CURRENCY_LABELS).map((code) => (
                     <p key={code} className="text-sm text-amber-700">
                       1 CNY ={" "}
                       {getEffectiveRate(

@@ -1,4 +1,3 @@
-// components/Admin/AddProduct/ProductForm.tsx
 "use client";
 
 import React, {
@@ -7,7 +6,7 @@ import React, {
   createContext,
   useContext,
   useCallback,
-  useRef, // ADDED
+  useRef,
 } from "react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
@@ -28,9 +27,22 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Define proper types
+type FormDataType = {
+  productName: string;
+  description: string;
+  price: string;
+  discount: string;
+  discountType: string;
+  target: string;
+  weight: string;
+  shippingCost: string;
+  sizes: string[];
+};
+
 interface FormDataContextType {
-  formData: any;
-  updateFormData: (field: string, value: any) => void;
+  formData: FormDataType;
+  updateFormData: (field: string, value: string | string[]) => void;
   colours: string[];
   setColours: (colours: string[]) => void;
   images: File[];
@@ -40,7 +52,6 @@ interface FormDataContextType {
   customType: string;
   setCustomType: (type: string) => void;
   finalProductType: string;
-  // NEW: Category state lifted to context
   selectedCategory: string;
   setSelectedCategory: (cat: string) => void;
   selectedTarget: string;
@@ -67,14 +78,12 @@ export default function ProductForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isReadyToSubmit, setIsReadyToSubmit] = useState(false);
 
-  // Lift category state to parent so it persists across steps
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedTarget, setSelectedTarget] = useState("");
 
-  // Use ref to track if we're actually on step 5 for submission
   const hasReachedStep5 = useRef(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     productName: "",
     description: "",
     price: "",
@@ -83,12 +92,15 @@ export default function ProductForm() {
     target: "",
     weight: "",
     shippingCost: "",
-    sizes: [] as string[],
+    sizes: [],
   });
 
-  const updateFormData = useCallback((field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const updateFormData = useCallback(
+    (field: string, value: string | string[]) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   const finalProductType = productType === "Custom" ? customType : productType;
 
@@ -132,7 +144,6 @@ export default function ProductForm() {
         break;
 
       case 4:
-        // Check lifted state instead of DOM
         if (!selectedCategory) {
           toast.error("Please select a category");
           return false;

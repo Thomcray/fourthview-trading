@@ -20,6 +20,29 @@ import {
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
+// Define specific types for the settings
+type PaystackSettings = {
+  enabled: boolean;
+  publicKey: string;
+  secretKey: string;
+  testMode: boolean;
+  callbackUrl: string;
+};
+
+type StripeSettings = {
+  enabled: boolean;
+  publicKey: string;
+  secretKey: string;
+  webhookSecret: string;
+  testMode: boolean;
+};
+
+type CurrencySettings = {
+  supportedCurrencies: string[];
+  defaultCurrency: string;
+  convertCurrency: boolean;
+};
+
 export default function PaymentSettings() {
   const [showKeys, setShowKeys] = useState({
     paystackPublic: false,
@@ -28,15 +51,15 @@ export default function PaymentSettings() {
     stripeSecret: false,
   });
 
-  const [paystackSettings, setPaystackSettings] = useState({
+  const [paystackSettings, setPaystackSettings] = useState<PaystackSettings>({
     enabled: true,
-    publicKey: process.env.NEXT_PUBLIC_TEST_PUBLIC_KEY || "",
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY || "",
     secretKey: process.env.PAYSTACK_TEST_SECRET_KEY || "",
     testMode: true,
     callbackUrl: "https://fourthview.com/payment/callback",
   });
 
-  const [stripeSettings, setStripeSettings] = useState({
+  const [stripeSettings, setStripeSettings] = useState<StripeSettings>({
     enabled: false,
     publicKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
     secretKey: process.env.STRIPE_SECRET_KEY || "",
@@ -44,7 +67,7 @@ export default function PaymentSettings() {
     testMode: true,
   });
 
-  const [currencySettings, setCurrencySettings] = useState({
+  const [currencySettings, setCurrencySettings] = useState<CurrencySettings>({
     supportedCurrencies: ["NGN", "USD", "EUR", "GBP"],
     defaultCurrency: "NGN",
     convertCurrency: true,
@@ -62,13 +85,18 @@ export default function PaymentSettings() {
     setIsDirty(true);
   };
 
-  const handleSettingChange = (section: string, field: string, value: any) => {
+  // Type-safe setting change handler
+  const handleSettingChange = (
+    section: "paystack" | "stripe" | "currency",
+    field: string,
+    value: string | boolean | string[],
+  ) => {
     if (section === "paystack") {
-      setPaystackSettings({ ...paystackSettings, [field]: value });
+      setPaystackSettings((prev) => ({ ...prev, [field]: value }));
     } else if (section === "stripe") {
-      setStripeSettings({ ...stripeSettings, [field]: value });
+      setStripeSettings((prev) => ({ ...prev, [field]: value }));
     } else if (section === "currency") {
-      setCurrencySettings({ ...currencySettings, [field]: value });
+      setCurrencySettings((prev) => ({ ...prev, [field]: value }));
     }
     setIsDirty(true);
   };
@@ -78,7 +106,7 @@ export default function PaymentSettings() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       toast.success(`${gateway} connection successful!`);
-    } catch (error) {
+    } catch {
       toast.error(`Failed to connect to ${gateway}`);
     } finally {
       setIsTesting(false);
@@ -91,7 +119,7 @@ export default function PaymentSettings() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Payment settings saved successfully!");
       setIsDirty(false);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
@@ -99,7 +127,6 @@ export default function PaymentSettings() {
   };
 
   const handleCancel = () => {
-    // Reset to original values
     setPaystackSettings({
       enabled: true,
       publicKey: process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY || "",

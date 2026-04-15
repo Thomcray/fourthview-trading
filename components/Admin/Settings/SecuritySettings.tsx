@@ -1,4 +1,3 @@
-// components/Admin/Settings/SecuritySettings.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,23 +12,18 @@ import {
   Users,
   Globe,
   Database,
-  Mail,
-  Smartphone,
   AlertTriangle,
   Save,
   CheckCircle,
   AlertCircle,
-  Eye,
-  EyeOff,
   RefreshCw,
   Fingerprint,
   Clock,
   FileText,
   Loader2,
-  ExternalLink,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +35,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
+type AdminRole = "admin" | "manager" | "support";
+
 type IpWhitelistEntry = {
   id: string;
   ip: string;
@@ -50,7 +46,7 @@ type IpWhitelistEntry = {
 type AdminUser = {
   id: string;
   email: string;
-  role: "admin" | "manager" | "support";
+  role: AdminRole;
   lastActive?: string;
   twoFactorEnabled: boolean;
 };
@@ -60,6 +56,20 @@ type ApiKeyInfo = {
   masked: string | null;
   createdAt: string | null;
   lastUsed: string | null;
+};
+
+type SecuritySettingsType = {
+  twoFactorAuth: boolean;
+  sessionTimeout: number;
+  maxLoginAttempts: number;
+  lockoutDuration: number;
+  requireStrongPassword: boolean;
+  passwordExpiryDays: number;
+  ipWhitelistEnabled: boolean;
+  sslEnabled: boolean;
+  backupEnabled: boolean;
+  backupFrequency: string;
+  auditLogEnabled: boolean;
 };
 
 export default function SecuritySettings() {
@@ -73,19 +83,20 @@ export default function SecuritySettings() {
   const [isLoadingKey, setIsLoadingKey] = useState(false);
 
   // General Security Settings
-  const [securitySettings, setSecuritySettings] = useState({
-    twoFactorAuth: false,
-    sessionTimeout: 60, // minutes
-    maxLoginAttempts: 5,
-    lockoutDuration: 30, // minutes
-    requireStrongPassword: true,
-    passwordExpiryDays: 90,
-    ipWhitelistEnabled: false,
-    sslEnabled: true,
-    backupEnabled: true,
-    backupFrequency: "daily", // daily, weekly, monthly
-    auditLogEnabled: true,
-  });
+  const [securitySettings, setSecuritySettings] =
+    useState<SecuritySettingsType>({
+      twoFactorAuth: false,
+      sessionTimeout: 60,
+      maxLoginAttempts: 5,
+      lockoutDuration: 30,
+      requireStrongPassword: true,
+      passwordExpiryDays: 90,
+      ipWhitelistEnabled: false,
+      sslEnabled: true,
+      backupEnabled: true,
+      backupFrequency: "daily",
+      auditLogEnabled: true,
+    });
 
   // IP Whitelist
   const [ipWhitelist, setIpWhitelist] = useState<IpWhitelistEntry[]>([
@@ -116,9 +127,12 @@ export default function SecuritySettings() {
   ]);
 
   const [newIp, setNewIp] = useState({ ip: "", label: "" });
-  const [newAdminUser, setNewAdminUser] = useState({
+  const [newAdminUser, setNewAdminUser] = useState<{
+    email: string;
+    role: AdminRole;
+  }>({
     email: "",
-    role: "support" as const,
+    role: "support",
   });
 
   // Fetch API key on mount
@@ -133,9 +147,7 @@ export default function SecuritySettings() {
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setApiKeyInfo(data);
-    } catch (error) {
-      console.error("Failed to fetch API key:", error);
-      // Set default state if fetch fails
+    } catch {
       setApiKeyInfo({
         exists: false,
         masked: null,
@@ -147,7 +159,10 @@ export default function SecuritySettings() {
     }
   };
 
-  const handleSettingChange = (field: string, value: any) => {
+  const handleSettingChange = (
+    field: keyof SecuritySettingsType,
+    value: boolean | number | string,
+  ) => {
     setSecuritySettings({ ...securitySettings, [field]: value });
     setIsDirty(true);
   };
@@ -173,7 +188,8 @@ export default function SecuritySettings() {
         ...adminUsers,
         {
           id: Date.now().toString(),
-          ...newAdminUser,
+          email: newAdminUser.email,
+          role: newAdminUser.role,
           twoFactorEnabled: false,
         },
       ]);
@@ -189,7 +205,7 @@ export default function SecuritySettings() {
     toast.info("Admin user removed");
   };
 
-  const updateAdminRole = (id: string, role: AdminUser["role"]) => {
+  const updateAdminRole = (id: string, role: AdminRole) => {
     setAdminUsers(
       adminUsers.map((user) => (user.id === id ? { ...user, role } : user)),
     );
@@ -204,12 +220,12 @@ export default function SecuritySettings() {
       });
       if (!res.ok) throw new Error("Failed to rotate key");
 
-      await fetchApiKey(); // Refresh key info
+      await fetchApiKey();
       toast.success(
         "API key rotated successfully! New key is available in your email.",
       );
       setShowRotateModal(false);
-    } catch (error) {
+    } catch {
       toast.error("Failed to rotate API key");
     } finally {
       setIsRotating(false);
@@ -219,11 +235,10 @@ export default function SecuritySettings() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Save all settings except API key (that's handled separately)
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Security settings saved successfully!");
       setIsDirty(false);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
@@ -446,7 +461,7 @@ export default function SecuritySettings() {
                 onChange={(e) =>
                   setNewAdminUser({
                     ...newAdminUser,
-                    role: e.target.value as any,
+                    role: e.target.value as AdminRole,
                   })
                 }
                 className="px-3 py-2 border border-gray-300 rounded-lg"
@@ -493,7 +508,7 @@ export default function SecuritySettings() {
                   <select
                     value={user.role}
                     onChange={(e) =>
-                      updateAdminRole(user.id, e.target.value as any)
+                      updateAdminRole(user.id, e.target.value as AdminRole)
                     }
                     className="px-2 py-1 text-sm border border-gray-300 rounded"
                   >
@@ -597,7 +612,6 @@ export default function SecuritySettings() {
         </div>
 
         <div className="space-y-4">
-          {/* Professional API Key Management */}
           <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex-1">

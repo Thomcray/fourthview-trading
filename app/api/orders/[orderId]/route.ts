@@ -1,8 +1,19 @@
-// app/api/orders/[orderId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/_lib/auth";
 import { createClient } from "@/app/_lib/supabase-server";
+
+// Define item type
+type OrderItem = {
+  id?: number;
+  itemName?: string;
+  name?: string;
+  product_name?: string;
+  quantity?: number;
+  price?: string | number;
+  size?: string;
+  image?: string;
+};
 
 export async function GET(
   req: NextRequest,
@@ -42,7 +53,7 @@ export async function GET(
     }
 
     // Parse items from JSONB
-    let parsedItems = [];
+    let parsedItems: OrderItem[] = [];
     if (order.items) {
       try {
         parsedItems =
@@ -69,7 +80,7 @@ export async function GET(
       customerEmail: userData?.email || "No email provided",
       items:
         Array.isArray(parsedItems) && parsedItems.length > 0
-          ? parsedItems.map((item: any, index: number) => ({
+          ? parsedItems.map((item: OrderItem, index: number) => ({
               id: item.id || index + 1,
               itemName:
                 item.itemName ||
@@ -77,7 +88,7 @@ export async function GET(
                 item.product_name ||
                 `Item ${index + 1}`,
               quantity: item.quantity || 1,
-              price: parseFloat(item.price) || 0,
+              price: parseFloat(String(item.price)) || 0,
               size: item.size || null,
               image: item.image || null,
             }))

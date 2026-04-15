@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/app/_lib/supabase";
 
+// Define error type
+type ApiError = {
+  message: string;
+};
+
 export async function POST(request: Request) {
   try {
     const { weight } = await request.json();
@@ -38,8 +43,13 @@ export async function POST(request: Request) {
       rate_per_kg: config.rate_per_kg,
       base_rate: config.base_rate,
     });
-  } catch (err: any) {
-    console.error("API error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    // proper error typing
+    const error = err as ApiError;
+    console.error("API error:", error);
+    return NextResponse.json(
+      { error: error.message || "Unknown error" },
+      { status: 500 },
+    );
   }
 }

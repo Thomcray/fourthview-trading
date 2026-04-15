@@ -2,6 +2,17 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Define proper types
+type OrderItem = {
+  id: number;
+  quantity: number;
+  price: number;
+  product?: {
+    id: number;
+    name: string;
+  };
+};
+
 export async function sendOrderStatusEmail({
   to,
   orderReference,
@@ -14,7 +25,7 @@ export async function sendOrderStatusEmail({
   orderReference: string;
   status: string;
   customerName: string;
-  items: any[];
+  items: OrderItem[];
   total: number;
 }) {
   const statusMessages: Record<string, string> = {

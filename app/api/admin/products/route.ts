@@ -1,6 +1,11 @@
-// app/api/admin/products/route.ts
 import { NextResponse } from "next/server";
 import { supabase } from "@/app/_lib/supabase";
+
+// Define Category type
+type Category = {
+  id: number;
+  name: string;
+};
 
 export async function GET(request: Request) {
   try {
@@ -36,7 +41,7 @@ export async function GET(request: Request) {
 
     // Fetch categories for product names
     const categoryIds = [...new Set(items?.map((p) => p.categoryId) || [])];
-    let categories: any[] = [];
+    let categories: Category[] = []; // Fixed: proper type instead of any[]
 
     if (categoryIds.length > 0) {
       const { data: cats, error: catError } = await supabase
@@ -45,7 +50,7 @@ export async function GET(request: Request) {
         .in("id", categoryIds);
 
       if (!catError && cats) {
-        categories = cats;
+        categories = cats as Category[]; // Type assertion if needed
       }
     }
 

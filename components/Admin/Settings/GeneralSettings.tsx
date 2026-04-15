@@ -91,7 +91,8 @@ export default function GeneralSettings() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("General settings saved successfully!");
       setIsDirty(false);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to save settings:", err);
       toast.error("Failed to save settings");
     } finally {
       setIsLoading(false);
@@ -175,7 +176,7 @@ export default function GeneralSettings() {
             General Information
           </h3>
           <p className="text-sm text-gray-500 mt-0.5">
-            Update your store's basic information
+            Update your store&apos;s basic information
           </p>
         </div>
         {isDirty && (

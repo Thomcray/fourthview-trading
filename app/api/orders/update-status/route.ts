@@ -1,15 +1,31 @@
-// app/api/orders/update-status/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/_lib/auth";
 import { createClient } from "@/app/_lib/supabase-server";
 import { sendOrderStatusEmail } from "@/app/_lib/email";
 
+// Define types
+type OrderItem = {
+  id: number;
+  quantity: number;
+  price: number;
+  product?: {
+    id: number;
+    name: string;
+  };
+};
+
+type UpdateData = {
+  status: string;
+  updated_at: string;
+  shipped_at?: string;
+  delivered_at?: string;
+};
+
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user is authenticated and is admin
     if (!session?.user || session.user.userRole !== "ADMIN") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -24,7 +40,6 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Validate status transition
     const validStatuses = [
       "pending",
       "processing",
@@ -36,10 +51,8 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ message: "Invalid status" }, { status: 400 });
     }
 
-    // Await the supabase client
     const supabase = await createClient();
 
-    // Get current order with user details
     const { data: currentOrder, error: fetchError } = await supabase
       .from("orders")
       .select(
@@ -69,7 +82,6 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
-    // Check if status is actually changing
     if (currentOrder.status === status) {
       return NextResponse.json(
         { message: "Order is already in this status" },
@@ -77,13 +89,11 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Build update data
-    const updateData: any = {
+    const updateData: UpdateData = {
       status,
       updated_at: new Date().toISOString(),
     };
 
-    // Add tracking timestamps
     if (status === "shipped") {
       updateData.shipped_at = new Date().toISOString();
     }
@@ -91,7 +101,6 @@ export async function PATCH(req: NextRequest) {
       updateData.delivered_at = new Date().toISOString();
     }
 
-    // Update order in database
     const { data: updatedOrder, error: updateError } = await supabase
       .from("orders")
       .update(updateData)
@@ -126,7 +135,6 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Send notification email if requested
     let emailSent = false;
     const customerEmail = currentOrder.user?.email;
 
@@ -140,13 +148,12 @@ export async function PATCH(req: NextRequest) {
           orderReference: currentOrder.reference,
           status: status,
           customerName: customerName,
-          items: currentOrder.items || [],
+          items: (currentOrder.items as OrderItem[]) || [],
           total: currentOrder.total,
         });
         emailSent = true;
       } catch (emailError) {
         console.error("Failed to send email:", emailError);
-        // Don't fail the request if email fails, just log it
       }
     }
 

@@ -11,12 +11,18 @@ import { queryKeys } from "@/app/_lib/queryKeys";
 
 type TimeRange = "today" | "week" | "month" | "year" | "all";
 
+type OrderItem = {
+  itemName: string;
+  quantity: number;
+  price: number;
+};
+
 type Order = {
   id: number;
   reference: string;
   total: number;
   status: string;
-  items: any[];
+  items: OrderItem[];
   created_at: string;
 };
 
@@ -35,6 +41,13 @@ type Refund = {
   amount: number;
   status: string;
   created_at: string;
+};
+
+type TopProduct = {
+  name: string;
+  sales: number;
+  revenue: number;
+  growth: number;
 };
 
 export default function AdminAnalytics() {
@@ -77,7 +90,7 @@ export default function AdminAnalytics() {
   // Calculate top products from orders
   const topProducts = orders
     .flatMap((order) => order.items || [])
-    .reduce((acc: any[], item: any) => {
+    .reduce<TopProduct[]>((acc, item) => {
       const existing = acc.find((p) => p.name === item.itemName);
       if (existing) {
         existing.sales += item.quantity;
@@ -167,7 +180,7 @@ export default function AdminAnalytics() {
                 Analytics Dashboard
               </h1>
               <p className="text-gray-500 mt-1">
-                Track your store's performance and insights
+                Track your store&apos;s performance and insights
               </p>
             </div>
             <div className="flex items-center gap-3">

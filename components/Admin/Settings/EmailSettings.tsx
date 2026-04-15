@@ -80,7 +80,7 @@ export default function EmailSettings() {
   const [isDirty, setIsDirty] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSmtpChange = (field: string, value: any) => {
+  const handleSmtpChange = (field: string, value: string | number) => {
     setSmtpSettings({ ...smtpSettings, [field]: value });
     setIsDirty(true);
   };
@@ -96,7 +96,8 @@ export default function EmailSettings() {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       toast.success("Test email sent successfully!");
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to send test email:", err);
       toast.error("Failed to send test email");
     } finally {
       setIsTesting(false);
@@ -109,7 +110,8 @@ export default function EmailSettings() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Email settings saved successfully!");
       setIsDirty(false);
-    } catch (error) {
+    } catch (err) {
+      console.error("Failed to save settings:", err);
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);

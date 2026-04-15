@@ -30,10 +30,30 @@ import UpdateCategory from "./UpdateCategory";
 import UpdateOtherInformation from "./UpdateOtherInformation";
 import UpdatePricing from "./UpdatePricing";
 
+// Define form data type
+type FormDataType = {
+  productName: string;
+  description: string;
+  price: string;
+  discount: string;
+  discountType: string;
+  target: string;
+  weight: string;
+  shippingCost: string;
+  sizes: string[];
+};
+
+// Define category type
+type Category = {
+  id: number;
+  name: string;
+  [key: string]: unknown;
+};
+
 // Create UpdateForm's own context
 interface UpdateFormContextType {
-  formData: any;
-  updateFormData: (field: string, value: any) => void;
+  formData: FormDataType;
+  updateFormData: (field: keyof FormDataType, value: string | string[]) => void;
   colours: string[];
   setColours: (colours: string[]) => void;
   images: File[];
@@ -99,7 +119,7 @@ export default function UpdateForm({ product }: UpdateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     productName: product?.name || "",
     description: product?.description || "",
     price: product?.price?.toString() || "",
@@ -115,11 +135,14 @@ export default function UpdateForm({ product }: UpdateFormProps) {
   const [selectedTarget, setSelectedTarget] = useState(product?.target || "");
   const [productType, setProductType] = useState(product?.productType || "");
   const [customType, setCustomType] = useState("");
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const updateFormData = useCallback((field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const updateFormData = useCallback(
+    (field: keyof FormDataType, value: string | string[]) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   const finalProductType = productType === "Custom" ? customType : productType;
 
@@ -138,7 +161,7 @@ export default function UpdateForm({ product }: UpdateFormProps) {
         setCategories(d.categories || []);
         if (product && d.categories) {
           const defaultCat = d.categories.find(
-            (c: any) => c.id === product.categoryId,
+            (c: Category) => c.id === product.categoryId,
           );
           if (defaultCat) {
             setSelectedCategory(defaultCat.name);
@@ -205,7 +228,7 @@ export default function UpdateForm({ product }: UpdateFormProps) {
   ]);
 
   const handleUpdate = useCallback(
-    async (e?: React.FormEvent<HTMLFormElement>) => {
+    async (e?: React.FormEvent<HTMLDivElement>) => {
       // CRITICAL: Prevent any default form submission
       if (e) {
         e.preventDefault();
@@ -283,9 +306,11 @@ export default function UpdateForm({ product }: UpdateFormProps) {
             toast.success("Product updated successfully!");
             router.push("/admin/view-products");
           }
-        } catch (error) {
-          setError((error as Error).message);
-          toast.error((error as Error).message);
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error ? err.message : "An error occurred";
+          setError(errorMessage);
+          toast.error(errorMessage);
           // Reset submission state on error so user can retry
           setHasSubmitted(false);
         } finally {
@@ -307,6 +332,8 @@ export default function UpdateForm({ product }: UpdateFormProps) {
       finalProductType,
       selectedCategory,
       selectedTarget,
+      productType,
+      customType,
     ],
   );
 
