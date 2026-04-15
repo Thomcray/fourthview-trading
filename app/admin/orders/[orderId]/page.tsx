@@ -1,4 +1,3 @@
-// app/admin/orders/[orderId]/page.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -6,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Package, User, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useCurrency } from "@/components/CurrencyContext";
 
 type OrderItem = {
   id: number;
@@ -40,6 +40,8 @@ export default function OrderDetailPage() {
       return res.json();
     },
   });
+
+  const { formatPrice, convertPrice, currency } = useCurrency();
 
   if (isLoading) {
     return (
@@ -140,7 +142,7 @@ export default function OrderDetailPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {order.items.map((item: OrderItem) => (
+                    {order.items.map((item) => (
                       <tr key={item.id}>
                         <td className="px-4 py-3 text-sm text-gray-700">
                           {item.itemName}
@@ -149,10 +151,13 @@ export default function OrderDetailPage() {
                           {item.quantity}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          ₦{item.price?.toLocaleString()}
+                          ₦{convertPrice(item.price).toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-800">
-                          ₦{(item.price * item.quantity).toLocaleString()}
+                          ₦
+                          {(
+                            convertPrice(item.price) * item.quantity
+                          ).toLocaleString()}
                         </td>
                       </tr>
                     ))}

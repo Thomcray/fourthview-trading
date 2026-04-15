@@ -28,6 +28,12 @@ export const fetchOrders = async () => {
   return res.json();
 };
 
+export const fetchOrderById = async (id: string) => {
+  const res = await fetch(`/api/orders/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch order");
+  return res.json();
+};
+
 export const fetchCart = async () => {
   const res = await fetch("/api/cart");
   if (!res.ok) throw new Error("Failed to fetch cart");

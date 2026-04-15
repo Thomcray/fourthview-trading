@@ -46,9 +46,9 @@ export default function ProductPrice({
           <span className="text-md font-bold text-red-600">
             {formatPrice(discountedYuanPrice)}
           </span>
-          <span className="text-xs text-gray-400 line-through">
+          {/* <span className="text-xs text-gray-400 line-through">
             {formatPrice(yuanPrice)}
-          </span>
+          </span> */}
         </span>
         {showOriginal && currency.code !== "CNY" && (
           <span className="text-xs text-gray-400">

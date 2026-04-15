@@ -2,16 +2,11 @@
 "use client";
 
 import Link from "next/link";
-import Category from "./Category";
 import ProductForm from "./ProductForm";
 import { Button } from "@/components/ui/button";
-import { Package, Eye } from "lucide-react";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { Eye } from "lucide-react";
 
 export default function AddProduct() {
-  const [productType, setProductType] = useState<string>("");
-
   return (
     <div className="w-full max-w-5xl mx-auto">
       <div className="bg-white rounded-xl overflow-hidden">
@@ -27,13 +22,8 @@ export default function AddProduct() {
           </div>
         </div>
 
-        {/* Product Form */}
-        <ProductForm>
-          {(productType: string) => {
-            setProductType(productType);
-            return <Category productType={productType} />;
-          }}
-        </ProductForm>
+        {/* Product Form  */}
+        <ProductForm />
       </div>
     </div>
   );

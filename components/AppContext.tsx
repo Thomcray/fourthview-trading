@@ -17,15 +17,18 @@ type Products = {
   description: string;
   categoryId: number;
   price: number;
+  compareAtPrice?: number; // Original price before discount (MSRP)
   discount?: number;
   discountType?: string;
-  target: string;
+  target: string | null;
   imageUrl: string[];
   productType: string;
   colours: string[];
   sizes: string[];
   weight: string;
   shippingCost: number;
+  // Derived at load time — never stored in DB
+  slug: string;
 };
 
 type Categories = {
@@ -37,7 +40,7 @@ type Categories = {
 
 type ChildrenProp = {
   children: React.ReactNode;
-  products: Products[];
+  products: Omit<Products, "slug">[];
   categories: Categories[];
 };
 
@@ -70,13 +73,26 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Derives a URL-safe slug for every product once at load time.
+// Fashion items  → target:       "Men"              → "men"
+// Other items    → productType:  "Washing Machine"  → "washing-machine"
+function deriveSlug(product: Omit<Products, "slug">): string {
+  const source = product.target ?? product.productType;
+  return source.toLowerCase().replace(/\s+/g, "-");
+}
+
+function normaliseProducts(raw: Omit<Products, "slug">[]): Products[] {
+  return raw.map((p) => ({ ...p, slug: deriveSlug(p) }));
+}
+
 function AppProvider({ children, products, categories }: ChildrenProp) {
   const [cart, setCart] = useState<Cart[]>([]);
-  const [allProducts, setAllProducts] = useState<Products[]>(products);
+  const [allProducts, setAllProducts] = useState<Products[]>(
+    normaliseProducts(products),
+  );
   const [allCategories, setAllCategories] = useState<Categories[]>(categories);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get cart and fetch items from cart at page load
   useEffect(() => {
     const fetchCart = async () => {
       try {
@@ -111,26 +127,18 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         return [...prev, { ...item, quantity: 1 }];
       });
 
-      // Save to DB
       const response = await fetch("/api/cart/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to add item");
-      }
+      if (!response.ok) throw new Error("Failed to add item");
 
       const data = await response.json();
-      console.log("API response:", data);
-
-      // Update with server response in case of any server-side changes
       setCart(data.cart);
     } catch (error) {
       console.error("Failed to add to cart: ", error);
-      // Revert to optimistic update on error
-      // Might want to fetch cart again here
     }
   };
 
@@ -146,9 +154,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         body: JSON.stringify({ itemName, size }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update size");
-      }
+      if (!response.ok) throw new Error("Failed to update size");
     } catch (error) {
       console.error("Failed to update size: ", error);
     }
@@ -156,18 +162,16 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
 
   const removeFromCart = async (itemName: string) => {
     try {
+      const previousCart = [...cart];
+      setCart((prev) => prev.filter((i) => i.itemName !== itemName));
+
       const response = await fetch("/api/cart/remove", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemName }),
       });
 
-      // Optimistic update
-      const previousCart = [...cart];
-      setCart((prev) => prev.filter((i) => i.itemName !== itemName));
-
       if (!response.ok) {
-        // Revert on error
         setCart(previousCart);
         throw new Error("Failed to remove item");
       }
@@ -178,7 +182,6 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
 
   const updateQuantity = async (itemName: string, quantity: number) => {
     try {
-      // Optimistic update
       setCart((prev) =>
         prev.map((i) => (i.itemName === itemName ? { ...i, quantity } : i)),
       );
@@ -189,9 +192,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         body: JSON.stringify({ itemName, quantity }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update quantity");
-      }
+      if (!response.ok) throw new Error("Failed to update quantity");
     } catch (error) {
       console.error("Failed to update quantity: ", error);
     }
@@ -205,9 +206,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to clear cart");
-      }
+      if (!response.ok) throw new Error("Failed to clear cart");
     } catch (error) {
       console.error("Failed to clear cart: ", error);
     }
@@ -245,4 +244,4 @@ function useApp() {
 }
 
 export { AppProvider, useApp };
-export type { AppContextType };
+export type { AppContextType, Products, Categories };

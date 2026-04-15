@@ -1,19 +1,20 @@
 "use client";
 
 import Selection from "@/components/Selection";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useCurrency } from "@/components/CurrencyContext";
 
 type OtherInformationProps = {
-  productType?: string;
+  productType: string;
+  isCustom?: boolean;
   productWeight?: string;
   shippingCost?: number;
   selectedSizes?: string[];
   isUpdatePage?: boolean;
-  onTypeChange?: (type: string) => void;
   children: React.ReactNode;
 };
 
-const SIZE_OPTIONS = {
+const SIZE_OPTIONS: Record<string, string[]> = {
   Shirt: [
     "XS (EU 42)",
     "S (EU 44-46)",
@@ -21,7 +22,6 @@ const SIZE_OPTIONS = {
     "L (EU 52-54)",
     "XL (EU 56-58)",
     "XXL (EU 60-62)",
-    "XXXL (EU 64-66)",
   ],
   Trouser: [
     "28 (EU 38)",
@@ -30,8 +30,6 @@ const SIZE_OPTIONS = {
     "34 (EU 44)",
     "36 (EU 46)",
     "38 (EU 48)",
-    "40 (EU 50)",
-    "42 (EU 52)",
   ],
   Shoes: [
     "6 (EU 39)",
@@ -40,8 +38,6 @@ const SIZE_OPTIONS = {
     "9 (EU 42)",
     "10 (EU 43)",
     "11 (EU 44)",
-    "12 (EU 45)",
-    "13 (EU 46)",
   ],
   Jewelry: ["One Size", "Adjustable", "Small", "Medium", "Large"],
   Furniture: [
@@ -52,24 +48,19 @@ const SIZE_OPTIONS = {
     "1 Seater",
     "2 Seater",
     "3 Seater",
-    "L-Shape",
-    "Small (60x60cm)",
-    "Medium (80x80cm)",
-    "Large (100x100cm)",
-    "Extra Large (120x120cm)",
   ],
 };
 
-const PRODUCT_TYPES = ["Shirt", "Trouser", "Shoes", "Jewelry", "Furniture"];
-
 const WEIGHT_OPTIONS = [
-  { value: "0-0.5", label: "0 - 0.5 kg (Light items)" },
-  { value: "0.5-1", label: "0.5 - 1 kg" },
-  { value: "1-2", label: "1 - 2 kg" },
-  { value: "2-5", label: "2 - 5 kg" },
-  { value: "5-10", label: "5 - 10 kg" },
-  { value: "10-20", label: "10 - 20 kg (Heavy items)" },
-  { value: "20+", label: "20+ kg (Extra heavy)" },
+  { value: "0.1", label: "0.1 kg (Very light)" },
+  { value: "0.25", label: "0.25 kg (Light)" },
+  { value: "0.5", label: "0.5 kg" },
+  { value: "1", label: "1 kg" },
+  { value: "2", label: "2 kg" },
+  { value: "5", label: "5 kg" },
+  { value: "10", label: "10 kg" },
+  { value: "20", label: "20 kg (Heavy)" },
+  { value: "50", label: "50 kg (Extra heavy)" },
 ];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -90,196 +81,246 @@ function CurrentValueBadge({ label, value }: { label: string; value: string }) {
 
 export default function OtherInformation({
   productType,
+  isCustom,
   productWeight,
   shippingCost,
   selectedSizes = [],
   isUpdatePage = false,
-  onTypeChange,
   children,
 }: OtherInformationProps) {
-  const [selectedType, setSelectedType] = useState(productType || "");
+  const { formatPrice } = useCurrency();
+
   const [selectedWeight, setSelectedWeight] = useState(productWeight || "");
-  const [cost, setCost] = useState(shippingCost?.toString() || "");
+  const [calculatedCost, setCalculatedCost] = useState<number | null>(
+    shippingCost || null,
+  );
+  const [ratePerKg, setRatePerKg] = useState<number | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
-  const availableSizes =
-    selectedType && SIZE_OPTIONS[selectedType as keyof typeof SIZE_OPTIONS]
-      ? SIZE_OPTIONS[selectedType as keyof typeof SIZE_OPTIONS]
-      : [];
+  // Custom specs state (for custom product types)
+  const [customSpecs, setCustomSpecs] = useState<string[]>([]);
+  const [newSpec, setNewSpec] = useState("");
 
-  const isFurniture = selectedType === "Furniture";
+  const predefinedSizes = SIZE_OPTIONS[productType] || [];
+  const hasPredefinedSizes = predefinedSizes.length > 0;
+
+  // Auto-calculate shipping when weight changes
+  useEffect(() => {
+    if (!selectedWeight) {
+      setCalculatedCost(null);
+      return;
+    }
+
+    const calculateShipping = async () => {
+      setIsCalculating(true);
+      try {
+        const res = await fetch("/api/calculate-shipping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ weight: selectedWeight }),
+        });
+
+        if (!res.ok) throw new Error("Calculation failed");
+
+        const data = await res.json();
+        setCalculatedCost(data.shippingCost);
+        setRatePerKg(data.rate_per_kg);
+      } catch (err) {
+        console.error("Failed to calculate shipping:", err);
+      } finally {
+        setIsCalculating(false);
+      }
+    };
+
+    calculateShipping();
+  }, [selectedWeight]);
+
+  const addCustomSpec = () => {
+    if (newSpec.trim() && !customSpecs.includes(newSpec.trim())) {
+      setCustomSpecs([...customSpecs, newSpec.trim()]);
+      setNewSpec("");
+    }
+  };
+
+  const removeSpec = (idx: number) => {
+    setCustomSpecs(customSpecs.filter((_, i) => i !== idx));
+  };
 
   return (
-    <div className="w-full flex flex-col gap-6 px-4">
+    <div className="w-full flex flex-col gap-6">
+      {/* Header */}
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-medium text-slate-800">
-          Other Information
+          Product Details
         </h2>
         <p className="text-xs text-slate-400">
-          Specify product type, sizing, weight and shipping details
+          Configure sizing, weight and shipping for {productType}
         </p>
       </div>
 
-      <div className="w-full flex flex-col gap-5">
-        {/* Product Type */}
+      {/* Sizes Section */}
+      {hasPredefinedSizes ? (
         <div className="flex flex-col gap-1.5">
-          <SectionLabel>Product Type</SectionLabel>
-          <Selection
-            defaultValue={productType || "Select Type"}
-            name="type"
-            width="w-96 max-sm:w-full"
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              setSelectedType(e.target.value);
-              onTypeChange?.(e.target.value);
-            }}
-            required={false}
-          >
-            {PRODUCT_TYPES.map((item) => (
-              <option value={item} key={item}>
-                {item}
-              </option>
-            ))}
-          </Selection>
-          <HintText>
-            Determines available size options for this product
-          </HintText>
-        </div>
-
-        {/* Furniture style */}
-        {isFurniture && (
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Furniture Style</SectionLabel>
-            <Selection
-              defaultValue="Select Style"
-              name="target"
-              width="w-96 max-sm:w-full"
-              required={false}
-            >
-              {["Modern Style", "Antique", "Chinese Style"].map((style) => (
-                <option value={style} key={style}>
-                  {style}
-                </option>
+          <SectionLabel>Available Sizes</SectionLabel>
+          {isUpdatePage && selectedSizes.length > 0 && (
+            <CurrentValueBadge
+              label="Current sizes"
+              value={selectedSizes.join(", ")}
+            />
+          )}
+          <div className="w-96 max-sm:w-full p-4 border rounded-lg bg-white">
+            <div className="grid gap-1 grid-cols-3">
+              {predefinedSizes.map((size) => (
+                <label
+                  key={size}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-md"
+                >
+                  <input
+                    type="checkbox"
+                    name="sizes"
+                    value={size}
+                    defaultChecked={
+                      isUpdatePage && selectedSizes.includes(size)
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-slate-600">{size}</span>
+                </label>
               ))}
-            </Selection>
-            <HintText>
-              Determines which section this product appears in on the furniture
-              page
-            </HintText>
+            </div>
           </div>
-        )}
-
-        {/* Sizes */}
-        {availableSizes.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>
-              {isFurniture
-                ? "Available Dimensions / Configurations"
-                : "Available Sizes"}
-            </SectionLabel>
-
-            {isUpdatePage && selectedSizes?.length > 0 && (
-              <CurrentValueBadge
-                label="Current sizes"
-                value={selectedSizes.join(", ")}
-              />
-            )}
-
-            <div className="w-96 max-sm:w-full p-4 border rounded-lg bg-white">
-              <div
-                className={`grid gap-1 ${isFurniture ? "grid-cols-2" : "grid-cols-3"}`}
-              >
-                {availableSizes.map((size) => (
-                  <label
-                    key={size}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors"
+          <HintText>Select all sizes available for this product</HintText>
+        </div>
+      ) : isCustom ? (
+        <div className="flex flex-col gap-3">
+          <SectionLabel>Custom Specifications</SectionLabel>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newSpec}
+              onChange={(e) => setNewSpec(e.target.value)}
+              placeholder="e.g., 8kg capacity, 1400 RPM..."
+              className="flex-1 px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCustomSpec();
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={addCustomSpec}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+            >
+              Add
+            </button>
+          </div>
+          {customSpecs.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {customSpecs.map((spec, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-2"
+                >
+                  {spec}
+                  <button
+                    type="button"
+                    onClick={() => removeSpec(idx)}
+                    className="text-blue-600 hover:text-blue-800 font-bold"
                   >
-                    <input
-                      type="checkbox"
-                      name="sizes"
-                      value={size}
-                      defaultChecked={
-                        isUpdatePage && selectedSizes?.includes(size)
-                      }
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="text-xs text-slate-600">{size}</span>
-                  </label>
-                ))}
-              </div>
+                    ×
+                  </button>
+                </span>
+              ))}
             </div>
-            <HintText>
-              {isFurniture
-                ? "Select all dimensions or configurations available for this product"
-                : "Select all sizes available for this product"}
-            </HintText>
-          </div>
-        )}
-
-        {/* Weight */}
-        <div className="flex flex-col gap-1.5">
-          <SectionLabel>Weight Range</SectionLabel>
-          {isUpdatePage &&
-            selectedWeight &&
-            selectedWeight !== "Select Weight" && (
-              <CurrentValueBadge
-                label="Current weight"
-                value={`${selectedWeight} kg`}
-              />
-            )}
-          <Selection
-            defaultValue={productWeight || "Select Weight"}
-            name="weight"
-            width="w-96 max-sm:w-full"
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setSelectedWeight(e.target.value)
-            }
-            required={false}
-          >
-            {WEIGHT_OPTIONS.map((option) => (
-              <option value={option.value} key={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Selection>
-          <HintText>Used to calculate shipping cost at checkout</HintText>
+          )}
+          {customSpecs.map((spec, idx) => (
+            <input key={idx} type="hidden" name="sizes" value={spec} />
+          ))}
         </div>
-
-        {/* Shipping cost */}
-        {selectedWeight && selectedWeight !== "Select Weight" && (
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Shipping Cost ({selectedWeight} kg)</SectionLabel>
-            {isUpdatePage && cost && (
-              <CurrentValueBadge
-                label="Current shipping cost"
-                value={`¥${cost}`}
-              />
-            )}
-            <div className="flex items-center rounded-lg border bg-white shadow-sm h-11 w-96 max-sm:w-full overflow-hidden">
-              <span className="px-3 text-slate-500 font-medium border-r h-full flex items-center bg-slate-50">
-                ¥
-              </span>
-              <input
-                type="number"
-                name="shippingCost"
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                className="flex-1 px-3 py-2 border-0 focus:outline-none text-sm text-slate-800"
-              />
-            </div>
-            <HintText>This cost will be added to the cart at checkout</HintText>
-          </div>
-        )}
-
-        {/* Colours */}
-        <div className="flex flex-col gap-1.5">
-          <SectionLabel>Available Colours</SectionLabel>
-          {children}
-          <HintText>
-            Each colour should correspond to a product image of that colour
-          </HintText>
+      ) : (
+        <div className="p-4 bg-gray-50 rounded-lg border">
+          <p className="text-sm text-gray-600">
+            No specific size options for {productType}
+          </p>
         </div>
+      )}
+
+      {/* Weight Selection */}
+      <div className="flex flex-col gap-1.5">
+        <SectionLabel>Product Weight (KG)</SectionLabel>
+        {isUpdatePage && selectedWeight && (
+          <CurrentValueBadge
+            label="Current weight"
+            value={`${selectedWeight} kg`}
+          />
+        )}
+        <Selection
+          value={selectedWeight}
+          onChange={(e) => setSelectedWeight(e.target.value)}
+          name="weight"
+          width="w-96 max-sm:w-full"
+          placeholder="Select Weight Range"
+        >
+          {WEIGHT_OPTIONS.map((opt) => (
+            <option value={opt.value} key={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </Selection>
+        <HintText>
+          {ratePerKg
+            ? `Rate: ¥${ratePerKg}/kg from admin settings`
+            : "Select weight to calculate shipping"}
+        </HintText>
+      </div>
+
+      {/* Auto-Calculated Shipping Cost */}
+      {selectedWeight && calculatedCost !== null && (
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Calculated Shipping Cost</SectionLabel>
+          {isUpdatePage && shippingCost && (
+            <CurrentValueBadge
+              label="Previous shipping"
+              value={`¥${shippingCost}`}
+            />
+          )}
+
+          {/* Hidden input: saves CNY to database */}
+          <input type="hidden" name="shippingCost" value={calculatedCost} />
+
+          {/* Display: converted to user's currency */}
+          <div className="flex items-center rounded-lg border bg-green-50 border-green-200 shadow-sm h-11 w-96 max-sm:w-full overflow-hidden">
+            <span className="px-3 text-green-600 font-medium border-r border-green-200 h-full flex items-center bg-green-100">
+              {formatPrice(calculatedCost).charAt(0)}
+            </span>
+            <span className="flex-1 px-3 py-2 text-sm text-slate-800 font-medium">
+              {isCalculating ? "..." : formatPrice(calculatedCost).slice(1)}
+            </span>
+          </div>
+
+          <div className="text-xs text-slate-500 space-y-1">
+            <p>Stored: ¥{calculatedCost} (CNY)</p>
+            <p className="text-green-600">
+              Calculation: {selectedWeight} kg × ¥{ratePerKg}/kg = ¥
+              {calculatedCost}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {!selectedWeight && (
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
+          Select a weight to calculate shipping cost
+        </div>
+      )}
+
+      {/* Colours */}
+      <div className="flex flex-col gap-1.5">
+        <SectionLabel>Available Colours</SectionLabel>
+        {children}
+        <HintText>Each colour should correspond to a product image</HintText>
       </div>
     </div>
   );

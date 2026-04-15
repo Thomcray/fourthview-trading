@@ -1,3 +1,4 @@
+// components/Admin/Tabs/OrdersTab.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -13,6 +14,11 @@ import {
   Eye,
   ShoppingBag,
   RefreshCw,
+  ChevronDown,
+  Check,
+  X,
+  Truck,
+  Package,
 } from "lucide-react";
 import { RefundModal } from "../Modals/RefundModal";
 
@@ -37,12 +43,45 @@ type Order = {
   items: OrderItem[] | number;
 };
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700" },
-  processing: { label: "Processing", color: "bg-blue-100 text-blue-700" },
-  shipped: { label: "Shipped", color: "bg-purple-100 text-purple-700" },
-  delivered: { label: "Delivered", color: "bg-green-100 text-green-700" },
-  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700" },
+const statusConfig: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    icon: React.ReactNode;
+    nextStatuses: string[];
+  }
+> = {
+  pending: {
+    label: "Pending",
+    color: "bg-yellow-100 text-yellow-700",
+    icon: <Package className="w-3 h-3" />,
+    nextStatuses: ["processing", "cancelled"],
+  },
+  processing: {
+    label: "Processing",
+    color: "bg-blue-100 text-blue-700",
+    icon: <RefreshCw className="w-3 h-3" />,
+    nextStatuses: ["shipped", "cancelled"],
+  },
+  shipped: {
+    label: "Shipped",
+    color: "bg-purple-100 text-purple-700",
+    icon: <Truck className="w-3 h-3" />,
+    nextStatuses: ["delivered"],
+  },
+  delivered: {
+    label: "Delivered",
+    color: "bg-green-100 text-green-700",
+    icon: <Check className="w-3 h-3" />,
+    nextStatuses: [],
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-700",
+    icon: <X className="w-3 h-3" />,
+    nextStatuses: [],
+  },
 };
 
 const orderHeaders = [
@@ -53,27 +92,33 @@ const orderHeaders = [
   "Total",
   "Date",
   "Status",
-  "Actions", // Only one Actions column
+  "Actions",
 ];
 
 interface OrdersTabProps {
   orders: Order[];
   isLoading?: boolean;
   onExport: () => void;
+  onStatusChange: (id: number, status: string, notify?: boolean) => void;
+  isUpdating: boolean;
 }
 
 export default function OrdersTab({
   orders,
   isLoading,
   onExport,
+  onStatusChange,
+  isUpdating,
 }: OrdersTabProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState<number | null>(
+    null,
+  );
 
-  // Helper function to get item count safely
   const getItemCount = (order: Order): number => {
     if (typeof order.items === "number") {
       return order.items;
@@ -84,7 +129,6 @@ export default function OrdersTab({
     return 0;
   };
 
-  // Function to check if order is eligible for refund
   const isEligibleForRefund = (order: Order): boolean => {
     const eligibleStatuses = ["delivered", "shipped", "processing"];
     return eligibleStatuses.includes(order.status);
@@ -108,7 +152,9 @@ export default function OrdersTab({
     total: orders.length,
     pending: orders.filter((o) => o.status === "pending").length,
     processing: orders.filter((o) => o.status === "processing").length,
+    shipped: orders.filter((o) => o.status === "shipped").length,
     delivered: orders.filter((o) => o.status === "delivered").length,
+    cancelled: orders.filter((o) => o.status === "cancelled").length,
   };
 
   const getStatusBadge = (status: string) => {
@@ -117,16 +163,26 @@ export default function OrdersTab({
       <span
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}
       >
+        {config.icon}
         {config.label}
       </span>
     );
   };
 
+  const handleStatusUpdate = (
+    orderId: number,
+    newStatus: string,
+    notify: boolean = true,
+  ) => {
+    onStatusChange(orderId, newStatus, notify);
+    setStatusDropdownOpen(null);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
               className="h-24 bg-gray-200 rounded-xl animate-pulse"
@@ -143,7 +199,7 @@ export default function OrdersTab({
     <>
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <p className="text-sm text-gray-500">Total Orders</p>
             <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
@@ -158,6 +214,12 @@ export default function OrdersTab({
             <p className="text-sm text-gray-500">Processing</p>
             <p className="text-2xl font-bold text-blue-600">
               {stats.processing}
+            </p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-500">Shipped</p>
+            <p className="text-2xl font-bold text-purple-600">
+              {stats.shipped}
             </p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
@@ -257,7 +319,64 @@ export default function OrdersTab({
                         day: "numeric",
                       })}
                     </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      {/* Status Dropdown */}
+                      <div className="relative">
+                        <button
+                          onClick={() =>
+                            setStatusDropdownOpen(
+                              statusDropdownOpen === order.id ? null : order.id,
+                            )
+                          }
+                          disabled={isUpdating}
+                          className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50"
+                        >
+                          {getStatusBadge(order.status)}
+                          {statusConfig[order.status]?.nextStatuses.length >
+                            0 && (
+                            <ChevronDown className="w-3 h-3 text-gray-400" />
+                          )}
+                        </button>
+
+                        {statusDropdownOpen === order.id && (
+                          <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
+                            {statusConfig[order.status]?.nextStatuses.map(
+                              (nextStatus) => (
+                                <button
+                                  key={nextStatus}
+                                  onClick={() =>
+                                    handleStatusUpdate(
+                                      order.id,
+                                      nextStatus,
+                                      true,
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <span
+                                    className={`w-2 h-2 rounded-full ${statusConfig[nextStatus].color.split(" ")[0].replace("bg-", "bg-").replace("100", "500")}`}
+                                  />
+                                  Mark as {statusConfig[nextStatus].label}
+                                </button>
+                              ),
+                            )}
+                            <div className="border-t border-gray-100 my-1" />
+                            <button
+                              onClick={() =>
+                                handleStatusUpdate(
+                                  order.id,
+                                  order.status,
+                                  false,
+                                )
+                              }
+                              className="w-full px-3 py-2 text-left text-xs text-gray-500 hover:bg-gray-50"
+                            >
+                              Update without notifying
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button

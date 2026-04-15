@@ -1,3 +1,4 @@
+// app/admin/orders/page.tsx
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -39,6 +40,7 @@ type Order = {
   status: string;
   customerName: string;
   customerEmail: string;
+  customerId?: number;
   items: number;
 };
 
@@ -73,7 +75,8 @@ export default function OrdersPage() {
   const bookings: Booking[] = bookingsData?.bookings ?? [];
   const orders: Order[] = ordersData?.orders ?? [];
 
-  const { mutate: updateStatus } = useMutation({
+  // Mutation for updating BOOKING/REQUEST status
+  const { mutate: updateBookingStatus } = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
       const res = await fetch("/api/bookings/update-status", {
         method: "PATCH",
@@ -107,8 +110,49 @@ export default function OrdersPage() {
     onSettled: () => setUpdatingId(null),
   });
 
-  const handleStatusChange = (id: number, status: string) =>
-    updateStatus({ id, status });
+  // NEW: Mutation for updating ORDER status
+  const { mutate: updateOrderStatus } = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+      notify = true,
+    }: {
+      id: number;
+      status: string;
+      notify?: boolean;
+    }) => {
+      const res = await fetch("/api/orders/update-status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status, notify }),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to update order status");
+      return data;
+    },
+    onMutate: ({ id }) => setUpdatingId(id),
+    onSuccess: (data, { status }) => {
+      // Invalidate and refetch orders
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders });
+      toast.success(
+        `Order marked as ${status.toUpperCase()}! ${data.notified ? "Customer notified via email." : ""}`,
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update order status.");
+    },
+    onSettled: () => setUpdatingId(null),
+  });
+
+  const handleBookingStatusChange = (id: number, status: string) =>
+    updateBookingStatus({ id, status });
+
+  const handleOrderStatusChange = (
+    id: number,
+    status: string,
+    notify: boolean = true,
+  ) => updateOrderStatus({ id, status, notify });
 
   const handleExportOrders = () => {
     const csv = [
@@ -186,7 +230,6 @@ export default function OrdersPage() {
     toast.success("Requests export started!");
   };
 
-  // Updated to include refunds
   const isLoading =
     (activeTab === "orders" && ordersLoading) ||
     (activeTab === "requests" && bookingsLoading) ||
@@ -267,6 +310,8 @@ export default function OrdersPage() {
               orders={orders}
               isLoading={ordersLoading}
               onExport={handleExportOrders}
+              onStatusChange={handleOrderStatusChange}
+              isUpdating={updatingId !== null}
             />
           </TabsContent>
 
@@ -275,7 +320,7 @@ export default function OrdersPage() {
               bookings={bookings}
               isLoading={bookingsLoading}
               onExport={handleExportRequests}
-              onStatusChange={handleStatusChange}
+              onStatusChange={handleBookingStatusChange}
               isUpdating={updatingId !== null}
             />
           </TabsContent>

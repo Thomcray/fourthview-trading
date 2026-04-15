@@ -306,8 +306,8 @@ export default function CartItems() {
                       )}
 
                       {/* Price and Quantity */}
-                      <div className="flex items-center justify-between mt-3">
-                        <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 gap-3">
+                        <div className="shrink-0">
                           {itemDiscount > 0 ? (
                             <div className="flex flex-col">
                               <span className="text-xs text-gray-400 line-through">
@@ -327,7 +327,7 @@ export default function CartItems() {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-start sm:self-auto">
                           <button
                             onClick={() =>
                               handleQuantityUpdate(
@@ -336,11 +336,11 @@ export default function CartItems() {
                               )
                             }
                             disabled={updatingItem === item.itemName}
-                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50"
+                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 shrink-0"
                           >
                             <MinusIcon className="w-3.5 h-3.5 text-gray-600" />
                           </button>
-                          <span className="w-10 text-center font-medium">
+                          <span className="w-10 text-center font-medium shrink-0">
                             {updatingItem === item.itemName ? (
                               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
                             ) : (
@@ -355,7 +355,7 @@ export default function CartItems() {
                               )
                             }
                             disabled={updatingItem === item.itemName}
-                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50"
+                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 shrink-0"
                           >
                             <PlusIcon className="w-3.5 h-3.5 text-gray-600" />
                           </button>

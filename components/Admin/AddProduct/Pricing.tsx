@@ -1,23 +1,11 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
-import React from "react";
+import { useFormData } from "./ProductForm";
 
-type ProductType = {
-  product?: {
-    id: number;
-    name: string;
-    description: string;
-    productType: string;
-    colours: string[];
-    price: number;
-    discount: number;
-    discountType: string;
-    categoryId: number;
-    target: string;
-    imageUrl: string[];
-  } | null;
-};
+export default function Pricing() {
+  const { formData, updateFormData } = useFormData();
 
-export default function Pricing({ product }: ProductType) {
   return (
     <div className="w-full flex flex-col gap-6 max-sm:px-4">
       <div className="flex flex-col gap-1">
@@ -40,7 +28,8 @@ export default function Pricing({ product }: ProductType) {
             <Input
               type="number"
               name="price"
-              defaultValue={product?.price || ""}
+              value={formData.price}
+              onChange={(e) => updateFormData("price", e.target.value)}
               placeholder="0.00"
               className="flex-1 border-0 shadow-none focus-visible:ring-0 px-3 text-slate-800"
               required
@@ -64,7 +53,8 @@ export default function Pricing({ product }: ProductType) {
               <Input
                 type="number"
                 name="discount"
-                defaultValue={product?.discount || ""}
+                value={formData.discount}
+                onChange={(e) => updateFormData("discount", e.target.value)}
                 placeholder="0"
                 min={0}
                 max={100}
@@ -82,7 +72,8 @@ export default function Pricing({ product }: ProductType) {
               <Input
                 type="text"
                 name="discountType"
-                defaultValue={product?.discountType || ""}
+                value={formData.discountType}
+                onChange={(e) => updateFormData("discountType", e.target.value)}
                 placeholder="e.g. Clearance, Sale, Promo"
                 className="flex-1 border-0 shadow-none focus-visible:ring-0 px-3 text-slate-800"
               />

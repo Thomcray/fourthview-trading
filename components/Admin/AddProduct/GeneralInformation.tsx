@@ -1,27 +1,14 @@
+// components/Admin/AddProduct/GeneralInformation.tsx (updated)
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import React from "react";
+import { useFormData } from "./ProductForm";
 
-type GeneralInformationProductType = {
-  product?: {
-    id: number;
-    name: string;
-    description: string;
-    productType: string;
-    colours: string[];
-    price: number;
-    discount: number;
-    discountType: string;
-    categoryId: number;
-    target: string;
-    imageUrl: string[];
-  } | null;
-};
+export default function GeneralInformation() {
+  const { formData, updateFormData } = useFormData();
 
-export default function GeneralInformation({
-  product,
-}: GeneralInformationProductType) {
   return (
     <div className="w-full flex flex-col gap-6 max-sm:px-4">
       <div className="flex flex-col gap-1">
@@ -40,7 +27,8 @@ export default function GeneralInformation({
           <Input
             type="text"
             name="productName"
-            defaultValue={product?.name}
+            value={formData.productName}
+            onChange={(e) => updateFormData("productName", e.target.value)}
             placeholder="e.g. Nike Air Force 1, Modern Sofa Set..."
             className="py-6 px-4 text-slate-800 placeholder:text-slate-300"
             required
@@ -55,7 +43,8 @@ export default function GeneralInformation({
           <span className="text-red-400 text-xs">* Required</span>
           <Textarea
             name="description"
-            defaultValue={product?.description}
+            value={formData.description}
+            onChange={(e) => updateFormData("description", e.target.value)}
             placeholder="Describe the product — materials, features, dimensions, use case..."
             className="min-h-32 px-4 py-3 text-slate-800 placeholder:text-slate-300 resize-y"
             required

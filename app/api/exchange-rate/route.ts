@@ -1,4 +1,3 @@
-//api / exchange - rate;
 import { NextResponse } from "next/server";
 
 let exchangeData: Record<string, number> | null = null;

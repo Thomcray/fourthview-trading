@@ -7,7 +7,7 @@ import fourthviewLogo from "@/public/fourthviewLogo.png";
 import { Dancing_Script } from "next/font/google";
 import { Bell, Settings, LogOut, User, ChevronDown, Menu } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react"; // Added useEffect, useRef
 import { useRouter } from "next/navigation";
 
 const dancingScript = Dancing_Script({
@@ -21,6 +21,10 @@ export default function AdminHeader() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  // Refs for click-outside handling
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   const notifications = [
     { id: 1, title: "New order received", time: "5 min ago", read: false },
     { id: 2, title: "Payment confirmed", time: "1 hour ago", read: false },
@@ -28,6 +32,27 @@ export default function AdminHeader() {
   ];
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
@@ -85,7 +110,7 @@ export default function AdminHeader() {
             </div>
 
             {/* Notifications */}
-            <div className="relative">
+            <div className="relative" ref={notificationRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
@@ -96,33 +121,59 @@ export default function AdminHeader() {
                 )}
               </button>
 
-              {/* Notifications Dropdown */}
+              {/* Notifications Dropdown - Mobile Responsive */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                  <div className="px-4 py-2 border-b border-gray-100">
+                <div className="fixed sm:absolute right-0 sm:right-0 left-0 sm:left-auto top-16 sm:top-auto sm:mt-2 w-full sm:w-80 bg-white sm:rounded-lg shadow-lg border border-gray-100 py-2 z-50 max-h-[calc(100vh-5rem)] sm:max-h-96">
+                  <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
                     <h3 className="font-semibold text-gray-800">
                       Notifications
                     </h3>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                          !notif.read ? "bg-blue-50" : ""
-                        }`}
+                    {/* Close button for mobile */}
+                    <button
+                      onClick={() => setShowNotifications(false)}
+                      className="sm:hidden p-1 text-gray-400 hover:text-gray-600"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        <p className="text-sm font-medium text-gray-800">
-                          {notif.title}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {notif.time}
-                        </p>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto max-h-[calc(100vh-10rem)] sm:max-h-80">
+                    {notifications.length > 0 ? (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            !notif.read ? "bg-blue-50" : ""
+                          }`}
+                        >
+                          <p className="text-sm font-medium text-gray-800">
+                            {notif.title}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {notif.time}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-8 text-center text-gray-500">
+                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No notifications yet</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                   <div className="px-4 py-2 border-t border-gray-100">
-                    <button className="text-xs text-blue-600 hover:text-blue-700">
+                    <button className="text-xs text-blue-600 hover:text-blue-700 w-full text-center">
                       View all notifications
                     </button>
                   </div>
@@ -131,7 +182,7 @@ export default function AdminHeader() {
             </div>
 
             {/* User Menu */}
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"

@@ -1,6 +1,5 @@
 import React from "react";
 import UpdateForm from "./UpdateForm";
-import Category from "./Category";
 import { getProductById } from "@/app/_lib/data-services";
 
 type Params = {
@@ -23,17 +22,26 @@ type Product = {
   weight: string;
   shippingCost: number;
 };
+
 export default async function UpdateProduct({ params }: Params) {
   const getParams = await params;
   const product: Product | null = await getProductById(
     Number(getParams.productId),
   );
 
+  if (!product) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Product not found.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full flex flex-col space-y-4 border-0">
-      <UpdateForm product={product}>
-        <Category product={product} />
-      </UpdateForm>
+    <div className="w-full">
+      <UpdateForm product={product} />
     </div>
   );
 }

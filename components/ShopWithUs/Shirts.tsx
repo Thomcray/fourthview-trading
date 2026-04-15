@@ -23,11 +23,11 @@ export default function Shirts() {
   const shopType = shopTypeMap[pathName] || "";
 
   const productShirts = products.filter(
-    (product) => product.productType.toLowerCase() === "shirts",
+    (product) => product.productType.toLowerCase() === "shirt",
   );
 
   const target = productShirts.filter((item) =>
-    item.target.toLowerCase().includes(shopType),
+    (item.target ?? "").toLowerCase().includes(shopType),
   );
 
   if (target.length === 0) return null;
@@ -115,13 +115,6 @@ export default function Shirts() {
 
                 {/* Action Buttons */}
                 <div className="px-4 pb-4 flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 font-medium rounded-lg"
-                  >
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    Buy Now
-                  </Button>
                   <AddToCart data={item} />
                 </div>
               </motion.div>

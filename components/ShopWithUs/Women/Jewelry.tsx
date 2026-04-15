@@ -27,7 +27,7 @@ export default function Jewelry() {
   );
 
   const target = productJewelry.filter((item) =>
-    item.target.toLowerCase().includes(shopType),
+    (item.target ?? "").toLowerCase().includes(shopType),
   );
 
   if (target.length === 0) return null;

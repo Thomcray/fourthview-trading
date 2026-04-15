@@ -1,4 +1,3 @@
-// components/Shoes.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -23,11 +22,12 @@ export default function Shoes() {
   const shopType = shopTypeMap[pathName] || "";
 
   const productShoes = products.filter(
-    (product) => product.productType.toLowerCase() === "shoes",
+    (product) => product.productType?.toLowerCase() === "shoes",
   );
 
+  // Handle null/undefined target with optional chaining
   const target = productShoes.filter((item) =>
-    item.target.toLowerCase().includes(shopType),
+    (item.target ?? "").toLowerCase().includes(shopType),
   );
 
   if (target.length === 0) return null;

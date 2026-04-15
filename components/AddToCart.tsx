@@ -15,8 +15,8 @@ type AddItem = {
   categoryId: number;
   price: number;
   discount?: number;
-  discountType?: string;
-  target: string;
+  discountType?: string | null;
+  target: string | null;
   imageUrl: string[];
   productType: string;
   colours: string[];

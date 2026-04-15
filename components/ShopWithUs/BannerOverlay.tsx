@@ -1,4 +1,3 @@
-// components/BannerOverlay.tsx
 "use client";
 
 import Image from "next/image";
@@ -7,63 +6,102 @@ import { useApp } from "../AppContext";
 import { motion } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 
-export default function BannerOverlay() {
-  const { allProducts: products } = useApp();
+type CategoryColors = {
+  color: string;
+  bgColor: string;
+  textColor: string;
+  buttonColor: string;
+};
 
-  const categories = [
-    {
-      name: "Men",
-      slug: "men",
-      items: products
-        .filter((item) => item.target.toLowerCase() === "men")
-        .slice(0, 4),
+function getColorsForCategory(name: string): CategoryColors {
+  const colorMap: Record<string, CategoryColors> = {
+    Men: {
       color: "from-blue-600 to-blue-700",
       bgColor: "bg-blue-50",
       textColor: "text-blue-950",
       buttonColor: "hover:bg-blue-50",
     },
-    {
-      name: "Women",
-      slug: "women",
-      items: products
-        .filter((item) => item.target.toLowerCase() === "women")
-        .slice(0, 4),
+    Women: {
       color: "from-pink-500 to-rose-600",
       bgColor: "bg-pink-50",
       textColor: "text-pink-950",
       buttonColor: "hover:bg-pink-50",
     },
-    {
-      name: "Kids",
-      slug: "kids",
-      items: products
-        .filter((item) => item.target.toLowerCase() === "kids")
-        .slice(0, 4),
+    Kids: {
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-green-50",
       textColor: "text-green-950",
       buttonColor: "hover:bg-green-50",
     },
-  ];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
+    Furniture: {
+      color: "from-amber-500 to-orange-600",
+      bgColor: "bg-amber-50",
+      textColor: "text-amber-950",
+      buttonColor: "hover:bg-amber-50",
+    },
+    "Washing Machine": {
+      color: "from-cyan-500 to-blue-600",
+      bgColor: "bg-cyan-50",
+      textColor: "text-cyan-950",
+      buttonColor: "hover:bg-cyan-50",
+    },
+    default: {
+      color: "from-gray-500 to-gray-600",
+      bgColor: "bg-gray-50",
+      textColor: "text-gray-950",
+      buttonColor: "hover:bg-gray-50",
     },
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  };
+  return colorMap[name] ?? colorMap["default"];
+}
 
-  const imageVariants = {
-    hover: { scale: 1.1, transition: { duration: 0.3 } },
-  };
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const imageVariants = {
+  hover: { scale: 1.1, transition: { duration: 0.3 } },
+};
+
+export default function BannerOverlay() {
+  const { allProducts: products } = useApp();
+
+  // Group products by slug — slug is already normalised in AppContext
+  const categoryMap = new Map<
+    string,
+    { name: string; slug: string; items: typeof products; sortOrder: number }
+  >();
+
+  products.forEach((product) => {
+    if (!categoryMap.has(product.slug)) {
+      // Derive a display name from target (fashion) or productType (other)
+      const name = product.target ?? product.productType ?? "Other";
+      const sortOrder = ["men", "women", "kids"].indexOf(product.slug);
+
+      categoryMap.set(product.slug, {
+        name,
+        slug: product.slug,
+        items: [],
+        sortOrder: sortOrder === -1 ? 100 : sortOrder,
+      });
+    }
+    categoryMap.get(product.slug)!.items.push(product);
+  });
+
+  const categories = Array.from(categoryMap.values())
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((cat) => ({
+      ...cat,
+      items: cat.items.slice(0, 4),
+      ...getColorsForCategory(cat.name),
+    }));
 
   return (
     <motion.div
@@ -75,16 +113,14 @@ export default function BannerOverlay() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
         {categories.map((category) => (
           <motion.div
-            key={category.name}
+            key={category.slug}
             variants={itemVariants}
             whileHover={{ y: -5 }}
             transition={{ duration: 0.2 }}
             className="relative group"
           >
             <Link href={`/shop/${category.slug}`} className="block h-full">
-              <div
-                className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 h-full flex flex-col`}
-              >
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 h-full flex flex-col">
                 {/* Category Header */}
                 <div
                   className={`relative ${category.bgColor} p-6 text-center border-b border-gray-100`}
@@ -108,7 +144,7 @@ export default function BannerOverlay() {
                 {category.items.length > 0 ? (
                   <div className="p-4 flex-1">
                     <div className="grid grid-cols-2 gap-3">
-                      {category.items.map((item, index) => (
+                      {category.items.map((item) => (
                         <motion.div
                           key={item.id}
                           variants={imageVariants}
@@ -123,8 +159,6 @@ export default function BannerOverlay() {
                             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/20 transition-colors duration-300" />
-
-                          {/* Quick view overlay */}
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 translate-y-full group-hover/image:translate-y-0 transition-transform duration-300">
                             <p className="text-white text-xs text-center truncate">
                               {item.name}
@@ -134,7 +168,6 @@ export default function BannerOverlay() {
                       ))}
                     </div>
 
-                    {/* View All Button */}
                     <div className="mt-4 text-center">
                       <span
                         className={`inline-flex items-center gap-2 text-sm font-medium ${category.textColor} ${category.buttonColor} px-4 py-2 rounded-lg transition-colors`}
@@ -162,7 +195,6 @@ export default function BannerOverlay() {
         ))}
       </div>
 
-      {/* Decorative Elements */}
       <div className="absolute -top-10 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-20 -z-10" />
       <div className="absolute -bottom-10 right-0 w-40 h-40 bg-pink-200 rounded-full blur-3xl opacity-20 -z-10" />
     </motion.div>

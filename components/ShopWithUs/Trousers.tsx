@@ -27,7 +27,7 @@ export default function Trousers() {
   );
 
   const target = productTrousers.filter((item) =>
-    item.target.toLowerCase().includes(shopType),
+    (item.target ?? "").toLowerCase().includes(shopType),
   );
 
   if (target.length === 0) return null;

@@ -115,7 +115,11 @@ type Product = {
 };
 
 export async function newProduct(product: Product) {
-  const { data, error } = await supabase.from("products").insert([product]);
+  const { data, error } = await supabase
+    .from("products")
+    .insert([product])
+    .select()
+    .single();
 
   if (error) {
     console.error(error);

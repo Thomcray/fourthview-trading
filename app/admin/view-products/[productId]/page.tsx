@@ -1,4 +1,4 @@
-import UpdateProduct from "@/components/Admin/AddProduct/UpdateProduct";
+import UpdateProduct from "@/components/Admin/UpdateProduct/UpdateProduct";
 import React from "react";
 
 export default function ProductView({
