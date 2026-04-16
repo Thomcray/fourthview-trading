@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 
 export async function PATCH(
   request: Request,
@@ -9,6 +9,8 @@ export async function PATCH(
     const { id } = await params;
     const { status } = await request.json();
     const refundId = parseInt(id);
+
+    const supabase = await createClient(true); // admin
 
     const { data, error } = await supabase
       .from("refunds")
@@ -46,6 +48,8 @@ export async function GET(
   try {
     const { id } = await params;
     const refundId = parseInt(id);
+
+    const supabase = await createClient(true); // admin
 
     const { data, error } = await supabase
       .from("refunds")

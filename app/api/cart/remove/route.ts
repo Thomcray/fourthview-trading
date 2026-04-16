@@ -1,6 +1,6 @@
 import { getOrCreateCart } from "@/app/_lib/actions/get-cart-action";
 import { authOptions } from "@/app/_lib/auth";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -15,6 +15,8 @@ export async function DELETE(req: Request) {
   const userId = session.user.id;
 
   const cart = await getOrCreateCart(userId);
+
+  const supabase = await createClient();
 
   await supabase
     .from("cartItems")

@@ -1,14 +1,14 @@
 "use server";
 
 import { getCategoryByName, updateCurrentProduct } from "../data-services";
-import { supabase } from "../supabase";
+import { createClient } from "../supabase-server";
 import { uploadProductImage } from "./upload-actions";
 
 export async function updateProduct(
   productId: number,
   formData: FormData,
   colours: string[],
-  images: File[]
+  images: File[],
 ) {
   const productName = formData.get("productName") as string;
   const description = formData.get("description") as string;
@@ -42,6 +42,8 @@ export async function updateProduct(
     if (fileURl) uploadedImageUrls.push(fileURl);
   }
 
+  const supabase = await createClient(true); // admin
+
   //   fetch current product images from db and merge with the new image(s)
   const { data: productData, error: fetchError } = await supabase
     .from("products")
@@ -72,7 +74,7 @@ export async function updateProduct(
         target,
         imageUrl: mergedImages,
       },
-      productId
+      productId,
     );
   } catch {
     throw new Error("Could not update product");
@@ -81,8 +83,10 @@ export async function updateProduct(
 
 export async function deleteExistingImage(
   imageUrl: string,
-  productId?: number
+  productId?: number,
 ) {
+  const supabase = await createClient(true); // admin
+
   try {
     const partPath = imageUrl.split("/");
     const fileName = partPath[partPath.length - 1].split("?")[0]; // remove query params | token;
@@ -108,7 +112,7 @@ export async function deleteExistingImage(
 
     // Remove the image Url from the product's imageUrl array
     const updatedImageUrls = productData.imageUrl.filter(
-      (url: string) => url !== imageUrl
+      (url: string) => url !== imageUrl,
     );
 
     // Update the product record with the new imageUrl array
@@ -119,7 +123,7 @@ export async function deleteExistingImage(
 
     if (updateError) {
       throw new Error(
-        "Could not update product images: " + updateError.message
+        "Could not update product images: " + updateError.message,
       );
     }
 

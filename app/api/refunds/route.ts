@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 
 export async function GET() {
   try {
+    const supabase = await createClient(true); // admin
+
     const { data, error } = await supabase
       .from("refunds")
       .select("*")
@@ -22,6 +24,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient(true); // admin
+
     const body = await request.json();
     const {
       orderId,

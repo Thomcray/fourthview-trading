@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { createClient } from "./supabase-server";
 
 type Orders = {
   email: string;
@@ -8,6 +8,7 @@ type Orders = {
 };
 
 export async function getUserRole(id: number) {
+  const supabase = await createClient(true); // admin
   const { data: userRole, error } = await supabase
     .from("userRole")
     .select("*")
@@ -20,6 +21,7 @@ export async function getUserRole(id: number) {
 }
 
 export async function getTempUserByToken(token: string) {
+  const supabase = await createClient(); // regular user
   const { data, error } = await supabase
     .from("tempUsers")
     .select("*")
@@ -32,6 +34,7 @@ export async function getTempUserByToken(token: string) {
 }
 
 export async function getUserByEmail(email: string) {
+  const supabase = await createClient(true); // admin
   const { data, error } = await supabase
     .from("users")
     .select("*")
@@ -59,18 +62,18 @@ export async function getCountries() {
     return countries;
   } catch (error) {
     console.error("Error fetching countries:", error);
-    throw new Error("Could not fetch countries"); // Throw error instead of returning null
+    throw new Error("Could not fetch countries");
   }
 }
 
 export async function getCategories() {
+  const supabase = await createClient(); // public data
   const { data: categories, error } = await supabase
     .from("categories")
     .select("id, created_at, name, image_url")
     .order("name");
 
   if (error) {
-    // throw new Error("Could not fetch categories");
     return null;
   }
 
@@ -81,9 +84,11 @@ type Category = {
   id: number;
   name: string;
 };
+
 export async function getCategoryByName(
   name: string,
 ): Promise<Category | null> {
+  const supabase = await createClient(); // public data
   const { data: category, error } = await supabase
     .from("categories")
     .select("id, name")
@@ -115,6 +120,7 @@ type Product = {
 };
 
 export async function newProduct(product: Product) {
+  const supabase = await createClient(true); // admin
   const { data, error } = await supabase
     .from("products")
     .insert([product])
@@ -123,7 +129,6 @@ export async function newProduct(product: Product) {
 
   if (error) {
     console.error(error);
-
     throw new Error("Could not create product");
   }
 
@@ -134,6 +139,7 @@ export async function updateCurrentProduct(
   product: Partial<Product>,
   productId: number,
 ) {
+  const supabase = await createClient(true); // admin
   const { data, error } = await supabase
     .from("products")
     .update([product])
@@ -147,6 +153,7 @@ export async function updateCurrentProduct(
 }
 
 export async function getAllProducts() {
+  const supabase = await createClient(); // public data
   const { data: products, error } = await supabase
     .from("products")
     .select(
@@ -161,6 +168,7 @@ export async function getAllProducts() {
 }
 
 export async function getProductById(id: number) {
+  const supabase = await createClient(); // public data
   const { data: product, error } = await supabase
     .from("products")
     .select(
@@ -177,11 +185,11 @@ export async function getProductById(id: number) {
 }
 
 export async function newSpecialOrders(orders: Orders) {
+  const supabase = await createClient(); // user operation
   const { data, error } = await supabase.from("specialOrders").insert([orders]);
 
   if (error) {
     console.error(error);
-
     throw new Error("Error placing order. Try again!");
   }
 

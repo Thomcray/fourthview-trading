@@ -1,15 +1,17 @@
-// app/api/shipping-config/route.ts
+import { createClient } from "@/app/_lib/supabase-server";
+import { authOptions } from "@/app/_lib/auth";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/_lib/supabase"; // _lib with underscore
 
 export async function GET() {
+  const supabase = await createClient(true);
+
   const { data, error } = await supabase
     .from("shippingConfig")
     .select("*")
     .single();
 
   if (error || !data) {
-    // Return default config
     return NextResponse.json({
       rate_per_kg: 15,
       base_rate: 0,
@@ -22,7 +24,15 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  // Add auth check for admin-only access
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.userRole !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await request.json();
+
+  const supabase = await createClient(true);
 
   const { data: existing } = await supabase
     .from("shippingConfig")

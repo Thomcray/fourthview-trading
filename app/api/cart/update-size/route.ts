@@ -1,6 +1,6 @@
 import { getOrCreateCart } from "@/app/_lib/actions/get-cart-action";
 import { authOptions } from "@/app/_lib/auth";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -13,6 +13,8 @@ export async function PATCH(req: Request) {
   }
 
   const cart = await getOrCreateCart(session.user.id);
+
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("cartItems")

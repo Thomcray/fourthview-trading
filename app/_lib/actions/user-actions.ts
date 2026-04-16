@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getTempUserByToken } from "../data-services";
-import { supabase } from "../supabase";
+import { createClient } from "../supabase-server";
 
 export async function createUser(token: string) {
   if (!token) return { success: false, message: "Missing token" };
@@ -24,6 +24,7 @@ export async function createUser(token: string) {
 
   const fullAddress = addressParts.join(", ");
 
+  const supabase = await createClient(true); // admin
   const { data, error } = await supabase
     .from("users")
     .insert({
@@ -69,6 +70,7 @@ export async function updateUserProfile(
   city?: string,
   zipCode?: string,
 ) {
+  const supabase = await createClient(); // user context
   const updateData = {
     phone,
     country,

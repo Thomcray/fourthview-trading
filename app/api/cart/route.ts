@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/_lib/auth";
 import { getOrCreateCart } from "@/app/_lib/actions/get-cart-action";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -14,6 +14,7 @@ export async function GET() {
 
   const cart = await getOrCreateCart(userId);
 
+  const supabase = await createClient(); // user context - their own cart
   const { data: items } = await supabase
     .from("cartItems")
     .select("*")

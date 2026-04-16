@@ -1,5 +1,5 @@
 import { authOptions } from "@/app/_lib/auth";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
@@ -13,6 +13,8 @@ export async function PATCH(req: Request) {
   }
 
   const { id, status } = await req.json();
+
+  const supabase = await createClient(true); // only admin
 
   const { data: booking, error } = await supabase
     .from("bookings")

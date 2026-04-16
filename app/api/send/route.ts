@@ -1,4 +1,4 @@
-import { supabase } from "./../../_lib/supabase";
+import { createClient } from "./../../_lib/supabase-server";
 import { getUserByEmail } from "@/app/_lib/data-services";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
@@ -42,13 +42,6 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    /**
-     * first check if user already exist in db
-     * if already exist, throw Error "User already exists"
-     * else store new user in temp location in db
-     * then send verify token to user email
-     */
-
     const existingUser = await getUserByEmail(email);
 
     if (existingUser) {
@@ -59,21 +52,22 @@ export async function POST(req: Request) {
     }
 
     //convert expiry to iso string to prevent timezone issues
-    const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString(); // valid for 10 minutes
+    const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString();
 
-    // store user in temp location in db - ADD the new fields here
+    const supabase = await createClient(true); // admin - inserting temp user data
+
+    // store user in temp location in db
     const { error } = await supabase.from("tempUsers").insert({
       firstName,
       lastName,
       email,
       country,
-      address, // Keep original for compatibility
+      address,
       countryCode,
       phone,
       password: hashedPassword,
       token,
       tokenExpiry,
-      // NEW
       streetAddress,
       apartment,
       city,
@@ -88,7 +82,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Send confirmation email containing token to user
+    // Send confirmation email
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const { error: mailErr } = await resend.emails.send({
@@ -98,8 +92,7 @@ export async function POST(req: Request) {
       html: `<h1>Hello, ${firstName}!</h1>
       <p>Thank you for signing up. Please confirm your email address by clicking the link below:</p>
       <a href="http://localhost:3000/verify-email?token=${token}">Confirm Email</a>
-      <p>This link will expire in 10 minutes. </p>
-      
+      <p>This link will expire in 10 minutes.</p>
       <p>If you did not sign up for this account, please ignore this email.</p>`,
     });
 

@@ -1,6 +1,8 @@
-import { supabase } from "../supabase";
+import { createClient } from "../supabase-server";
 
 export async function getOrCreateCart(userId: string) {
+  const supabase = await createClient(); // user context - their own cart
+
   // Check for existing cart
   const { data: cart } = await supabase
     .from("carts")

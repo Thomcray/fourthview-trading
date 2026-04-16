@@ -1,5 +1,5 @@
 import { authOptions } from "@/app/_lib/auth";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -12,6 +12,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const supabase = await createClient(true);
   const { id } = await params;
 
   const { data: customer, error } = await supabase

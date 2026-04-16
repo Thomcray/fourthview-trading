@@ -1,8 +1,10 @@
 "use server";
 
-import { supabase } from "../supabase";
+import { createClient } from "../supabase-server";
 
 export async function uploadProductImage(file: File) {
+  const supabase = await createClient(true); // admin - storage operations need service role
+
   const ext = file.name.split(".").pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
@@ -13,7 +15,7 @@ export async function uploadProductImage(file: File) {
     .from("product-images")
     .upload(fileName, buffer, {
       contentType: file.type,
-      upsert: false, //prevents overwrite files with the same name
+      upsert: false,
     });
 
   if (error) throw new Error(error.message);
@@ -21,7 +23,7 @@ export async function uploadProductImage(file: File) {
   //   get image path from bucket
   const { data } = await supabase.storage
     .from("product-images")
-    .createSignedUrl(fileName, 60 * 60 * 24 * 365); // expire after 1 year;
+    .createSignedUrl(fileName, 60 * 60 * 24 * 365);
 
   return data?.signedUrl;
 }

@@ -1,5 +1,5 @@
+import { createClient } from "@/app/_lib/supabase-server";
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/_lib/supabase";
 
 // Define error type
 type ApiError = {
@@ -16,6 +16,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    const supabase = await createClient(true); // admin
 
     const { data: config, error } = await supabase
       .from("shippingConfig")

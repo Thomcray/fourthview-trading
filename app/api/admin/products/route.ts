@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 
 // Define Category type
 type Category = {
@@ -9,6 +9,8 @@ type Category = {
 
 export async function GET(request: Request) {
   try {
+    const supabase = await createClient(); // public data - no auth needed
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const cursor = searchParams.get("cursor");
@@ -41,7 +43,7 @@ export async function GET(request: Request) {
 
     // Fetch categories for product names
     const categoryIds = [...new Set(items?.map((p) => p.categoryId) || [])];
-    let categories: Category[] = []; // Fixed: proper type instead of any[]
+    let categories: Category[] = [];
 
     if (categoryIds.length > 0) {
       const { data: cats, error: catError } = await supabase
@@ -50,7 +52,7 @@ export async function GET(request: Request) {
         .in("id", categoryIds);
 
       if (!catError && cats) {
-        categories = cats as Category[]; // Type assertion if needed
+        categories = cats as Category[];
       }
     }
 

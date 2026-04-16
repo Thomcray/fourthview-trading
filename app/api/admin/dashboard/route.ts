@@ -1,5 +1,5 @@
 import { authOptions } from "@/app/_lib/auth";
-import { supabase } from "@/app/_lib/supabase";
+import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -8,6 +8,8 @@ export async function GET() {
   if (!session?.user || session.user.userRole !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const supabase = await createClient(true); // admin
 
   const { count: totalCustomers } = await supabase
     .from("users")
