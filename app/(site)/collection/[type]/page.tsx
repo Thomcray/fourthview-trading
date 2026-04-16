@@ -88,7 +88,7 @@ export default function CollectionPage() {
             Collection Not Found
           </h1>
           <p className="text-gray-500 mb-6">
-            The collection you're looking for doesn't exist.
+            The collection you&apos;re looking for doesn't exist.
           </p>
           <Button
             onClick={() => router.push("/shop")}

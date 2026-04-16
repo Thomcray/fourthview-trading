@@ -6,18 +6,18 @@ import { ShoppingCart, ArrowLeft, Heart, Filter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, ChangeEvent } from "react";
 import { motion } from "framer-motion";
 import { useApp } from "@/components/AppContext";
 import AddToCart from "@/components/AddToCart";
 import ProductPrice from "@/components/ProductPrice";
 
+type SortOption = "default" | "price-asc" | "price-desc" | "name";
+
 export default function ItemClient() {
   const { allProducts: products } = useApp();
   const [wishlist, setWishlist] = useState<Set<number>>(new Set());
-  const [sortBy, setSortBy] = useState<
-    "default" | "price-asc" | "price-desc" | "name"
-  >("default");
+  const [sortBy, setSortBy] = useState<SortOption>("default");
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -50,9 +50,17 @@ export default function ItemClient() {
   const toggleWishlist = (itemId: number) => {
     setWishlist((prev) => {
       const newSet = new Set(prev);
-      newSet.has(itemId) ? newSet.delete(itemId) : newSet.add(itemId);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
       return newSet;
     });
+  };
+
+  const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as SortOption);
   };
 
   const displayName = category
@@ -143,7 +151,7 @@ export default function ItemClient() {
             <Filter className="w-4 h-4 text-gray-400" />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={handleSortChange}
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400"
             >
               <option value="default">Default</option>
