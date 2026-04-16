@@ -31,7 +31,6 @@ type GroupedCategory = {
   name: string;
   slug: string;
   image_url: string | null;
-  theme_color: string | null;
   color: string;
   images: string[];
 };
@@ -51,7 +50,7 @@ export default function Category() {
       if (!acc[cat.slug]) {
         acc[cat.slug] = {
           ...cat,
-          color: cat.theme_color || getColor(cat.name),
+          color: getColor(cat.name),
           images: [],
         };
       }

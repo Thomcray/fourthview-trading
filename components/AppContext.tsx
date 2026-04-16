@@ -34,7 +34,6 @@ type Categories = {
   name: string;
   slug: string;
   image_url: string;
-  theme_color: string | null;
 };
 
 type ChildrenProp = {
