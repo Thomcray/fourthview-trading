@@ -9,7 +9,7 @@ type Category = {
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient(); // public data - no auth needed
+    const supabase = await createClient(true);
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
@@ -32,6 +32,7 @@ export async function GET(request: Request) {
     query = query.order("id", { ascending: false }).limit(limit + 1);
 
     const { data: products, error, count } = await query;
+    console.log(products);
 
     if (error) throw error;
 

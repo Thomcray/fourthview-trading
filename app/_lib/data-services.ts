@@ -9,6 +9,7 @@ type Orders = {
 
 export async function getUserRole(id: number) {
   const supabase = await createClient(true); // admin
+
   const { data: userRole, error } = await supabase
     .from("userRole")
     .select("*")

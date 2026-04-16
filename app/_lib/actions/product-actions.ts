@@ -21,22 +21,13 @@ export async function createProduct(
   const category = formData.get("category") as string;
   const target = formData.get("target") as string;
 
-  // Log what we received
-  console.log("createProduct received:", {
-    productName: productName || "MISSING!",
-    description: description || "MISSING!",
-    productType: productType || "MISSING!",
-    category: category || "MISSING!",
-    price: price || "MISSING!",
-  });
-
   // Throw errors instead of returning null
   if (!productName?.trim()) {
     throw new Error("Product name is required");
   }
 
   if (!category) {
-    throw new Error("Category is required"); // ← FIXED: Was returning null
+    throw new Error("Category is required"); // Was returning null
   }
 
   const getCategory = await getCategoryByName(category);
