@@ -21,7 +21,7 @@ export default function FurnitureCategorySection({ categoryName }: Props) {
   const items = allProducts.filter(
     (p) =>
       p.productType.toLowerCase() === "furniture" &&
-      p.target.toLowerCase().includes(categoryName.toLowerCase()),
+      (p.target ?? "").toLowerCase().includes(categoryName.toLowerCase()),
   );
 
   const toggleWishlist = (itemId: number, e: React.MouseEvent) => {
