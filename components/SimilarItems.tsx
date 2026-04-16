@@ -1,12 +1,14 @@
+// components/SimilarItems.tsx
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useApp } from "./AppContext";
 import ProductPrice from "./ProductPrice";
 import AddToCart from "./AddToCart";
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 
 type Item = {
   id: number;
@@ -33,89 +35,138 @@ type Props = {
 export default function SimilarItems({ selectedItem }: Props) {
   const { allProducts: products } = useApp();
 
-  const similar = useMemo(
-    () =>
-      products
-        .filter(
-          (p) =>
-            p.id !== selectedItem?.id &&
-            (p.categoryId === selectedItem?.categoryId ||
-              p.productType === selectedItem?.productType),
-        )
-        .slice(0, 8),
-    [products, selectedItem],
-  );
+  const similar = useMemo(() => {
+    if (!selectedItem) return [];
+
+    // First priority: Same category
+    const sameCategory = products.filter(
+      (p) =>
+        p.id !== selectedItem.id && p.categoryId === selectedItem.categoryId,
+    );
+
+    // Second priority: Same product type
+    const sameType = products.filter(
+      (p) =>
+        p.id !== selectedItem.id &&
+        p.productType === selectedItem.productType &&
+        p.categoryId !== selectedItem.categoryId,
+    );
+
+    // Combine and remove duplicates
+    const combined = [...sameCategory, ...sameType];
+    const unique = combined.filter(
+      (item, index, self) => index === self.findIndex((t) => t.id === item.id),
+    );
+
+    return unique.slice(0, 8);
+  }, [products, selectedItem]);
 
   if (!selectedItem || similar.length === 0) return null;
 
   return (
-    <div className="py-4 w-full flex flex-col gap-3">
-      {/* Header */}
-      <div className="bg-[#334EAC] rounded-md px-4 py-2 flex flex-row justify-between items-center">
-        <h1 className="font-normal text-base text-white">Similar Items</h1>
-        <ChevronRight
-          color="white"
-          strokeWidth={1.5}
-          className="cursor-pointer"
-        />
-      </div>
-
-      {/* Products */}
-      <div className="flex flex-row gap-3 overflow-x-auto pb-2">
-        {similar.map((item) => (
-          <div
-            key={item.id}
-            className="shrink-0 w-48 max-sm:w-36 flex flex-col border rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white"
-          >
-            <Link
-              href={`/item-description?id=${item.id}&name=${item.name.toLowerCase()}`}
-            >
-              <div className="relative">
-                <Image
-                  src={item.imageUrl[0]}
-                  alt={item.name}
-                  width={200}
-                  height={200}
-                  className="w-full h-44 max-sm:h-28 object-cover"
-                />
-                {item.discount && (
-                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                    -{item.discount}%
-                  </span>
-                )}
-              </div>
-
-              <div className="px-2 pt-2 flex flex-col gap-1">
-                <p className="text-blue-950 font-medium text-sm truncate">
-                  {item.name}
-                </p>
-
-                {item.discount ? (
-                  <>
-                    <p className="text-xs text-slate-400 line-through">
-                      <ProductPrice yuanPrice={item.price} />
-                    </p>
-                    <p className="text-sm font-semibold text-red-500">
-                      <ProductPrice
-                        yuanPrice={item.price}
-                        discount={item.discount}
-                      />
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm font-semibold text-blue-950">
-                    <ProductPrice yuanPrice={item.price} />
-                  </p>
-                )}
-              </div>
-            </Link>
-
-            <div className="px-2 py-2 mt-auto">
-              <AddToCart data={item} />
+    <section className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl mx-auto">
+      <div className="flex flex-col gap-5">
+        {/* Header - Matching TopPicks design */}
+        <div className="bg-gradient-to-r from-purple-700 to-purple-600 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-yellow-400" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <h1 className="font-semibold text-lg text-white">
+                Similar Items
+              </h1>
+              <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                {similar.length} {similar.length === 1 ? "item" : "items"}
+              </span>
             </div>
           </div>
-        ))}
+          <ChevronRight
+            color="white"
+            strokeWidth={2}
+            className="cursor-pointer hover:translate-x-1 transition-transform duration-300"
+          />
+        </div>
+
+        {/* Products Grid - Horizontal Scroll */}
+        <div className="relative">
+          <div className="flex flex-row gap-5 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 snap-x snap-mandatory">
+            {similar.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                whileHover={{ y: -8 }}
+                className="shrink-0 w-52 sm:w-56 snap-start bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
+              >
+                <Link
+                  href={`/item-description?id=${item.id}&name=${item.name.toLowerCase()}`}
+                >
+                  <div className="relative bg-gray-50">
+                    <Image
+                      src={item.imageUrl[0]}
+                      alt={item.name || "item-image"}
+                      width={224}
+                      height={224}
+                      className="w-full h-48 sm:h-52 object-cover hover:scale-105 transition-transform duration-500"
+                    />
+
+                    {/* Badges */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                      {item.discount && (
+                        <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">
+                          -{item.discount}%
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors duration-300" />
+                  </div>
+
+                  <div className="p-3">
+                    {/* Category Badge */}
+                    <div className="flex items-center gap-1 mb-1">
+                      <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                        {item.productType || "Product"}
+                      </span>
+                    </div>
+
+                    <p className="text-gray-800 font-medium text-sm truncate hover:text-blue-600 transition-colors">
+                      {item.name}
+                    </p>
+
+                    {/* Price */}
+                    {item.discount ? (
+                      <div className="mt-2">
+                        <div className="text-xs text-gray-400 line-through">
+                          <ProductPrice yuanPrice={item.price} />
+                        </div>
+                        <div className="text-lg font-bold text-red-600">
+                          <ProductPrice
+                            yuanPrice={item.price}
+                            discount={item.discount}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-lg font-bold text-blue-900">
+                        <ProductPrice yuanPrice={item.price} />
+                      </p>
+                    )}
+                  </div>
+                </Link>
+
+                <div className="px-3 pb-3">
+                  <AddToCart data={item} />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Scroll Indicator */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
