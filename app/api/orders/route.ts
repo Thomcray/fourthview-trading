@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = await createClient(); // user context - their own orders
+  const supabase = await createClient(true); // user context - their own orders
 
   const { data, error } = await supabase
     .from("orders")
