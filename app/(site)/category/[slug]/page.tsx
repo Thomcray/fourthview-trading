@@ -6,30 +6,26 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Package, ShoppingBag, Filter } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
 import AddToCart from "@/components/AddToCart";
+
+type SortOption = "default" | "price-asc" | "price-desc" | "name";
 
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const { allProducts, allCategories } = useApp();
-  const [sortBy, setSortBy] = useState<
-    "default" | "price-asc" | "price-desc" | "name"
-  >("default");
+  const [sortBy, setSortBy] = useState<SortOption>("default");
 
   const slug = params.slug as string;
 
-  // Find the current category
   const currentCategory = allCategories?.find((cat) => cat.slug === slug);
-
-  // Filter products by category
   const categoryProducts = allProducts.filter(
     (product) => product.categoryId === currentCategory?.id,
   );
 
-  // Sort products
   const sortedProducts = useMemo(() => {
     const products = [...categoryProducts];
     switch (sortBy) {
@@ -43,6 +39,10 @@ export default function CategoryPage() {
         return products;
     }
   }, [categoryProducts, sortBy]);
+
+  const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as SortOption);
+  };
 
   if (!currentCategory) {
     return (
@@ -70,7 +70,6 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-900 to-blue-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <button
@@ -96,15 +95,13 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters Bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={handleSortChange}
               className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400"
             >
               <option value="default">Default</option>
@@ -119,7 +116,6 @@ export default function CategoryPage() {
           </p>
         </div>
 
-        {/* Products Grid */}
         {sortedProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
