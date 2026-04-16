@@ -1,115 +1,104 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useApp } from "@/components/AppContext";
 
-const categoryColors: Record<string, string> = {
-  caps: "from-yellow-500 to-amber-600",
-  shoes: "from-orange-500 to-amber-600",
-  bags: "from-pink-500 to-rose-600",
-  slippers: "from-teal-500 to-cyan-600",
-  shirts: "from-blue-500 to-blue-700",
-  trousers: "from-purple-600 to-purple-800",
-  jewelry: "from-rose-400 to-pink-600",
-  jackets: "from-slate-600 to-slate-800",
-  belts: "from-brown-500 to-amber-800",
+const PALETTES = [
+  "from-blue-500 to-blue-600",
+  "from-pink-500 to-rose-600",
+  "from-green-500 to-emerald-600",
+  "from-amber-500 to-orange-600",
+  "from-cyan-500 to-blue-600",
+  "from-purple-500 to-violet-600",
+  "from-red-500 to-red-600",
+  "from-teal-500 to-teal-600",
+];
+
+function getColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return PALETTES[Math.abs(hash) % PALETTES.length];
+}
+
+// Define the grouped category type
+type GroupedCategory = {
+  id: number;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  theme_color: string | null;
+  color: string;
+  images: string[];
 };
 
 export default function Category() {
-  const { allProducts: products } = useApp();
+  const { allProducts, allCategories } = useApp();
 
-  // Group products by productType, keeping up to 4 images per category
-  const grouped = products.reduce<Record<string, string[]>>((acc, product) => {
-    const type = product.productType.toLowerCase();
-    if (!acc[type]) acc[type] = [];
-    if (acc[type].length < 4 && product.imageUrl?.[0]) {
-      acc[type].push(product.imageUrl[0]);
-    }
-    return acc;
-  }, {});
+  if (!allCategories?.length) return null;
 
-  const categories = Object.entries(grouped);
+  const catMap = new Map(allCategories.map((c) => [c.id, c]));
 
-  if (categories.length === 0) return null;
+  const grouped = allProducts.reduce<Record<string, GroupedCategory>>(
+    (acc, product) => {
+      const cat = catMap.get(product.categoryId);
+      if (!cat) return acc;
+
+      if (!acc[cat.slug]) {
+        acc[cat.slug] = {
+          ...cat,
+          color: cat.theme_color || getColor(cat.name),
+          images: [],
+        };
+      }
+      if (acc[cat.slug].images.length < 4 && product.imageUrl?.[0]) {
+        acc[cat.slug].images.push(product.imageUrl[0]);
+      }
+      return acc;
+    },
+    {},
+  );
+
+  const categories = Object.values(grouped);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="relative z-10 px-4 w-full sm:px-6 lg:px-8 py-8"
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {categories.map(([category, images]) => {
-          const displayName =
-            category.charAt(0).toUpperCase() + category.slice(1);
-          const gradientColor =
-            categoryColors[category] || "from-gray-600 to-gray-700";
-
-          return (
-            <motion.div
-              key={category}
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Link
-                href={`/category/item?q=${category}`}
-                className="block h-full"
-              >
-                <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 h-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 py-8">
+      {categories.map((cat) => (
+        <motion.div key={cat.slug} whileHover={{ y: -5 }}>
+          <Link href={`/category/${cat.slug}`}>
+            <div className="bg-white rounded-xl shadow-md hover:shadow-xl overflow-hidden">
+              <div className={`bg-gradient-to-r ${cat.color} p-4 text-center`}>
+                <h3 className="font-bold text-lg text-white">{cat.name}</h3>
+              </div>
+              <div className="p-4 grid grid-cols-2 gap-2">
+                {cat.images.map((src: string, i: number) => (
                   <div
-                    className={`bg-gradient-to-r ${gradientColor} p-3 sm:p-4 text-center`}
+                    key={i}
+                    className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
                   >
-                    <h3 className="font-bold text-lg sm:text-xl text-white">
-                      {displayName}
-                    </h3>
+                    <Image src={src} alt="" fill className="object-cover" />
                   </div>
-
-                  <div className="p-3 sm:p-4">
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      {images.map((src, i) => (
-                        <div
-                          key={i}
-                          className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
-                        >
-                          <Image
-                            src={src}
-                            alt={`${category} product`}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-300"
-                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
-                          />
-                        </div>
-                      ))}
-
-                      {/* Fill empty slots if fewer than 4 products */}
-                      {Array.from({
-                        length: Math.max(0, 4 - images.length),
-                      }).map((_, i) => (
-                        <div
-                          key={`empty-${i}`}
-                          className="relative aspect-square rounded-lg bg-gray-100"
-                        />
-                      ))}
-                    </div>
-
-                    <div className="mt-4 text-center">
-                      <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-                        Shop Now
-                        <ArrowRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </div>
-    </motion.div>
+                ))}
+                {Array.from({ length: 4 - cat.images.length }).map((_, i) => (
+                  <div
+                    key={`e${i}`}
+                    className="aspect-square rounded-lg bg-gray-100"
+                  />
+                ))}
+              </div>
+              <div className="p-4 text-center">
+                <span className="text-sm font-medium text-blue-600 flex items-center justify-center gap-1">
+                  Shop Now <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+      ))}
+    </div>
   );
 }

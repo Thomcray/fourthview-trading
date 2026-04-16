@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useApp } from "../AppContext";
 import { motion } from "framer-motion";
-import { ArrowRight, ShoppingBag } from "lucide-react";
+import { ArrowRight, ShoppingBag, Grid3X3 } from "lucide-react";
 
 type CategoryColors = {
   color: string;
@@ -13,47 +13,118 @@ type CategoryColors = {
   buttonColor: string;
 };
 
-function getColorsForCategory(name: string): CategoryColors {
-  const colorMap: Record<string, CategoryColors> = {
-    Men: {
-      color: "from-blue-600 to-blue-700",
-      bgColor: "bg-blue-50",
-      textColor: "text-blue-950",
-      buttonColor: "hover:bg-blue-50",
-    },
-    Women: {
-      color: "from-pink-500 to-rose-600",
-      bgColor: "bg-pink-50",
-      textColor: "text-pink-950",
-      buttonColor: "hover:bg-pink-50",
-    },
-    Kids: {
-      color: "from-green-500 to-emerald-600",
-      bgColor: "bg-green-50",
-      textColor: "text-green-950",
-      buttonColor: "hover:bg-green-50",
-    },
-    Furniture: {
-      color: "from-amber-500 to-orange-600",
-      bgColor: "bg-amber-50",
-      textColor: "text-amber-950",
-      buttonColor: "hover:bg-amber-50",
-    },
-    "Washing Machine": {
-      color: "from-cyan-500 to-blue-600",
-      bgColor: "bg-cyan-50",
-      textColor: "text-cyan-950",
-      buttonColor: "hover:bg-cyan-50",
-    },
-    default: {
-      color: "from-gray-500 to-gray-600",
-      bgColor: "bg-gray-50",
-      textColor: "text-gray-950",
-      buttonColor: "hover:bg-gray-50",
-    },
-  };
+// Brand-consistent color palettes for strategic categories
+const BRAND_COLORS: Record<string, CategoryColors> = {
+  Men: {
+    color: "from-blue-600 to-blue-700",
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-950",
+    buttonColor: "hover:bg-blue-50",
+  },
+  Women: {
+    color: "from-pink-500 to-rose-600",
+    bgColor: "bg-pink-50",
+    textColor: "text-pink-950",
+    buttonColor: "hover:bg-pink-50",
+  },
+  Kids: {
+    color: "from-green-500 to-emerald-600",
+    bgColor: "bg-green-50",
+    textColor: "text-green-950",
+    buttonColor: "hover:bg-green-50",
+  },
+  Furniture: {
+    color: "from-amber-500 to-orange-600",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-950",
+    buttonColor: "hover:bg-amber-50",
+  },
+  "Home & Living": {
+    color: "from-amber-500 to-orange-600",
+    bgColor: "bg-amber-50",
+    textColor: "text-amber-950",
+    buttonColor: "hover:bg-amber-50",
+  },
+  Electronics: {
+    color: "from-cyan-500 to-blue-600",
+    bgColor: "bg-cyan-50",
+    textColor: "text-cyan-950",
+    buttonColor: "hover:bg-cyan-50",
+  },
+  Sports: {
+    color: "from-orange-500 to-red-600",
+    bgColor: "bg-orange-50",
+    textColor: "text-orange-950",
+    buttonColor: "hover:bg-orange-50",
+  },
+  Beauty: {
+    color: "from-purple-500 to-violet-600",
+    bgColor: "bg-purple-50",
+    textColor: "text-purple-950",
+    buttonColor: "hover:bg-purple-50",
+  },
+};
 
-  return colorMap[name] ?? colorMap["default"];
+// Fallback color palettes for auto-assigned categories
+const FALLBACK_PALETTES: CategoryColors[] = [
+  {
+    color: "from-indigo-500 to-indigo-600",
+    bgColor: "bg-indigo-50",
+    textColor: "text-indigo-950",
+    buttonColor: "hover:bg-indigo-50",
+  },
+  {
+    color: "from-teal-500 to-teal-600",
+    bgColor: "bg-teal-50",
+    textColor: "text-teal-950",
+    buttonColor: "hover:bg-teal-50",
+  },
+  {
+    color: "from-red-500 to-red-600",
+    bgColor: "bg-red-50",
+    textColor: "text-red-950",
+    buttonColor: "hover:bg-red-50",
+  },
+  {
+    color: "from-lime-500 to-lime-600",
+    bgColor: "bg-lime-50",
+    textColor: "text-lime-950",
+    buttonColor: "hover:bg-lime-50",
+  },
+  {
+    color: "from-fuchsia-500 to-fuchsia-600",
+    bgColor: "bg-fuchsia-50",
+    textColor: "text-fuchsia-950",
+    buttonColor: "hover:bg-fuchsia-50",
+  },
+  {
+    color: "from-sky-500 to-sky-600",
+    bgColor: "bg-sky-50",
+    textColor: "text-sky-950",
+    buttonColor: "hover:bg-sky-50",
+  },
+];
+
+function getStringHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function getColorsForCategory(name: string): CategoryColors {
+  if (BRAND_COLORS[name]) {
+    return BRAND_COLORS[name];
+  }
+
+  const normalizedName = name.toLowerCase().trim();
+  const hash = getStringHash(normalizedName);
+  const paletteIndex = hash % FALLBACK_PALETTES.length;
+
+  return FALLBACK_PALETTES[paletteIndex];
 }
 
 const containerVariants = {
@@ -73,44 +144,62 @@ const imageVariants = {
 export default function BannerOverlay() {
   const { allProducts: products } = useApp();
 
-  // Group products by slug — slug is already normalised in AppContext
+  // Group products by slug
   const categoryMap = new Map<
     string,
-    { name: string; slug: string; items: typeof products; sortOrder: number }
+    { name: string; slug: string; items: typeof products }
   >();
 
   products.forEach((product) => {
     if (!categoryMap.has(product.slug)) {
-      // Derive a display name from target (fashion) or productType (other)
-      const name = product.target ?? product.productType ?? "Other";
-      const sortOrder = ["men", "women", "kids"].indexOf(product.slug);
+      const name = product.productType ?? "Other";
 
       categoryMap.set(product.slug, {
         name,
         slug: product.slug,
         items: [],
-        sortOrder: sortOrder === -1 ? 100 : sortOrder,
       });
     }
     categoryMap.get(product.slug)!.items.push(product);
   });
 
-  const categories = Array.from(categoryMap.values())
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((cat) => ({
-      ...cat,
-      items: cat.items.slice(0, 4),
-      ...getColorsForCategory(cat.name),
-    }));
+  // Convert to array - no hardcoded sorting, display as received from API
+  const categories = Array.from(categoryMap.values()).map((cat) => ({
+    ...cat,
+    items: cat.items.slice(0, 4),
+    ...getColorsForCategory(cat.name),
+  }));
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="relative -mt-20 sm:-mt-32 lg:-mt-40 z-10 px-4 sm:px-6 lg:px-8"
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+    <div className="relative -mt-20 sm:-mt-32 lg:-mt-40 z-10 px-4 sm:px-6 lg:px-8">
+      {/* Section Header */}
+      <div className="max-w-7xl mx-auto mb-8">
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
+          <div className="flex items-center gap-2">
+            <Grid3X3 className="w-5 h-5 text-white" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <h2 className="font-semibold text-lg text-white">
+                Shop by Product Type
+              </h2>
+            </div>
+          </div>
+          <Link href="/shop">
+            <ArrowRight
+              color="white"
+              strokeWidth={2}
+              className="cursor-pointer hover:translate-x-1 transition-transform duration-300"
+            />
+          </Link>
+        </div>
+      </div>
+
+      {/* Categories Grid */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto"
+      >
         {categories.map((category) => (
           <motion.div
             key={category.slug}
@@ -119,7 +208,11 @@ export default function BannerOverlay() {
             transition={{ duration: 0.2 }}
             className="relative group"
           >
-            <Link href={`/shop/${category.slug}`} className="block h-full">
+            {/* Link to ItemClient page with ?q=productType */}
+            <Link
+              href={`/item?q=${encodeURIComponent(category.name)}`}
+              className="block h-full"
+            >
               <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 h-full flex flex-col">
                 {/* Category Header */}
                 <div
@@ -193,10 +286,11 @@ export default function BannerOverlay() {
             </Link>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
+      {/* Decorative Elements */}
       <div className="absolute -top-10 left-0 w-32 h-32 bg-blue-200 rounded-full blur-3xl opacity-20 -z-10" />
       <div className="absolute -bottom-10 right-0 w-40 h-40 bg-pink-200 rounded-full blur-3xl opacity-20 -z-10" />
-    </motion.div>
+    </div>
   );
 }

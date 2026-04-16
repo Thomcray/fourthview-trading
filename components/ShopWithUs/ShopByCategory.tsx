@@ -46,7 +46,10 @@ export default function ShopByCategory() {
                     whileHover={{ y: -5 }}
                     className="shrink-0"
                   >
-                    <Link href={`/category/${item.id}`} className="block group">
+                    <Link
+                      href={`/category/${item.slug}`}
+                      className="block group"
+                    >
                       <div className="w-40 h-40 sm:w-44 sm:h-44 relative rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300">
                         <Image
                           src={item.image_url}

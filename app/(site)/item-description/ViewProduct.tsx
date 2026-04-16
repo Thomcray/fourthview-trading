@@ -3,7 +3,6 @@
 import AddToCart from "@/components/AddToCart";
 import { useApp } from "@/components/AppContext";
 import ProductPrice from "@/components/ProductPrice";
-import { Button } from "@/components/ui/button";
 import { MinusIcon, PlusIcon, ShoppingCart, Truck, Weight } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -34,18 +33,22 @@ type ViewProductProps = {
 
 export default function ViewProduct({ selectedItem }: ViewProductProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColour, setSelectedColour] = useState<string | null>(null);
   const [sizeUpdated, setSizeUpdated] = useState(false);
+  const [colourUpdated, setColourUpdated] = useState(false);
   const [imageIdx, setImageIdx] = useState(0);
-  const [qty, setQty] = useState(1);
 
   const { cart, updateQuantity, updateSize } = useApp();
   const inCart = cart.find((item) => item.itemName === selectedItem?.name);
   const hasSizes = (selectedItem?.sizes?.length ?? 0) > 0;
+  const hasColours = (selectedItem?.colours?.length ?? 0) > 0;
 
   useEffect(() => {
     setImageIdx(0);
     setSelectedSize(null);
+    setSelectedColour(null);
     setSizeUpdated(false);
+    setColourUpdated(false);
   }, [selectedItem?.id]);
 
   useEffect(() => {
@@ -63,6 +66,12 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
       Math.max(0, selectedItem.imageUrl.length - 1),
     );
     setImageIdx(safeIdx);
+    const colour = selectedItem.colours[idx];
+    setSelectedColour(colour);
+    if (inCart) {
+      setColourUpdated(true);
+      setTimeout(() => setColourUpdated(false), 2000);
+    }
   };
 
   const handleSizeChange = (size: string) => {
@@ -80,6 +89,10 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
   };
 
   if (!selectedItem) return null;
+
+  const missingSize = hasSizes && !selectedSize;
+  const missingColour = hasColours && !selectedColour;
+  const canAddToCart = !missingSize && !missingColour;
 
   return (
     <div className="w-full px-8 max-sm:px-2 py-8 flex flex-col lg:flex-row gap-8">
@@ -99,17 +112,39 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
           )}
         </div>
 
-        {selectedItem.colours?.length > 0 && (
-          <div className="flex flex-row gap-2 flex-wrap">
-            {selectedItem.colours.map((colour, idx) => (
-              <button
-                key={idx}
-                style={{ backgroundColor: colour }}
-                onClick={() => handleImageColour(idx)}
-                className={`w-8 h-8 rounded-full border-2 cursor-pointer transition-all
-                  ${imageIdx === idx ? "border-blue-500 scale-110 shadow-md" : "border-slate-200"}`}
-              />
-            ))}
+        {hasColours && (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-row items-center gap-2">
+              <p className="text-sm font-medium text-slate-700">
+                {inCart ? "Change Colour" : "Select Colour"}
+              </p>
+              {colourUpdated && (
+                <span className="text-xs text-green-600 font-medium animate-pulse">
+                  ✓ Colour updated in cart
+                </span>
+              )}
+            </div>
+            <div className="flex flex-row gap-2 flex-wrap">
+              {selectedItem.colours.map((colour, idx) => (
+                <button
+                  key={idx}
+                  style={{ backgroundColor: colour }}
+                  onClick={() => handleImageColour(idx)}
+                  className={`relative w-8 h-8 rounded-full border-2 cursor-pointer transition-all
+                    ${
+                      selectedColour === colour
+                        ? "border-blue-500 scale-110 shadow-md"
+                        : "border-slate-200 hover:border-blue-300"
+                    }`}
+                >
+                  {selectedColour === colour && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -224,7 +259,12 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
         {/* Add to cart */}
         {!inCart && (
           <div className="w-full max-w-xs flex flex-col gap-2">
-            {hasSizes && !selectedSize && (
+            {missingColour && (
+              <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                ⚠️ Please select a colour to add to cart
+              </p>
+            )}
+            {missingSize && (
               <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
                 ⚠️ Please select a size to add to cart
               </p>
@@ -232,7 +272,9 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
             <AddToCart
               data={selectedItem}
               selectedSize={selectedSize}
-              disableIfNoSize
+              selectedColour={selectedColour}
+              disableIfNoSize={hasSizes}
+              disabled={!canAddToCart}
             />
           </div>
         )}

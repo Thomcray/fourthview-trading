@@ -71,7 +71,7 @@ export async function getCategories() {
   const supabase = await createClient(true); // public data
   const { data: categories, error } = await supabase
     .from("categories")
-    .select("id, created_at, name, image_url")
+    .select("id, created_at, name, slug, image_url")
     .order("name");
 
   if (error) {

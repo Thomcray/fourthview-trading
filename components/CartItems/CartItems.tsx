@@ -31,6 +31,7 @@ const PaystackButton = dynamic(() => import("../PaystackButton"), {
   ),
 });
 
+// Updated CartItem type with colour support
 type CartItem = {
   itemName: string;
   price: number;
@@ -39,7 +40,9 @@ type CartItem = {
   shippingCost?: number;
   image?: string;
   size?: string;
+  colour?: string;
   productSizes?: string[];
+  productColours?: string[];
   cartId?: string;
 };
 
@@ -47,7 +50,8 @@ export default function CartItems() {
   const [removingItem, setRemovingItem] = useState<string | null>(null);
   const [updatingItem, setUpdatingItem] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const { cart, removeFromCart, updateQuantity, updateSize } = useApp();
+  const { cart, removeFromCart, updateQuantity, updateSize, updateColour } =
+    useApp();
   const router = useRouter();
 
   // Initialize selected items when cart changes
@@ -130,6 +134,17 @@ export default function CartItems() {
       await updateQuantity(itemName, newQuantity);
     } catch (error) {
       console.error("Error updating quantity: ", error);
+    } finally {
+      setUpdatingItem(null);
+    }
+  };
+
+  const handleColourUpdate = async (itemName: string, colour: string) => {
+    setUpdatingItem(itemName);
+    try {
+      await updateColour(itemName, colour);
+    } catch (error) {
+      console.error("Error updating colour: ", error);
     } finally {
       setUpdatingItem(null);
     }
@@ -268,11 +283,22 @@ export default function CartItems() {
                           <h3 className="font-semibold text-gray-800 truncate">
                             {item.itemName}
                           </h3>
-                          {item.size && (
-                            <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full mt-1">
-                              Size: {item.size}
-                            </span>
-                          )}
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {item.size && (
+                              <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                Size: {item.size}
+                              </span>
+                            )}
+                            {item.colour && (
+                              <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                Colour:
+                                <span
+                                  className="w-4 h-4 rounded-full"
+                                  style={{ backgroundColor: item.colour }}
+                                />
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <button
                           onClick={() => handleRemove(item.itemName)}
@@ -283,30 +309,64 @@ export default function CartItems() {
                         </button>
                       </div>
 
+                      {/* Colour Selector */}
+                      {item.productColours &&
+                        item.productColours.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-xs text-gray-500 mb-1.5">
+                              Colour:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {item.productColours.map((colourHex, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() =>
+                                    handleColourUpdate(item.itemName, colourHex)
+                                  }
+                                  className={`
+                                  w-7 h-7 rounded-full border-2 transition-all cursor-pointer
+                                  ${
+                                    item.colour === colourHex
+                                      ? "border-blue-500 ring-2 ring-blue-200 ring-offset-1 scale-110"
+                                      : "border-gray-300 hover:border-gray-400 hover:scale-105"
+                                  }
+                                `}
+                                  style={{ backgroundColor: colourHex }}
+                                  title={colourHex}
+                                  disabled={updatingItem === item.itemName}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                       {/* Size Selector */}
                       {item.productSizes && item.productSizes.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {item.productSizes.map((size) => (
-                            <button
-                              key={size}
-                              onClick={() => updateSize(item.itemName, size)}
-                              className={`
-                                px-2.5 py-1 text-xs rounded-md transition-all
-                                ${
-                                  item.size === size
-                                    ? "bg-blue-600 text-white ring-2 ring-blue-300"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                }
-                              `}
-                            >
-                              {size}
-                            </button>
-                          ))}
+                        <div className="mt-3">
+                          <p className="text-xs text-gray-500 mb-1.5">Size:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.productSizes.map((size) => (
+                              <button
+                                key={size}
+                                onClick={() => updateSize(item.itemName, size)}
+                                className={`
+                                  px-2.5 py-1 text-xs rounded-md transition-all
+                                  ${
+                                    item.size === size
+                                      ? "bg-blue-600 text-white ring-2 ring-blue-300"
+                                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                  }
+                                `}
+                              >
+                                {size}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
 
                       {/* Price and Quantity */}
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
                         <div className="shrink-0">
                           {itemDiscount > 0 ? (
                             <div className="flex flex-col">

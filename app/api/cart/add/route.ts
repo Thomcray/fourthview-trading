@@ -16,8 +16,10 @@ export async function POST(req: Request) {
     productId,
     image,
     size,
+    colour,
     shippingCost,
     productSizes,
+    productColours,
   } = body;
 
   const session = await getServerSession(authOptions);
@@ -30,20 +32,27 @@ export async function POST(req: Request) {
 
   const supabase = await createClient(true);
 
-  //   Check if item already exists
+  // Check if item already exists with same size and colour
   const { data: existingItem } = await supabase
     .from("cartItems")
     .select("*")
     .eq("cartId", cart.id)
     .eq("itemName", itemName)
+    .eq("size", size || "")
+    .eq("colour", colour || "")
     .maybeSingle();
 
   if (existingItem) {
     // Update quantity
-    await supabase
+    const { error: updateError } = await supabase
       .from("cartItems")
-      .update({ quantity: existingItem.quantity + 1, size })
+      .update({ quantity: existingItem.quantity + 1 })
       .eq("id", existingItem.id);
+
+    if (updateError) {
+      console.error("Update error:", updateError);
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
   } else {
     // Insert new item
     const { data: insertData, error: insertError } = await supabase
@@ -58,9 +67,11 @@ export async function POST(req: Request) {
           discount,
           description,
           image,
-          size,
+          size: size || null,
+          colour: colour || null,
           shippingCost,
-          productSizes,
+          productSizes: productSizes || [],
+          productColours: productColours || [],
         },
       ])
       .select();
@@ -71,11 +82,15 @@ export async function POST(req: Request) {
     }
   }
 
-  //   Return updated cart
-  const { data: items } = await supabase
+  // Return updated cart
+  const { data: items, error: fetchError } = await supabase
     .from("cartItems")
     .select("*")
     .eq("cartId", cart.id);
 
-  return NextResponse.json({ cart: items });
+  if (fetchError) {
+    console.error("Fetch error:", fetchError);
+  }
+
+  return NextResponse.json({ cart: items || [] });
 }

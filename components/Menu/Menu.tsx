@@ -55,14 +55,15 @@ export default function MenuButton() {
 
   return (
     <>
-      <div className="relative">
+      {/* Fixed positioning wrapper - KEY CHANGE */}
+      <div className="fixed top-20 left-4 z-50">
         <Button
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           variant="outline"
           className={`
             group relative overflow-hidden
-            bg-gradient-to-r from-blue-900 to-blue-800 
+            bg-linear-to-r from-blue-900 to-blue-800 
             hover:from-blue-800 hover:to-blue-700
             border-blue-900 text-white 
             py-3 px-4 flex items-center justify-center 

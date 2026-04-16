@@ -23,22 +23,24 @@ export default function OnSale() {
     <section className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col gap-5">
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
-          <div className="flex items-center gap-2">
-            <div className="bg-white/20 rounded-full p-1.5">
-              <Flame className="w-4 h-4 text-white" />
+        <Link href="/collection/on-sale">
+          <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
+            <div className="flex items-center gap-2">
+              <div className="bg-white/20 rounded-full p-1.5">
+                <Flame className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="font-semibold text-lg text-white">Flash Sale</h1>
+              <span className="bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full ml-2">
+                {sortedByDiscount.length} Items
+              </span>
             </div>
-            <h1 className="font-semibold text-lg text-white">Flash Sale</h1>
-            <span className="bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full ml-2">
-              {sortedByDiscount.length} Items
-            </span>
+            <ChevronRight
+              color="white"
+              strokeWidth={2}
+              className="cursor-pointer hover:translate-x-1 transition-transform duration-300"
+            />
           </div>
-          <ChevronRight
-            color="white"
-            strokeWidth={2}
-            className="cursor-pointer hover:translate-x-1 transition-transform duration-300"
-          />
-        </div>
+        </Link>
 
         {/* Products Grid - Horizontal Scroll */}
         <div className="relative">

@@ -27,13 +27,17 @@ type AddItem = {
 interface Data {
   data: AddItem;
   selectedSize?: string | null;
+  selectedColour?: string | null;
   disableIfNoSize?: boolean;
+  disabled?: boolean;
 }
 
 export default function AddToCart({
   data,
   selectedSize = null,
+  selectedColour = null,
   disableIfNoSize = false,
+  disabled = false,
 }: Data) {
   const { cart, addToCart } = useApp();
   const [isAdding, setIsAdding] = useState(false);
@@ -41,6 +45,7 @@ export default function AddToCart({
 
   const defaultImage = data.imageUrl[0];
   const hasSizes = data.sizes?.length > 0;
+  const hasColours = data.colours?.length > 0;
   const itemInCart = cart.some((item) => item.itemName === data.name);
 
   const newItem = {
@@ -52,20 +57,22 @@ export default function AddToCart({
     categoryId: data.categoryId,
     image: defaultImage,
     size: selectedSize,
+    colour: selectedColour,
     shippingCost: data.shippingCost ?? 0,
     productSizes: data.sizes ?? [],
+    productColours: data.colours ?? [],
   };
 
   const handleCart = async () => {
-    // Navigate to product page to select size first
     if (hasSizes && !selectedSize) {
       if (disableIfNoSize) return;
-
       router.push(
         `/item-description?id=${data.id}&name=${data.name.toLowerCase()}`,
       );
       return;
     }
+
+    if (hasColours && !selectedColour) return;
 
     setIsAdding(true);
     try {
@@ -78,12 +85,18 @@ export default function AddToCart({
     }
   };
 
+  const isDisabled =
+    isAdding ||
+    disabled ||
+    (disableIfNoSize && hasSizes && !selectedSize) ||
+    (hasColours && !selectedColour);
+
   return (
     <Button
       variant="outline"
       className="cursor-pointer px-4 py-5 text-white text-base w-full bg-black disabled:opacity-50"
       onClick={handleCart}
-      disabled={isAdding || (disableIfNoSize && hasSizes && !selectedSize)}
+      disabled={isDisabled}
     >
       {isAdding ? "Adding..." : "Add to cart"}
       {!isAdding && <ShoppingCart color={itemInCart ? "#22c55e" : "#334EAC"} />}

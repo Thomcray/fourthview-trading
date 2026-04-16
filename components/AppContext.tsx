@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import {
   createContext,
   SetStateAction,
@@ -17,7 +15,7 @@ type Products = {
   description: string;
   categoryId: number;
   price: number;
-  compareAtPrice?: number; // Original price before discount (MSRP)
+  compareAtPrice?: number;
   discount?: number;
   discountType?: string;
   target: string | null;
@@ -27,7 +25,6 @@ type Products = {
   sizes: string[];
   weight: string;
   shippingCost: number;
-  // Derived at load time — never stored in DB
   slug: string;
 };
 
@@ -35,7 +32,9 @@ type Categories = {
   id: number;
   created_at: string;
   name: string;
+  slug: string;
   image_url: string;
+  theme_color: string | null;
 };
 
 type ChildrenProp = {
@@ -53,14 +52,17 @@ type Cart = {
   quantity?: number;
   description?: string;
   size?: string | null;
+  colour?: string | null;
   shippingCost?: number;
   productSizes?: string[];
+  productColours?: string[];
 };
 
 interface AppContextType {
   cart: Cart[];
   addToCart: (item: Cart) => Promise<void>;
   updateSize: (itemName: string, size: string) => Promise<void>;
+  updateColour: (itemName: string, colour: string) => Promise<void>;
   removeFromCart: (itemName: string) => Promise<void>;
   updateQuantity: (itemName: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -73,9 +75,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Derives a URL-safe slug for every product once at load time.
-// Fashion items  → target:       "Men"              → "men"
-// Other items    → productType:  "Washing Machine"  → "washing-machine"
 function deriveSlug(product: Omit<Products, "slug">): string {
   const source = product.target ?? product.productType;
   return source.toLowerCase().replace(/\s+/g, "-");
@@ -119,7 +118,12 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         if (existingItem) {
           return prev.map((i) =>
             i.itemName === item.itemName
-              ? { ...i, quantity: (i.quantity || 1) + 1, size: item.size }
+              ? {
+                  ...i,
+                  quantity: (i.quantity || 1) + 1,
+                  size: item.size,
+                  colour: item.colour,
+                }
               : i,
           );
         }
@@ -157,6 +161,24 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
       if (!response.ok) throw new Error("Failed to update size");
     } catch (error) {
       console.error("Failed to update size: ", error);
+    }
+  };
+
+  const updateColour = async (itemName: string, colour: string) => {
+    try {
+      setCart((prev) =>
+        prev.map((i) => (i.itemName === itemName ? { ...i, colour } : i)),
+      );
+
+      const response = await fetch("/api/cart/update-colour", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemName, colour }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update colour");
+    } catch (error) {
+      console.error("Failed to update colour: ", error);
     }
   };
 
@@ -218,6 +240,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         cart,
         addToCart,
         updateSize,
+        updateColour,
         removeFromCart,
         updateQuantity,
         clearCart,

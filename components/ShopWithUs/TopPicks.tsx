@@ -30,26 +30,28 @@ export default function TopPicks() {
     <section className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col gap-5">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-yellow-400" />
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-              <h1 className="font-semibold text-lg text-white">
-                Top Picks for You
-              </h1>
-              <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-2">
-                {allProducts.filter((p) => p.slug === slug).length === 1
-                  ? "1 item"
-                  : `${allProducts.filter((p) => p.slug === slug).length} items`}
-              </span>
+        <Link href="/collection/top-picks">
+          <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-yellow-400" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <h1 className="font-semibold text-lg text-white">
+                  Top Picks for You
+                </h1>
+                <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-2">
+                  {allProducts.filter((p) => p.slug === slug).length === 1
+                    ? "1 item"
+                    : `${allProducts.filter((p) => p.slug === slug).length} items`}
+                </span>
+              </div>
             </div>
+            <ChevronRight
+              color="white"
+              strokeWidth={2}
+              className="cursor-pointer hover:translate-x-1 transition-transform duration-300"
+            />
           </div>
-          <ChevronRight
-            color="white"
-            strokeWidth={2}
-            className="cursor-pointer hover:translate-x-1 transition-transform duration-300"
-          />
-        </div>
+        </Link>
 
         {/* Products Grid - Horizontal Scroll */}
         <div className="relative">

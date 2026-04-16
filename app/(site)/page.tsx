@@ -7,7 +7,7 @@ import TravelGuide from "@/components/TravelGuide";
 
 export default function Home() {
   return (
-    <main className="relative z-10 border-0 flex flex-col space-y-4 bg-blue-50">
+    <main className="relative z-10 border-0 flex flex-col bg-blue-50 -mt-2">
       <Hero />
       <MoneySection />
       <ShopWithUs />

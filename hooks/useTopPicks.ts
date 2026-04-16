@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Products } from "@/components/AppContext";
 
 export interface TopPick extends Products {
@@ -29,7 +29,8 @@ export function useTopPicks(
     minSavingsThreshold = 10,
   } = options;
 
-  return useMemo(() => {
+  // Stable, deterministic list — safe for SSR and initial client render
+  const stableTopItems = useMemo(() => {
     const categoryProducts = categorySlug
       ? products.filter((p) => p.slug === categorySlug)
       : products;
@@ -152,22 +153,28 @@ export function useTopPicks(
       };
     });
 
-    const sorted = scored.sort((a, b) => b.score - a.score);
-    let topItems = sorted.slice(0, limit);
+    // Always return deterministic sorted order — no Math.random() here
+    return scored.sort((a, b) => b.score - a.score).slice(0, limit);
+  }, [products, categorySlug, limit, requireImages, minSavingsThreshold]);
 
-    if (shuffle && topItems.length > 3) {
-      const fixed = topItems.slice(0, 3);
-      const variable = topItems.slice(3).sort(() => Math.random() - 0.5);
-      topItems = [...fixed, ...variable];
-    }
+  // Initialize state with the stable list so server and client first render match
+  const [topPicks, setTopPicks] = useState<TopPick[]>(stableTopItems);
 
-    return topItems;
-  }, [
-    products,
-    categorySlug,
-    limit,
-    shuffle,
-    requireImages,
-    minSavingsThreshold,
-  ]);
+  // Sync stable list into state when it changes (e.g. slug or products change)
+  useEffect(() => {
+    setTopPicks(stableTopItems);
+  }, [stableTopItems]);
+
+  // Shuffle only on the client, after hydration — Math.random() is safe here
+  useEffect(() => {
+    if (!shuffle || stableTopItems.length <= 3) return;
+
+    const fixed = stableTopItems.slice(0, 3);
+    const variable = [...stableTopItems.slice(3)].sort(
+      () => Math.random() - 0.5,
+    );
+    setTopPicks([...fixed, ...variable]);
+  }, [stableTopItems, shuffle]);
+
+  return topPicks;
 }

@@ -1,7 +1,8 @@
+// app/category/item/page.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Heart } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Heart, Filter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -14,6 +15,9 @@ import ProductPrice from "@/components/ProductPrice";
 export default function ItemClient() {
   const { allProducts: products } = useApp();
   const [wishlist, setWishlist] = useState<Set<number>>(new Set());
+  const [sortBy, setSortBy] = useState<
+    "default" | "price-asc" | "price-desc" | "name"
+  >("default");
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -25,6 +29,21 @@ export default function ItemClient() {
       (product) => product.productType.toLowerCase() === category.toLowerCase(),
     );
   }, [products, category]);
+
+  // Sort products
+  const sortedItems = useMemo(() => {
+    const items = [...categoryItems];
+    switch (sortBy) {
+      case "price-asc":
+        return items.sort((a, b) => a.price - b.price);
+      case "price-desc":
+        return items.sort((a, b) => b.price - a.price);
+      case "name":
+        return items.sort((a, b) => a.name.localeCompare(b.name));
+      default:
+        return items;
+    }
+  }, [categoryItems, sortBy]);
 
   const loading = products.length === 0;
 
@@ -42,7 +61,7 @@ export default function ItemClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -65,8 +84,8 @@ export default function ItemClient() {
 
   if (categoryItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
-        <div className="container mx-auto px-4 text-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
+        <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingCart className="w-12 h-12 text-gray-400" />
@@ -90,30 +109,57 @@ export default function ItemClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 sm:py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-900 to-blue-800 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Go back"
+            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-4 h-4" />
+            Back
           </button>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-blue-950">
+          <div className="text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
               {displayName}
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              {categoryItems.length} products found
+            <p className="text-blue-100 max-w-2xl mx-auto">
+              Explore our collection of {displayName.toLowerCase()} products
             </p>
+            <div className="inline-block mt-4 px-3 py-1 bg-white/20 rounded-full text-white text-sm">
+              {categoryItems.length}{" "}
+              {categoryItems.length === 1 ? "Product" : "Products"}
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Filters Bar */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-4 border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-400"
+            >
+              <option value="default">Default</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name">Name: A to Z</option>
+            </select>
+          </div>
+          <p className="text-sm text-gray-500">
+            Showing {sortedItems.length} of {categoryItems.length} products
+          </p>
         </div>
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {categoryItems.map((item, index) => (
+          {sortedItems.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
@@ -136,7 +182,7 @@ export default function ItemClient() {
                   />
 
                   {item.discount && item.discount > 0 && (
-                    <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg z-10">
+                    <span className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10">
                       -{item.discount}%
                     </span>
                   )}
@@ -193,13 +239,14 @@ export default function ItemClient() {
               </Link>
 
               {/* Action Buttons */}
-              <div className="px-4 pb-4 flex gap-2">
+              <div className="px-4 pb-4">
                 <AddToCart data={item} />
               </div>
             </motion.div>
           ))}
         </div>
 
+        {/* Load More */}
         {categoryItems.length >= 8 && (
           <div className="text-center mt-12">
             <Button

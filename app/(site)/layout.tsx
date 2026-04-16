@@ -10,10 +10,8 @@ export default function SiteLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      {/* Menu Button Bar */}
-      <div className="sticky top-0 z-40 px-4 py-2">
-        <MenuButton />
-      </div>
+      {/* Menu Button - now fixed directly on component */}
+      <MenuButton />
       {/* Main Content */}
       <main className="flex-1 w-full">{children}</main>
       <Footer />
