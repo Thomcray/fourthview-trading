@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
 
   const cart = await getOrCreateCart(session.user.id);
 
-  const supabase = await createClient();
+  const supabase = await createClient(true);
 
   const { error } = await supabase
     .from("cartItems")

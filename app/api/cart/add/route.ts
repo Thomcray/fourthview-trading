@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
   const cart = await getOrCreateCart(userId);
 
-  const supabase = await createClient(); // user context - their own cart
+  const supabase = await createClient(true);
 
   //   Check if item already exists
   const { data: existingItem } = await supabase

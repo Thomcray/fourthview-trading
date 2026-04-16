@@ -68,7 +68,7 @@ export async function getCountries() {
 }
 
 export async function getCategories() {
-  const supabase = await createClient(); // public data
+  const supabase = await createClient(true); // public data
   const { data: categories, error } = await supabase
     .from("categories")
     .select("id, created_at, name, image_url")
@@ -89,7 +89,7 @@ type Category = {
 export async function getCategoryByName(
   name: string,
 ): Promise<Category | null> {
-  const supabase = await createClient(); // public data
+  const supabase = await createClient(true); // public data
   const { data: category, error } = await supabase
     .from("categories")
     .select("id, name")
@@ -121,7 +121,7 @@ type Product = {
 };
 
 export async function newProduct(product: Product) {
-  const supabase = await createClient(true); // admin
+  const supabase = await createClient(true);
   const { data, error } = await supabase
     .from("products")
     .insert([product])
