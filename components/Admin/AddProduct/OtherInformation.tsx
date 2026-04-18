@@ -293,10 +293,10 @@ export default function OtherInformation({
           {/* Display: converted to user's currency */}
           <div className="flex items-center rounded-lg border bg-green-50 border-green-200 shadow-sm h-11 w-96 max-sm:w-full overflow-hidden">
             <span className="px-3 text-green-600 font-medium border-r border-green-200 h-full flex items-center bg-green-100">
-              {formatPrice(calculatedCost).charAt(0)}
+              {formatPrice(calculatedCost)!.charAt(0)}
             </span>
             <span className="flex-1 px-3 py-2 text-sm text-slate-800 font-medium">
-              {isCalculating ? "..." : formatPrice(calculatedCost).slice(1)}
+              {isCalculating ? "..." : formatPrice(calculatedCost)!.slice(1)}
             </span>
           </div>
 
