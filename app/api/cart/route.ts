@@ -4,7 +4,7 @@ import { authOptions } from "@/app/_lib/auth";
 import { getOrCreateCart } from "@/app/_lib/actions/get-cart-action";
 import { createClient } from "@/app/_lib/supabase-server";
 
-// Define Cart type here (or import from a shared types file)
+// Define Cart type
 type Cart = {
   id?: number;
   productId?: number;
@@ -14,15 +14,15 @@ type Cart = {
   discount?: number;
   quantity?: number;
   description?: string;
-  size: string | null; // required, no ?
-  colour: string | null; // required, no ?
+  size: string | null;
+  colour: string | null;
   shippingCost?: number;
   productSizes?: string[];
   productColours?: string[];
 };
 
 // Normalize to ensure size/colour are never undefined
-const normalizeCartItems = (items: any[] | null): Cart[] => {
+const normalizeCartItems = (items: Cart[] | null): Cart[] => {
   if (!items) return [];
 
   return items.map((item) => ({
