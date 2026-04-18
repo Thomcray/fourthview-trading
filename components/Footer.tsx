@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation"; // Added
 
 type StoreSettings = {
   storeName: string;
@@ -60,6 +61,7 @@ const serviceFeatures = [
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = useState<StoreSettings | null>(null);
+  const pathname = usePathname(); // Added
 
   useEffect(() => {
     fetch("/api/settings")
@@ -71,6 +73,9 @@ export default function Footer() {
         // Fail silently — footer still renders with fallbacks
       });
   }, []);
+
+  // Check if on account page
+  const isAccountPage = pathname?.includes("account");
 
   // Build social links dynamically from DB — only show if value exists
   const socialLinks = [
@@ -209,8 +214,8 @@ export default function Footer() {
           >
             <h3 className="text-lg font-semibold text-white">Contact Us</h3>
             <ul className="space-y-3">
-              {contactInfo.map((info) => (
-                <li key={info.text}>
+              {contactInfo.map((info, idx) => (
+                <li key={idx}>
                   <Link
                     href={info.href}
                     target="_blank"
@@ -289,7 +294,8 @@ export default function Footer() {
           href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+          className={`fixed z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110
+            ${isAccountPage ? "bottom-18 right-4 sm:bottom-6 sm:right-6" : "bottom-6 right-6"}`}
           aria-label="Chat on WhatsApp"
         >
           <MessageCircle className="w-6 h-6" />

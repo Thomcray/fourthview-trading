@@ -100,7 +100,7 @@ export default function OrderSummary({
                     <Tag className="w-3.5 h-3.5 text-green-500" />
                     <span className="text-gray-600">Discount</span>
                   </div>
-                  <span className="text-green-600">
+                  <span className="flex text-green-600 whitespace-nowrap">
                     - <ProductPrice yuanPrice={totalDiscount} />
                   </span>
                 </div>

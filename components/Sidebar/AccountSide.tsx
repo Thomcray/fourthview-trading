@@ -42,12 +42,6 @@ export default function AccountSide() {
 
   const secondaryLinks = [
     {
-      href: "/account/wishlist",
-      label: "Wishlist",
-      icon: <Heart className="w-5 h-5" />,
-      description: "Saved items",
-    },
-    {
       href: "/account/settings",
       label: "Settings",
       icon: <Settings className="w-5 h-5" />,
@@ -89,7 +83,7 @@ export default function AccountSide() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed lg:sticky top-0 left-0 z-40 h-full lg:h-auto
+          fixed lg:sticky top-0 left-0 z-50 h-full lg:h-auto
           transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           flex flex-col justify-between
@@ -116,7 +110,7 @@ export default function AccountSide() {
             </div>
             {isAdmin && (
               <span className="inline-block px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                Administrator
+                {session?.user?.userRole}
               </span>
             )}
           </div>
