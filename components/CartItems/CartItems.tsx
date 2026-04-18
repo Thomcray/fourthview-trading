@@ -99,7 +99,7 @@ export default function CartItems() {
         <Link href="/shop">
           <Button variant="outline" className="gap-2">
             <ChevronLeft className="w-4 h-4" />
-            Continue Shopping
+            Back
           </Button>
         </Link>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
