@@ -20,10 +20,5 @@ export async function uploadProductImage(file: File) {
 
   if (error) throw new Error(error.message);
 
-  //   get image path from bucket
-  const { data } = await supabase.storage
-    .from("product-images")
-    .createSignedUrl(fileName, 60 * 60 * 24 * 365);
-
-  return data?.signedUrl;
+  return fileName;
 }

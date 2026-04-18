@@ -1,4 +1,3 @@
-// components/Admin/Tabs/RefundsTab.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -8,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { TableCell } from "@/components/ui/table";
 import AdminTable from "@/components/Admin/AdminTable";
 import { Search, CloudDownload, Eye, RefreshCw } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchRefunds } from "@/app/_lib/api";
+import { queryKeys } from "@/app/_lib/queryKeys";
 import { toast } from "react-toastify";
 import Link from "next/link";
 
 type Refund = {
   id: number;
-  order_id: number; // Note: snake_case from database
+  order_id: number;
   order_reference?: string;
   customer_id: number;
   customer_name: string;
@@ -38,12 +40,6 @@ const headers = [
   "Actions",
 ];
 
-interface RefundsTabProps {
-  refunds: Refund[] | { refunds: Refund[] };
-  isLoading?: boolean;
-  onRefundProcessed: () => void;
-}
-
 const statusConfig: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "bg-yellow-100 text-yellow-700" },
   approved: { label: "Approved", color: "bg-blue-100 text-blue-700" },
@@ -51,18 +47,19 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   rejected: { label: "Rejected", color: "bg-red-100 text-red-700" },
 };
 
-export default function RefundsTab({
-  refunds: refundsProp,
-  isLoading,
-  onRefundProcessed,
-}: RefundsTabProps) {
+export default function RefundsTab() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Handle both array and object formats
-  const refundsArray = Array.isArray(refundsProp)
-    ? refundsProp
-    : refundsProp?.refunds || [];
+  const { data: refundsData, isLoading } = useQuery({
+    queryKey: ["refunds"],
+    queryFn: fetchRefunds,
+  });
+
+  const refundsArray: Refund[] = Array.isArray(refundsData)
+    ? refundsData
+    : (refundsData?.refunds ?? []);
 
   const filteredRefunds = useMemo(() => {
     const q = search.toLowerCase();
@@ -134,7 +131,7 @@ export default function RefundsTab({
     a.download = `refunds_${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Refunds export started!");
+    toast.success("Refunds exported!");
   };
 
   if (isLoading) {
@@ -156,7 +153,7 @@ export default function RefundsTab({
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Total Refunds</p>
@@ -178,7 +175,7 @@ export default function RefundsTab({
         </div>
       </div>
 
-      {/* Search and Filters */}
+      {/* Search & Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative flex-1 max-w-md">
@@ -211,7 +208,7 @@ export default function RefundsTab({
         </div>
       </div>
 
-      {/* Refunds Table */}
+      {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {filteredRefunds.length === 0 ? (
           <div className="text-center py-12">

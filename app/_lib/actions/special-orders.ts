@@ -6,7 +6,7 @@ import { uploadProductImage } from "./upload-actions";
 export async function specialOrders(
   formData: FormData,
   userId: string | undefined,
-  orderImages: File[]
+  orderImages: File[],
 ) {
   const email = formData.get("email") as string;
   const description = formData.get("description") as string;
@@ -40,6 +40,6 @@ export async function specialOrders(
       images: uploadedImageUrls,
     });
   } catch {
-    throw new Error("Could not create product");
+    throw new Error("Could not submit special order.");
   }
 }

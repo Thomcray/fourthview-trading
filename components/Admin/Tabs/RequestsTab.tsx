@@ -1,4 +1,3 @@
-// components/Admin/RequestsTab.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -9,6 +8,9 @@ import { TableCell } from "@/components/ui/table";
 import AdminTable from "@/components/Admin/AdminTable";
 import BookingDetailsModal from "@/components/Admin/BookingDetailsModal";
 import { Search, CloudDownload, Eye, ClipboardList } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchBookings } from "@/app/_lib/api";
+import { queryKeys } from "@/app/_lib/queryKeys";
 import { toast } from "react-toastify";
 
 type Booking = {
@@ -41,24 +43,53 @@ const requestHeaders = [
   "Actions",
 ];
 
-interface RequestsTabProps {
-  bookings: Booking[];
-  isLoading?: boolean;
-  onExport: () => void;
-  onStatusChange: (id: number, status: string) => void;
-  isUpdating: boolean;
-}
-
-export default function RequestsTab({
-  bookings,
-  isLoading,
-  onExport,
-  onStatusChange,
-  isUpdating,
-}: RequestsTabProps) {
+export default function RequestsTab() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  const { data: bookingsData, isLoading } = useQuery({
+    queryKey: queryKeys.bookings,
+    queryFn: fetchBookings,
+  });
+
+  const bookings: Booking[] = bookingsData?.bookings ?? [];
+
+  const { mutate: updateBookingStatus } = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const res = await fetch("/api/bookings/update-status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const data = await res.json();
+      if (!res.ok && res.status !== 207)
+        throw new Error("Failed to update status");
+      return { data, status: res.status };
+    },
+    onMutate: ({ id }) => setUpdatingId(id),
+    onSuccess: ({ data, status }, { id, status: newStatus }) => {
+      queryClient.setQueryData(
+        queryKeys.bookings,
+        (old: { bookings: Booking[] } | undefined) => ({
+          bookings: (old?.bookings ?? []).map((b) =>
+            b.id === id ? { ...b, status: newStatus } : b,
+          ),
+        }),
+      );
+      if (status === 207) {
+        toast.warn(data.warning);
+      } else {
+        toast.success(
+          `Request ${newStatus.toUpperCase()}! Customer has been notified.`,
+        );
+      }
+    },
+    onError: () => toast.error("Failed to update status. Please try again."),
+    onSettled: () => setUpdatingId(null),
+  });
 
   const filteredRequests = useMemo(() => {
     const q = search.toLowerCase();
@@ -93,6 +124,46 @@ export default function RequestsTab({
     );
   };
 
+  const handleExport = () => {
+    const csv = [
+      [
+        "ID",
+        "Name",
+        "Email",
+        "Phone",
+        "Purpose",
+        "Factory Name",
+        "Factory Address",
+        "Visit Date",
+        "Submitted Date",
+        "Status",
+      ],
+      ...bookings.map((b) => [
+        b.id,
+        `${b.firstName} ${b.lastName}`,
+        b.email,
+        b.phone,
+        b.purpose,
+        b.factoryName || "-",
+        b.factoryAddress || "-",
+        b.visitDate ? new Date(b.visitDate).toLocaleDateString() : "-",
+        new Date(b.created_at).toLocaleDateString(),
+        b.status,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `requests_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Requests exported!");
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -112,7 +183,7 @@ export default function RequestsTab({
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <p className="text-sm text-gray-500">Total Requests</p>
@@ -132,7 +203,7 @@ export default function RequestsTab({
         </div>
       </div>
 
-      {/* Search and Filters */}
+      {/* Search & Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative flex-1 max-w-md">
@@ -156,7 +227,7 @@ export default function RequestsTab({
               <option value="confirmed">Confirmed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <Button variant="outline" onClick={onExport} className="gap-2">
+            <Button variant="outline" onClick={handleExport} className="gap-2">
               <CloudDownload className="w-4 h-4" />
               Export CSV
             </Button>
@@ -164,7 +235,7 @@ export default function RequestsTab({
         </div>
       </div>
 
-      {/* Requests Table */}
+      {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {filteredRequests.length === 0 ? (
           <div className="text-center py-12">
@@ -241,13 +312,12 @@ export default function RequestsTab({
         )}
       </div>
 
-      {/* Booking Details Modal */}
       <BookingDetailsModal
         booking={selectedBooking}
         isOpen={!!selectedBooking}
         onClose={() => setSelectedBooking(null)}
-        onStatusChange={onStatusChange}
-        isUpdating={isUpdating}
+        onStatusChange={(id, status) => updateBookingStatus({ id, status })}
+        isUpdating={updatingId !== null}
       />
     </div>
   );

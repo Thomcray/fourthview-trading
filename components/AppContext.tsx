@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useState,
-  useCallback,
 } from "react";
 import { toast } from "react-toastify";
 
@@ -68,7 +67,6 @@ interface AppContextType {
   removeFromCart: (id: number) => Promise<void>;
   updateQuantity: (id: number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
-  // NEW: Update variant without flash
   updateVariant: (
     id: number,
     updates: { colour?: string; size?: string },

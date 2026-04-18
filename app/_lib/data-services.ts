@@ -68,17 +68,31 @@ export async function getCountries() {
 }
 
 export async function getCategories() {
-  const supabase = await createClient(true); // public data
+  const supabase = await createClient(true);
+
   const { data: categories, error } = await supabase
     .from("categories")
     .select("id, created_at, name, slug, image_url")
     .order("name");
 
-  if (error) {
-    return null;
-  }
+  if (error) return null;
 
-  return categories;
+  const categoriesWithSignedUrls = await Promise.all(
+    categories.map(async (category) => {
+      if (!category.image_url) return category;
+
+      // Already a full URL (old data) — return as-is
+      if (category.image_url.startsWith("http")) return category;
+
+      const { data } = await supabase.storage
+        .from("category-images")
+        .createSignedUrl(category.image_url, 60 * 60);
+
+      return { ...category, image_url: data?.signedUrl ?? "" };
+    }),
+  );
+
+  return categoriesWithSignedUrls;
 }
 
 type Category = {
@@ -154,18 +168,40 @@ export async function updateCurrentProduct(
 }
 
 export async function getAllProducts() {
-  const supabase = await createClient(); // public data
+  const supabase = await createClient();
+
   const { data: products, error } = await supabase
     .from("products")
     .select(
       "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours, sizes, weight, shippingCost",
     );
 
-  if (error) {
-    return null;
-  }
+  if (error) return null;
 
-  return products;
+  // Sign all image URLs fresh
+  const supabaseAdmin = await createClient(true);
+  const productsWithSignedUrls = await Promise.all(
+    products.map(async (product) => {
+      if (!product.imageUrl?.length) return product;
+
+      const signedUrls = await Promise.all(
+        product.imageUrl.map(async (path: string) => {
+          // Already a full URL (old data before fix) — return as-is
+          if (path.startsWith("http")) return path;
+
+          const { data } = await supabaseAdmin.storage
+            .from("product-images")
+            .createSignedUrl(path, 60 * 60); // 1 hour
+
+          return data?.signedUrl ?? "";
+        }),
+      );
+
+      return { ...product, imageUrl: signedUrls };
+    }),
+  );
+
+  return productsWithSignedUrls;
 }
 
 export async function getProductById(id: number) {
@@ -186,7 +222,7 @@ export async function getProductById(id: number) {
 }
 
 export async function newSpecialOrders(orders: Orders) {
-  const supabase = await createClient(); // user operation
+  const supabase = await createClient(true); // user operation
   const { data, error } = await supabase.from("specialOrders").insert([orders]);
 
   if (error) {

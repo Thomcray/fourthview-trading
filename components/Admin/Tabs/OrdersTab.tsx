@@ -1,4 +1,3 @@
-// components/Admin/Tabs/OrdersTab.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -21,6 +20,10 @@ import {
   Package,
 } from "lucide-react";
 import { RefundModal } from "../Modals/RefundModal";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchOrders } from "@/app/_lib/api";
+import { queryKeys } from "@/app/_lib/queryKeys";
+import { toast } from "react-toastify";
 
 type OrderItem = {
   id: number;
@@ -95,22 +98,9 @@ const orderHeaders = [
   "Actions",
 ];
 
-interface OrdersTabProps {
-  orders: Order[];
-  isLoading?: boolean;
-  onExport: () => void;
-  onStatusChange: (id: number, status: string, notify?: boolean) => void;
-  isUpdating: boolean;
-}
-
-export default function OrdersTab({
-  orders,
-  isLoading,
-  onExport,
-  onStatusChange,
-  isUpdating,
-}: OrdersTabProps) {
+export default function OrdersTab() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -118,21 +108,58 @@ export default function OrdersTab({
   const [statusDropdownOpen, setStatusDropdownOpen] = useState<number | null>(
     null,
   );
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: queryKeys.orders,
+    queryFn: fetchOrders,
+  });
+
+  const orders: Order[] = ordersData?.orders ?? [];
+
+  const { mutate: updateOrderStatus } = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+      notify = true,
+    }: {
+      id: number;
+      status: string;
+      notify?: boolean;
+    }) => {
+      const res = await fetch("/api/orders/update-status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status, notify }),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.message || "Failed to update order status");
+      return data;
+    },
+    onMutate: ({ id }) => setUpdatingId(id),
+    onSuccess: (data, { status }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders });
+      toast.success(
+        `Order marked as ${status.toUpperCase()}!${data.notified ? " Customer notified via email." : ""}`,
+      );
+    },
+    onError: (error: Error) =>
+      toast.error(error.message || "Failed to update order status."),
+    onSettled: () => {
+      setUpdatingId(null);
+      setStatusDropdownOpen(null);
+    },
+  });
 
   const getItemCount = (order: Order): number => {
-    if (typeof order.items === "number") {
-      return order.items;
-    }
-    if (Array.isArray(order.items)) {
-      return order.items.length;
-    }
+    if (typeof order.items === "number") return order.items;
+    if (Array.isArray(order.items)) return order.items.length;
     return 0;
   };
 
-  const isEligibleForRefund = (order: Order): boolean => {
-    const eligibleStatuses = ["delivered", "shipped", "processing"];
-    return eligibleStatuses.includes(order.status);
-  };
+  const isEligibleForRefund = (order: Order) =>
+    ["delivered", "shipped", "processing"].includes(order.status);
 
   const filteredOrders = useMemo(() => {
     const q = search.toLowerCase();
@@ -169,13 +196,40 @@ export default function OrdersTab({
     );
   };
 
-  const handleStatusUpdate = (
-    orderId: number,
-    newStatus: string,
-    notify: boolean = true,
-  ) => {
-    onStatusChange(orderId, newStatus, notify);
-    setStatusDropdownOpen(null);
+  const handleExport = () => {
+    const csv = [
+      [
+        "ID",
+        "Reference",
+        "Customer",
+        "Email",
+        "Items",
+        "Total",
+        "Date",
+        "Status",
+      ],
+      ...orders.map((o) => [
+        o.id,
+        o.reference,
+        o.customerName,
+        o.customerEmail,
+        getItemCount(o),
+        o.total.toFixed(2),
+        new Date(o.created_at).toLocaleDateString(),
+        o.status,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Orders exported!");
   };
 
   if (isLoading) {
@@ -198,7 +252,7 @@ export default function OrdersTab({
   return (
     <>
       <div className="space-y-6">
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <p className="text-sm text-gray-500">Total Orders</p>
@@ -230,7 +284,7 @@ export default function OrdersTab({
           </div>
         </div>
 
-        {/* Search and Filters */}
+        {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="relative flex-1 max-w-md">
@@ -256,7 +310,11 @@ export default function OrdersTab({
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </select>
-              <Button variant="outline" onClick={onExport} className="gap-2">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="gap-2"
+              >
                 <CloudDownload className="w-4 h-4" />
                 Export CSV
               </Button>
@@ -264,7 +322,7 @@ export default function OrdersTab({
           </div>
         </div>
 
-        {/* Orders Table */}
+        {/* Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {filteredOrders.length === 0 ? (
             <div className="text-center py-12">
@@ -320,7 +378,6 @@ export default function OrdersTab({
                       })}
                     </TableCell>
                     <TableCell>
-                      {/* Status Dropdown */}
                       <div className="relative">
                         <button
                           onClick={() =>
@@ -328,7 +385,7 @@ export default function OrdersTab({
                               statusDropdownOpen === order.id ? null : order.id,
                             )
                           }
-                          disabled={isUpdating}
+                          disabled={updatingId === order.id}
                           className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50"
                         >
                           {getStatusBadge(order.status)}
@@ -337,7 +394,6 @@ export default function OrdersTab({
                             <ChevronDown className="w-3 h-3 text-gray-400" />
                           )}
                         </button>
-
                         {statusDropdownOpen === order.id && (
                           <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
                             {statusConfig[order.status]?.nextStatuses.map(
@@ -345,16 +401,16 @@ export default function OrdersTab({
                                 <button
                                   key={nextStatus}
                                   onClick={() =>
-                                    handleStatusUpdate(
-                                      order.id,
-                                      nextStatus,
-                                      true,
-                                    )
+                                    updateOrderStatus({
+                                      id: order.id,
+                                      status: nextStatus,
+                                      notify: true,
+                                    })
                                   }
                                   className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
                                 >
                                   <span
-                                    className={`w-2 h-2 rounded-full ${statusConfig[nextStatus].color.split(" ")[0].replace("bg-", "bg-").replace("100", "500")}`}
+                                    className={`w-2 h-2 rounded-full ${statusConfig[nextStatus].color.split(" ")[0].replace("100", "500")}`}
                                   />
                                   Mark as {statusConfig[nextStatus].label}
                                 </button>
@@ -363,11 +419,11 @@ export default function OrdersTab({
                             <div className="border-t border-gray-100 my-1" />
                             <button
                               onClick={() =>
-                                handleStatusUpdate(
-                                  order.id,
-                                  order.status,
-                                  false,
-                                )
+                                updateOrderStatus({
+                                  id: order.id,
+                                  status: order.status,
+                                  notify: false,
+                                })
                               }
                               className="w-full px-3 py-2 text-left text-xs text-gray-500 hover:bg-gray-50"
                             >
@@ -386,7 +442,6 @@ export default function OrdersTab({
                             router.push(`/admin/orders/${order.id}`)
                           }
                           className="text-gray-400 hover:text-blue-600"
-                          title="View Order Details"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -399,7 +454,6 @@ export default function OrdersTab({
                               setShowRefundModal(true);
                             }}
                             className="text-gray-400 hover:text-red-600"
-                            title="Process Refund"
                           >
                             <RefreshCw className="w-4 h-4" />
                           </Button>
@@ -414,7 +468,6 @@ export default function OrdersTab({
         </div>
       </div>
 
-      {/* Refund Modal */}
       <RefundModal
         open={showRefundModal}
         onClose={() => {
