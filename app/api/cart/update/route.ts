@@ -5,23 +5,33 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request) {
-  const { itemName, quantity } = await req.json();
+  const { id, quantity } = await req.json();
+
+  if (!id || quantity === undefined) {
+    return NextResponse.json(
+      { error: "Item id and quantity are required" },
+      { status: 400 },
+    );
+  }
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
 
-  const cart = await getOrCreateCart(userId);
-
+  const cart = await getOrCreateCart(session.user.id);
   const supabase = await createClient(true);
 
-  await supabase
+  const { error } = await supabase
     .from("cartItems")
     .update({ quantity })
-    .eq("cartId", cart.id)
-    .eq("itemName", itemName);
+    .eq("id", id)
+    .eq("cartId", cart.id);
+
+  if (error) {
+    console.error("Error updating quantity:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

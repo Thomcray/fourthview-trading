@@ -5,7 +5,14 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request) {
-  const { itemName, size } = await req.json();
+  const { id, size } = await req.json();
+
+  if (!id || !size) {
+    return NextResponse.json(
+      { error: "Item id and size are required" },
+      { status: 400 },
+    );
+  }
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -13,20 +20,17 @@ export async function PATCH(req: Request) {
   }
 
   const cart = await getOrCreateCart(session.user.id);
-
   const supabase = await createClient(true);
 
   const { error } = await supabase
     .from("cartItems")
     .update({ size })
-    .eq("cartId", cart.id)
-    .eq("itemName", itemName);
+    .eq("id", id)
+    .eq("cartId", cart.id);
 
   if (error) {
-    return NextResponse.json(
-      { error: "Failed to update size" },
-      { status: 500 },
-    );
+    console.error("Error updating size:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

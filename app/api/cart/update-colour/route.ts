@@ -6,11 +6,11 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request) {
-  const { itemName, colour } = await req.json();
+  const { id, colour } = await req.json();
 
-  if (!itemName || !colour) {
+  if (!id || !colour) {
     return NextResponse.json(
-      { error: "Item name and colour are required" },
+      { error: "Item id and colour are required" },
       { status: 400 },
     );
   }
@@ -21,22 +21,18 @@ export async function PATCH(req: Request) {
   }
 
   const cart = await getOrCreateCart(session.user.id);
-
   const supabase = await createClient(true);
 
   const { error } = await supabase
     .from("cartItems")
     .update({ colour })
-    .eq("cartId", cart.id)
-    .eq("itemName", itemName);
+    .eq("id", id)
+    .eq("cartId", cart.id);
 
   if (error) {
     console.error("Error updating colour:", error);
-    return NextResponse.json(
-      { error: "Failed to update colour" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, colour });
+  return NextResponse.json({ success: true });
 }

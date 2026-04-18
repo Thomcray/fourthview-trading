@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useApp } from "./AppContext";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
+import { toast } from "react-toastify";
 
 const PAYSTACK_PUBLIC_KEY = process.env
   .NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY as string;
@@ -28,13 +29,12 @@ export default function PaystackButton({ total }: { total: number }) {
   const router = useRouter();
 
   const user = session?.user;
-  const nairaTotal = convertPrice(total);
+  const nairaTotal = convertPrice(total) ?? 0;
 
-  // Must be called before any early returns
   const config = {
     reference: new Date().getTime().toString(),
     email: user?.email ?? "",
-    amount: Math.round(nairaTotal * 100),
+    amount: Math.round((nairaTotal ?? 0) * 100),
     publicKey: PAYSTACK_PUBLIC_KEY,
     metadata: {
       custom_fields: [
@@ -67,19 +67,10 @@ export default function PaystackButton({ total }: { total: number }) {
 
   const initializePayment = usePaystackPayment(config);
 
-  // Early returns after all hooks
   if (currencyLoading) {
     return (
       <Button type="button" disabled className="cursor-pointer h-10">
         Loading rates...
-      </Button>
-    );
-  }
-
-  if (currency.code !== "NGN") {
-    return (
-      <Button disabled className="cursor-pointer h-10">
-        Please switch to NGN to checkout
       </Button>
     );
   }
@@ -89,7 +80,8 @@ export default function PaystackButton({ total }: { total: number }) {
 
     const onSuccess = async (reference: PaystackReference) => {
       try {
-        await fetch("/api/orders/save", {
+        // FIXED: Properly await and check response
+        const response = await fetch("/api/orders/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -98,10 +90,27 @@ export default function PaystackButton({ total }: { total: number }) {
             items: cart,
           }),
         });
+
+        // FIXED: Check if response is OK
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to save order");
+        }
+
+        const data = await response.json();
+
+        // Only clear cart and redirect if save succeeded
         await clearCart();
+        toast.success("Order placed successfully!");
         router.push("/account/purchased-items");
       } catch (error) {
         console.error("Failed to save order:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to save order. Please contact support.",
+        );
+        // Don't clear cart - let user retry
       } finally {
         setIsLoading(false);
       }

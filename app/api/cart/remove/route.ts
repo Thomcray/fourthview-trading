@@ -5,24 +5,31 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function DELETE(req: Request) {
-  const body = await req.json();
-  const { itemName } = body;
+  const { id } = await req.json();
+
+  if (!id) {
+    return NextResponse.json({ error: "Item id is required" }, { status: 400 });
+  }
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
 
-  const cart = await getOrCreateCart(userId);
-
+  const cart = await getOrCreateCart(session.user.id);
   const supabase = await createClient(true);
 
-  await supabase
+  // Scope deletion to cartId as well so a user can never delete another user's item
+  const { error } = await supabase
     .from("cartItems")
     .delete()
-    .eq("cartId", cart.id)
-    .eq("itemName", itemName);
+    .eq("id", id)
+    .eq("cartId", cart.id);
+
+  if (error) {
+    console.error("Error removing item:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

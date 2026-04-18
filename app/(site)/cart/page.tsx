@@ -1,4 +1,3 @@
-// app/cart/page.tsx (Improved original version)
 "use client";
 
 import React, { Suspense } from "react";

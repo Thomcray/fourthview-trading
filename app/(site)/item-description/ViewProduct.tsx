@@ -5,7 +5,8 @@ import { useApp } from "@/components/AppContext";
 import ProductPrice from "@/components/ProductPrice";
 import { MinusIcon, PlusIcon, ShoppingCart, Truck, Weight } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { toast } from "react-toastify";
 
 type Item = {
   id: number;
@@ -37,13 +38,26 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
   const [sizeUpdated, setSizeUpdated] = useState(false);
   const [colourUpdated, setColourUpdated] = useState(false);
   const [imageIdx, setImageIdx] = useState(0);
+  const [isSwitching, setIsSwitching] = useState(false);
 
-  const { cart, updateQuantity, updateSize } = useApp();
-  const inCart = cart.find((item) => item.itemName === selectedItem?.name);
+  const userInteractedRef = useRef(false);
+
+  const { cart, addToCart, removeFromCart, updateQuantity, updateVariant } =
+    useApp();
+
   const hasSizes = (selectedItem?.sizes?.length ?? 0) > 0;
   const hasColours = (selectedItem?.colours?.length ?? 0) > 0;
 
+  const inCart = cart.find(
+    (item) =>
+      item.productId === selectedItem?.id &&
+      item.colour === selectedColour &&
+      item.size === selectedSize,
+  );
+
+  // Reset state when switching products
   useEffect(() => {
+    userInteractedRef.current = false;
     setImageIdx(0);
     setSelectedSize(null);
     setSelectedColour(null);
@@ -51,42 +65,137 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
     setColourUpdated(false);
   }, [selectedItem?.id]);
 
+  // Sync from cart on initial load
   useEffect(() => {
-    if (inCart?.size) {
-      setSelectedSize(inCart.size);
-    } else if (!inCart) {
-      setSelectedSize(null);
-    }
-  }, [inCart?.size, inCart]);
+    if (userInteractedRef.current) return;
+    if (!inCart) return;
 
-  const handleImageColour = (idx: number) => {
-    if (!selectedItem) return;
-    const safeIdx = Math.min(
-      idx,
-      Math.max(0, selectedItem.imageUrl.length - 1),
-    );
-    setImageIdx(safeIdx);
-    const colour = selectedItem.colours[idx];
-    setSelectedColour(colour);
-    if (inCart) {
-      setColourUpdated(true);
-      setTimeout(() => setColourUpdated(false), 2000);
+    if (inCart.size) setSelectedSize(inCart.size);
+    if (inCart.colour) {
+      setSelectedColour(inCart.colour);
+      const colourIdx = selectedItem?.colours.indexOf(inCart.colour) ?? -1;
+      if (colourIdx !== -1) setImageIdx(colourIdx);
     }
-  };
+  }, [selectedItem?.id]);
 
-  const handleSizeChange = (size: string) => {
-    setSelectedSize(size);
-    if (inCart) {
-      updateSize(selectedItem!.name, size);
-      setSizeUpdated(true);
-      setTimeout(() => setSizeUpdated(false), 2000);
-    }
-  };
+  // SIMPLIFIED: Use updateVariant instead of remove+add
+  const handleImageColour = useCallback(
+    async (idx: number) => {
+      if (!selectedItem || isSwitching) return;
 
-  const handleQuantityChange = (newQty: number) => {
-    if (!inCart || !selectedItem) return;
-    updateQuantity(selectedItem.name, Math.max(1, newQty));
-  };
+      userInteractedRef.current = true;
+      const safeIdx = Math.min(
+        idx,
+        Math.max(0, selectedItem.imageUrl.length - 1),
+      );
+      const newColour = selectedItem.colours[safeIdx];
+
+      // Not in cart yet — just update local selection
+      if (!inCart?.id || !inCart.productId) {
+        setImageIdx(safeIdx);
+        setSelectedColour(newColour);
+        return;
+      }
+
+      // Same colour — nothing to do
+      if (inCart.colour === newColour) {
+        setImageIdx(safeIdx);
+        return;
+      }
+
+      // Check if variant exists
+      const variantExists = cart.some(
+        (item) =>
+          item.productId === selectedItem.id &&
+          item.colour === newColour &&
+          item.size === selectedSize &&
+          item.id !== inCart.id,
+      );
+
+      if (variantExists) {
+        toast.info("This colour variant is already in your cart");
+        return;
+      }
+
+      setIsSwitching(true);
+      setImageIdx(safeIdx);
+      setSelectedColour(newColour);
+
+      try {
+        await updateVariant(inCart.id, { colour: newColour }, inCart.productId);
+        setColourUpdated(true);
+        setTimeout(() => setColourUpdated(false), 2000);
+        toast.success("Colour switched in cart");
+      } catch {
+        toast.error("Failed to switch colour");
+        // Revert on error
+        const oldIdx = inCart.colour
+          ? selectedItem.colours.indexOf(inCart.colour)
+          : 0;
+        setImageIdx(oldIdx);
+        setSelectedColour(inCart.colour ?? null);
+      } finally {
+        setIsSwitching(false);
+      }
+    },
+    [selectedItem, inCart, cart, selectedSize, updateVariant],
+  );
+
+  // SIMPLIFIED: Use updateVariant instead of remove+add
+  const handleSizeChange = useCallback(
+    async (newSize: string) => {
+      if (!selectedItem || isSwitching) return;
+
+      userInteractedRef.current = true;
+
+      // Not in cart yet — just update local selection
+      if (!inCart?.id || !inCart.productId) {
+        setSelectedSize(newSize);
+        return;
+      }
+
+      // Same size — nothing to do
+      if (inCart.size === newSize) return;
+
+      // Check if variant exists
+      const variantExists = cart.some(
+        (item) =>
+          item.productId === selectedItem.id &&
+          item.colour === selectedColour &&
+          item.size === newSize &&
+          item.id !== inCart.id,
+      );
+
+      if (variantExists) {
+        toast.info("This size variant is already in your cart");
+        return;
+      }
+
+      setIsSwitching(true);
+      setSelectedSize(newSize);
+
+      try {
+        await updateVariant(inCart.id, { size: newSize }, inCart.productId);
+        setSizeUpdated(true);
+        setTimeout(() => setSizeUpdated(false), 2000);
+        toast.success("Size switched in cart");
+      } catch {
+        toast.error("Failed to switch size");
+        setSelectedSize(inCart.size ?? null);
+      } finally {
+        setIsSwitching(false);
+      }
+    },
+    [selectedItem, inCart, cart, selectedColour, updateVariant],
+  );
+
+  const handleQuantityChange = useCallback(
+    async (newQty: number) => {
+      if (!inCart?.id) return;
+      await updateQuantity(inCart.id, Math.max(1, newQty));
+    },
+    [inCart, updateQuantity],
+  );
 
   if (!selectedItem) return null;
 
@@ -123,6 +232,11 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
                   ✓ Colour updated in cart
                 </span>
               )}
+              {isSwitching && (
+                <span className="text-xs text-blue-600 font-medium animate-pulse">
+                  Switching...
+                </span>
+              )}
             </div>
             <div className="flex flex-row gap-2 flex-wrap">
               {selectedItem.colours.map((colour, idx) => (
@@ -130,7 +244,8 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
                   key={idx}
                   style={{ backgroundColor: colour }}
                   onClick={() => handleImageColour(idx)}
-                  className={`relative w-8 h-8 rounded-full border-2 cursor-pointer transition-all
+                  disabled={isSwitching}
+                  className={`relative w-8 h-8 rounded-full border-2 cursor-pointer transition-all disabled:opacity-50
                     ${
                       selectedColour === colour
                         ? "border-blue-500 scale-110 shadow-md"
@@ -207,13 +322,19 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
                   ✓ Size updated in cart
                 </span>
               )}
+              {isSwitching && (
+                <span className="text-xs text-blue-600 font-medium animate-pulse">
+                  Switching...
+                </span>
+              )}
             </div>
             <div className="flex flex-row gap-2 flex-wrap">
               {selectedItem.sizes.map((size, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSizeChange(size)}
-                  className={`relative text-sm px-3 py-1.5 border cursor-pointer transition-all rounded
+                  disabled={isSwitching}
+                  className={`relative text-sm px-3 py-1.5 border cursor-pointer transition-all rounded disabled:opacity-50
                     ${
                       selectedSize === size
                         ? "border-blue-500 bg-blue-50 text-blue-900 font-medium"
@@ -232,23 +353,25 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
           </div>
         )}
 
-        {/* Quantity (only if in cart) */}
+        {/* Quantity */}
         {inCart && (
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium text-slate-700">Quantity</p>
             <div className="flex flex-row items-center gap-2 w-fit border rounded-md overflow-hidden">
               <button
-                className="px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
                 onClick={() => handleQuantityChange((inCart.quantity || 1) - 1)}
+                disabled={isSwitching}
               >
                 <MinusIcon className="w-4 h-4 text-blue-950" />
               </button>
               <span className="px-4 text-sm font-semibold">
-                {inCart.quantity}
+                {isSwitching ? "..." : inCart.quantity}
               </span>
               <button
-                className="px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="px-3 py-2 hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
                 onClick={() => handleQuantityChange((inCart.quantity || 1) + 1)}
+                disabled={isSwitching}
               >
                 <PlusIcon className="w-4 h-4 text-blue-950" />
               </button>
@@ -274,7 +397,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
               selectedSize={selectedSize}
               selectedColour={selectedColour}
               disableIfNoSize={hasSizes}
-              disabled={!canAddToCart}
+              disabled={!canAddToCart || isSwitching}
             />
           </div>
         )}

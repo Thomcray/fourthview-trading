@@ -30,9 +30,6 @@ export default function FurniturePage() {
   const categoriesToShow =
     selected === "All Categories" ? CATEGORIES : [selected];
 
-  // Count total items (you can fetch this from your data)
-  const totalItems = CATEGORIES.length * 4; // Example calculation
-
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Banner Section */}

@@ -41,7 +41,7 @@ export default function OrderDetailPage() {
     },
   });
 
-  const { formatPrice, convertPrice, currency } = useCurrency();
+  const { formatPrice } = useCurrency();
 
   if (isLoading) {
     return (
@@ -151,13 +151,12 @@ export default function OrderDetailPage() {
                           {item.quantity}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          ₦{convertPrice(item.price).toLocaleString()}
+                          {formatPrice(item.price) ?? "—"}
                         </td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-800">
-                          ₦
-                          {(
-                            convertPrice(item.price) * item.quantity
-                          ).toLocaleString()}
+                          <td className="px-4 py-3 text-sm font-medium text-gray-800">
+                            {formatPrice(item.price * item.quantity) ?? "—"}
+                          </td>
                         </td>
                       </tr>
                     ))}

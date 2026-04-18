@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
+import { useCurrency } from "@/components/CurrencyContext";
 
 type OrderItem = {
   itemName: string;
@@ -23,6 +24,7 @@ type OrderItem = {
   price?: number;
   quantity?: number;
   size?: string | null;
+  colour?: string;
   shippingCost?: number;
 };
 
@@ -59,6 +61,8 @@ export default function PurchasedPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
+
+  const { formatFromNGN } = useCurrency();
   const router = useRouter();
 
   useEffect(() => {
@@ -240,11 +244,7 @@ export default function PurchasedPage() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-lg font-bold text-gray-900">
-                      ₦
-                      {order.total.toLocaleString("en-NG", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {formatFromNGN(order.total) ?? ""}
                     </p>
                     <p className="text-xs text-gray-500">
                       {order.items.length} item
@@ -314,6 +314,15 @@ export default function PurchasedPage() {
                                 {item.quantity}
                               </span>
                             </p>
+                            {item.colour && (
+                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                                Colour:{" "}
+                                <span
+                                  className="inline-block w-3 h-3 rounded-full border border-gray-300"
+                                  style={{ backgroundColor: item.colour }}
+                                />
+                              </p>
+                            )}
                           </div>
                         </div>
                         {item.price && (
@@ -334,11 +343,7 @@ export default function PurchasedPage() {
                         Total Amount
                       </span>
                       <span className="text-lg font-bold text-blue-600">
-                        ₦
-                        {order.total.toLocaleString("en-NG", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        {formatFromNGN(order.total)}
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 text-right">

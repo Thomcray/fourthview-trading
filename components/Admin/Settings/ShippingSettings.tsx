@@ -16,9 +16,9 @@ import { motion } from "framer-motion";
 import { useCurrency } from "@/components/CurrencyContext";
 
 type ShippingConfig = {
-  rate_per_kg: number;
-  base_rate: number;
-  free_shipping_threshold: number;
+  rate_per_kg: number | string;
+  base_rate: number | string;
+  free_shipping_threshold: number | string;
   currency: string;
 };
 
@@ -35,7 +35,6 @@ export default function ShippingSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Load from DB on mount
   useEffect(() => {
     fetch("/api/shipping-config")
       .then((res) => res.json())
@@ -46,21 +45,34 @@ export default function ShippingSettings() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const handleChange = (
-    field: keyof ShippingConfig,
-    value: number | string,
-  ) => {
-    setConfig((prev) => ({ ...prev, [field]: value }));
-    setIsDirty(true);
+  const handleChange = (field: keyof ShippingConfig, value: string) => {
+    // Allow empty string, "-", or numbers
+    if (value === "" || value === "-" || !isNaN(Number(value))) {
+      setConfig((prev) => ({ ...prev, [field]: value }));
+      setIsDirty(true);
+    }
+  };
+
+  const handleBlur = (field: keyof ShippingConfig) => {
+    const num = Number(config[field]);
+    setConfig((prev) => ({ ...prev, [field]: isNaN(num) ? 0 : num }));
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Convert all to numbers before saving
+      const payload = {
+        rate_per_kg: Number(config.rate_per_kg),
+        base_rate: Number(config.base_rate),
+        free_shipping_threshold: Number(config.free_shipping_threshold),
+        currency: config.currency,
+      };
+
       const res = await fetch("/api/shipping-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Save failed");
@@ -84,7 +96,6 @@ export default function ShippingSettings() {
 
   return (
     <div className="space-y-8 max-w-2xl">
-      {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-100">
         <div>
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -124,13 +135,13 @@ export default function ShippingSettings() {
             min="0"
             className="pl-8"
             value={config.rate_per_kg}
-            onChange={(e) =>
-              handleChange("rate_per_kg", Number(e.target.value))
-            }
+            onChange={(e) => handleChange("rate_per_kg", e.target.value)}
+            onBlur={() => handleBlur("rate_per_kg")}
           />
         </div>
         <p className="text-xs text-gray-500">
-          Example: 2kg product = {formatPrice(config.rate_per_kg * 2)} shipping
+          Example: 2kg product ={" "}
+          {formatPrice(Number(config.rate_per_kg || 0) * 2)} shipping
         </p>
       </div>
 
@@ -147,7 +158,8 @@ export default function ShippingSettings() {
             min="0"
             className="pl-8"
             value={config.base_rate}
-            onChange={(e) => handleChange("base_rate", Number(e.target.value))}
+            onChange={(e) => handleChange("base_rate", e.target.value)}
+            onBlur={() => handleBlur("base_rate")}
           />
         </div>
         <p className="text-xs text-gray-500">
@@ -169,13 +181,14 @@ export default function ShippingSettings() {
             className="pl-8"
             value={config.free_shipping_threshold}
             onChange={(e) =>
-              handleChange("free_shipping_threshold", Number(e.target.value))
+              handleChange("free_shipping_threshold", e.target.value)
             }
+            onBlur={() => handleBlur("free_shipping_threshold")}
           />
         </div>
         <p className="text-xs text-gray-500">
           Orders above this amount get free shipping (
-          {formatPrice(config.free_shipping_threshold)})
+          {formatPrice(Number(config.free_shipping_threshold || 0))})
         </p>
       </div>
 
@@ -184,7 +197,9 @@ export default function ShippingSettings() {
         <h4 className="font-medium text-gray-800 mb-3">Sample Calculations</h4>
         <div className="grid grid-cols-2 gap-3 text-sm">
           {[0.5, 1, 2, 5, 10].map((kg) => {
-            const cost = kg * config.rate_per_kg + config.base_rate;
+            const cost =
+              kg * Number(config.rate_per_kg || 0) +
+              Number(config.base_rate || 0);
             return (
               <div key={kg} className="flex justify-between">
                 <span className="text-gray-600">{kg}kg:</span>

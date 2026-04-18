@@ -1,0 +1,58 @@
+import { createClient } from "@/app/_lib/supabase-server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/_lib/auth";
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("storeSettings")
+    .select("*")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ settings: data });
+}
+
+export async function PUT(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+
+  const supabase = await createClient(true); // service role for update
+
+  const { data, error } = await supabase
+    .from("storeSettings")
+    .update({
+      storeName: body.storeName,
+      storeEmail: body.storeEmail,
+      storePhone: body.storePhone,
+      storeAddress: body.storeAddress,
+      websiteUrl: body.websiteUrl,
+      description: body.description,
+      whatsapp: body.whatsapp,
+      instagram: body.instagram,
+      facebook: body.facebook,
+      twitter: body.twitter,
+      tiktok: body.tiktok,
+      youtube: body.youtube,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", body.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Supabase error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ settings: data });
+}

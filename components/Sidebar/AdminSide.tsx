@@ -156,11 +156,6 @@ export default function AdminSide() {
             {!isCollapsed && "Back to Store"}
           </Button>
         </Link>
-        {!isCollapsed && (
-          <p className="text-center text-xs text-gray-400 mt-3">
-            Version 2.0.0
-          </p>
-        )}
       </div>
     </aside>
   );

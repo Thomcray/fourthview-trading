@@ -46,7 +46,14 @@ export default function AddToCart({
   const defaultImage = data.imageUrl[0];
   const hasSizes = data.sizes?.length > 0;
   const hasColours = data.colours?.length > 0;
-  const itemInCart = cart.some((item) => item.itemName === data.name);
+
+  // Update itemInCart to check for exact variant
+  const itemInCart = cart.some(
+    (item) =>
+      item.productId === data.id &&
+      item.colour === selectedColour &&
+      item.size === selectedSize,
+  );
 
   const newItem = {
     productId: data.id,

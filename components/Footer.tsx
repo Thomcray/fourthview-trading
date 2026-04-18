@@ -1,115 +1,142 @@
-// components/Footer.tsx
 "use client";
 
 import {
   Facebook,
   Mail,
   MessageCircle,
-  MessageSquareText,
   Phone,
   Twitter,
   Instagram,
-  Linkedin,
   Youtube,
   MapPin,
-  Clock,
   Shield,
-  Truck,
   RefreshCw,
   CreditCard,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+
+type StoreSettings = {
+  storeName: string;
+  storeEmail: string;
+  storePhone: string;
+  storeAddress: string;
+  websiteUrl: string;
+  description: string;
+  whatsapp: string;
+  instagram: string;
+  facebook: string;
+  twitter: string;
+  tiktok: string;
+  youtube: string;
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const quickLinks = [
+  { name: "About Us", href: "/about" },
+  { name: "Shop", href: "/shop" },
+  { name: "Contact", href: "/contact" },
+  { name: "FAQs", href: "/faq" },
+  { name: "Privacy Policy", href: "/privacy" },
+  { name: "Terms & Conditions", href: "/terms" },
+];
+
+const serviceFeatures = [
+  { icon: RefreshCw, text: "Easy Returns", subtext: "30-day return policy" },
+  { icon: Shield, text: "Secure Payment", subtext: "100% secure transactions" },
+  {
+    icon: CreditCard,
+    text: "Multiple Payments",
+    subtext: "Cards, Bank, Crypto",
+  },
+];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [settings, setSettings] = useState<StoreSettings | null>(null);
 
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings) setSettings(data.settings);
+      })
+      .catch(() => {
+        // Fail silently — footer still renders with fallbacks
+      });
+  }, []);
+
+  // Build social links dynamically from DB — only show if value exists
   const socialLinks = [
     {
       icon: Facebook,
-      href: "https://facebook.com",
+      href: settings?.facebook
+        ? `https://facebook.com/${settings.facebook}`
+        : null,
       label: "Facebook",
       color: "hover:text-blue-500",
     },
     {
       icon: Twitter,
-      href: "https://twitter.com",
-      label: "Twitter",
+      href: settings?.twitter ? `https://x.com/${settings.twitter}` : null,
+      label: "X (Twitter)",
       color: "hover:text-sky-500",
     },
     {
       icon: Instagram,
-      href: "https://instagram.com",
+      href: settings?.instagram
+        ? `https://instagram.com/${settings.instagram}`
+        : null,
       label: "Instagram",
       color: "hover:text-pink-500",
     },
     {
-      icon: Linkedin,
-      href: "https://linkedin.com",
-      label: "LinkedIn",
-      color: "hover:text-blue-600",
-    },
-    {
       icon: Youtube,
-      href: "https://youtube.com",
+      href: settings?.youtube
+        ? `https://youtube.com/${settings.youtube}`
+        : null,
       label: "YouTube",
       color: "hover:text-red-600",
     },
     {
+      icon: Video,
+      href: settings?.tiktok ? `https://tiktok.com/${settings.tiktok}` : null,
+      label: "TikTok",
+      color: "hover:text-white",
+    },
+    {
       icon: MessageCircle,
-      href: "https://wa.me/2348123456789",
+      href: settings?.whatsapp
+        ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`
+        : null,
       label: "WhatsApp",
       color: "hover:text-green-500",
     },
-  ];
+  ].filter((s) => s.href !== null); // Hide socials with no value
 
   const contactInfo = [
-    { icon: Phone, text: "+234 813 123 4567", href: "tel:+2348131234567" },
+    {
+      icon: Phone,
+      text: settings?.storePhone,
+      href: `tel:${settings?.storePhone?.replace(/\s/g, "") || ""}`,
+    },
     {
       icon: Mail,
-      text: "support@fourthview.com",
-      href: "mailto:support@fourthview.com",
-    },
-    { icon: MapPin, text: "Lagos, Nigeria", href: "https://maps.google.com" },
-  ];
-
-  const quickLinks = [
-    { name: "About Us", href: "/about" },
-    { name: "Shop", href: "/shop" },
-    { name: "Contact", href: "/contact" },
-    { name: "FAQs", href: "/faq" },
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms & Conditions", href: "/terms" },
-  ];
-
-  const serviceFeatures = [
-    { icon: RefreshCw, text: "Easy Returns", subtext: "30-day return policy" },
-    {
-      icon: Shield,
-      text: "Secure Payment",
-      subtext: "100% secure transactions",
+      text: settings?.storeEmail,
+      href: `mailto:${settings?.storeEmail || ""}`,
     },
     {
-      icon: CreditCard,
-      text: "Multiple Payments",
-      subtext: "Cards, Bank, Crypto",
+      icon: MapPin,
+      text: settings?.storeAddress || "Lagos, Nigeria",
+      href: `https://maps.google.com/?q=${encodeURIComponent(settings?.storeAddress || "Lagos, Nigeria")}`,
     },
   ];
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
 
   return (
     <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-white">
@@ -125,27 +152,28 @@ export default function Footer() {
             className="space-y-4"
           >
             <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-              Fourthview Trading
+              {settings?.storeName}
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Your trusted partner for fashion, travel, currency exchange, and
-              global trade solutions. Experience excellence with our premium
-              services.
+              {settings?.description ||
+                "Your trusted partner for fashion, travel, currency exchange, and global trade solutions."}
             </p>
-            <div className="flex space-x-3 pt-2">
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-300 ${social.color}`}
-                  aria-label={social.label}
-                >
-                  <social.icon className="w-4 h-4" />
-                </Link>
-              ))}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {socialLinks.map((social) => (
+                  <Link
+                    key={social.label}
+                    href={social.href!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-300 ${social.color}`}
+                    aria-label={social.label}
+                  >
+                    <social.icon className="w-4 h-4" />
+                  </Link>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Quick Links */}
@@ -184,10 +212,12 @@ export default function Footer() {
               {contactInfo.map((info) => (
                 <li key={info.text}>
                   <Link
-                    href={info.href || "#"}
+                    href={info.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors duration-200 text-sm"
                   >
-                    <info.icon className="w-4 h-4" />
+                    <info.icon className="w-4 h-4 shrink-0" />
                     <span>{info.text}</span>
                   </Link>
                 </li>
@@ -207,7 +237,7 @@ export default function Footer() {
             <div className="space-y-3">
               {serviceFeatures.map((feature) => (
                 <div key={feature.text} className="flex items-start gap-3">
-                  <feature.icon className="w-5 h-5 text-blue-400 mt-0.5" />
+                  <feature.icon className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-white">
                       {feature.text}
@@ -225,11 +255,10 @@ export default function Footer() {
       <div className="border-t border-gray-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-center sm:text-left">
-              <p className="text-gray-400 text-sm">
-                &copy; {currentYear} Fourthview Trading. All rights reserved.
-              </p>
-            </div>
+            <p className="text-gray-400 text-sm text-center sm:text-left">
+              &copy; {currentYear} {settings?.storeName || "Fourthview Trading"}
+              . All rights reserved.
+            </p>
             <div className="flex items-center gap-6">
               <Link
                 href="/privacy"
@@ -254,16 +283,18 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* WhatsApp Floating Button */}
-      <Link
-        href="https://wa.me/2348123456789"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
-        aria-label="Chat on WhatsApp"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </Link>
+      {/* WhatsApp Floating Button — only shows if whatsapp is set */}
+      {settings?.whatsapp && (
+        <Link
+          href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+          aria-label="Chat on WhatsApp"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </Link>
+      )}
     </footer>
   );
 }

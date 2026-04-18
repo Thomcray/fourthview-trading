@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   useCallback,
   ReactNode,
 } from "react";
@@ -29,12 +30,14 @@ type ExchangeRates = {
 type CurrencyContextType = {
   currency: Currency;
   setCurrency: (code: string) => void;
-  convertPrice: (priceInCNY: number) => number;
-  formatPrice: (priceInCNY: number) => string;
+  convertPrice: (priceInCNY: number) => number | null;
+  formatPrice: (priceInCNY: number) => string | null;
+  formatFromNGN: (amountInNGN: number) => string | null;
   availableCurrencies: Currency[];
   isLoading: boolean;
   error: string | null;
   rates: ExchangeRates | null;
+  country: string | null;
 };
 
 const CURRENCY_META: Record<string, Currency> = {
@@ -44,6 +47,7 @@ const CURRENCY_META: Record<string, Currency> = {
   GBP: { code: "GBP", symbol: "£", name: "British Pound" },
   CAD: { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
   AUD: { code: "AUD", symbol: "A$", name: "Australian Dollar" },
+  CNY: { code: "CNY", symbol: "¥", name: "Chinese Yuan" }, // Fix: was missing
 };
 
 const COUNTRY_CURRENCY_MAP: Record<string, string> = {
@@ -56,6 +60,7 @@ const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   FR: "EUR",
   IT: "EUR",
   ES: "EUR",
+  CN: "CNY",
 };
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(
@@ -68,28 +73,46 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     isLoading: ratesLoading,
     error: ratesError,
   } = useExchangeRate();
+
   const [currencyCode, setCurrencyCode] = useState<string>("NGN");
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(true);
+  const [countryCode, setCountryCode] = useState<string | null>(null);
 
-  // Detect preferred currency from localStorage or IP — runs once rates are ready
+  // Fix: ref guard prevents re-running if rates reload (e.g. on a refresh interval)
+  const hasDetected = useRef(false);
+
   useEffect(() => {
-    if (ratesLoading) return;
+    if (ratesLoading || hasDetected.current) return;
+    hasDetected.current = true;
 
+    // Honour explicit user preference first
     const saved = localStorage.getItem("preferredCurrency");
     if (saved && CURRENCY_META[saved]) {
       setCurrencyCode(saved);
+      const savedCountry = localStorage.getItem("detectedCountry");
+      if (savedCountry) setCountryCode(savedCountry);
+      setLocationLoading(false);
       return;
     }
 
-    fetch("https://ipapi.co/json/")
+    // Fix: call our own API route instead of ipapi.co directly
+    fetch("/api/location")
       .then((res) => res.json())
       .then((data) => {
-        const detected = COUNTRY_CURRENCY_MAP[data.country_code] || "NGN";
+        console.log("location response:", data);
+        const code = data.country_code;
+        setCountryCode(code);
+        if (code) localStorage.setItem("detectedCountry", code);
+        const detected = (code && COUNTRY_CURRENCY_MAP[code]) || "NGN";
         setCurrencyCode(detected);
       })
       .catch(() => {
         setLocationError("Could not detect location");
         setCurrencyCode("NGN");
+      })
+      .finally(() => {
+        setLocationLoading(false);
       });
   }, [ratesLoading]);
 
@@ -99,26 +122,31 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("preferredCurrency", code);
   }, []);
 
-  // Always read rate fresh from `rates` — avoids stale closure bugs
   const getRate = useCallback(
-    (code: string): number => {
-      if (!rates) return 0;
-      return rates[code as keyof ExchangeRates] ?? 0;
+    (code: string): number | null => {
+      if (!rates) return null;
+      const rate = rates[code as keyof ExchangeRates];
+      // Fix: return null instead of 0 so callers can show skeleton vs ₦0.00
+      return rate ?? null;
     },
     [rates],
   );
 
+  // Fix: returns null when rates aren't ready — callers should show skeleton
   const convertPrice = useCallback(
-    (priceInCNY: number): number => {
+    (priceInCNY: number): number | null => {
       const rate = getRate(currencyCode);
+      if (rate === null) return null;
       return priceInCNY * rate;
     },
     [currencyCode, getRate],
   );
 
+  // Fix: returns null when rates aren't ready — callers should show skeleton
   const formatPrice = useCallback(
-    (priceInCNY: number): string => {
+    (priceInCNY: number): string | null => {
       const converted = convertPrice(priceInCNY);
+      if (converted === null) return null;
       const symbol = CURRENCY_META[currencyCode]?.symbol ?? "₦";
       return `${symbol}${converted.toLocaleString(undefined, {
         minimumFractionDigits: 2,
@@ -128,6 +156,15 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     [convertPrice, currencyCode],
   );
 
+  const formatFromNGN = useCallback(
+    (amountInNGN: number): string | null => {
+      if (!rates) return null;
+      const inCNY = amountInNGN / rates.NGN;
+      return formatPrice(inCNY);
+    },
+    [rates, formatPrice],
+  );
+
   return (
     <CurrencyContext.Provider
       value={{
@@ -135,10 +172,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         setCurrency,
         convertPrice,
         formatPrice,
+        formatFromNGN,
         availableCurrencies: Object.values(CURRENCY_META),
-        isLoading: ratesLoading,
+        isLoading: ratesLoading || locationLoading,
         error: ratesError || locationError,
         rates: rates ?? null,
+        country: countryCode,
       }}
     >
       {children}
