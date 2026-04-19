@@ -7,6 +7,7 @@ import QueryProvider from "./_lib/providers/QueryProvider";
 import { AppProvider } from "@/components/AppContext";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyContext";
+import { NetworkProvider } from "@/components/NetworkContext";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -37,9 +38,11 @@ export default async function RootLayout({
       <body className={`${outfit.className} antialiased`}>
         <QueryProvider>
           <AppProvider products={products || []} categories={categories || []}>
-            <CurrencyProvider>
-              <Providers>{children}</Providers>
-            </CurrencyProvider>
+            <NetworkProvider>
+              <CurrencyProvider>
+                <Providers>{children}</Providers>
+              </CurrencyProvider>
+            </NetworkProvider>
 
             <ToastContainer
               position="top-center"
