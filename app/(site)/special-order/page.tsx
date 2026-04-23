@@ -205,7 +205,7 @@ export default function SpecialOrders() {
                 required
               />
               <p className="text-xs text-gray-500">
-                We'll contact you on WhatsApp with updates on your order
+                We&apos;ll contact you on WhatsApp with updates on your order
               </p>
             </div>
 
