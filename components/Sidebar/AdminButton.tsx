@@ -22,7 +22,7 @@ export default function AdminButton() {
         onClick={loginAdmin}
         className="group relative w-full overflow-hidden bg-gradient-to-r from-red-600 to-red-700 
           hover:from-red-700 hover:to-red-800 text-white font-medium py-5 px-4 
-          rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+          rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
       >
         {/* Animated background effect */}
         <div

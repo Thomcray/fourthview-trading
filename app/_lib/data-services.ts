@@ -5,6 +5,7 @@ type Orders = {
   description: string;
   userId: string;
   images: string[];
+  whatsapp: string;
 };
 
 export async function getUserRole(id: number) {
@@ -53,17 +54,16 @@ export async function getCountries() {
   try {
     const res = await fetch(
       "https://restcountries.com/v3.1/all?fields=name,flag,idd",
+      { next: { revalidate: 86400 } }, // cache for 24 hours
     );
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch countries: ${res.status}`);
-    }
+    if (!res.ok) return []; // return empty array instead of throwing the error
 
     const countries = await res.json();
     return countries;
   } catch (error) {
     console.error("Error fetching countries:", error);
-    throw new Error("Could not fetch countries");
+    return []; // return empty array instead of throwing the error
   }
 }
 

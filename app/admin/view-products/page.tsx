@@ -7,15 +7,7 @@ import AdminTable from "@/components/Admin/AdminTable";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import {
-  Eye,
-  Search,
-  RefreshCw,
-  Package,
-  Plus,
-  Edit,
-  Loader2,
-} from "lucide-react";
+import { Search, RefreshCw, Package, Plus, Edit, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 type Product = {
@@ -257,18 +249,9 @@ export default function ViewProducts() {
                               size="sm"
                               className="text-gray-400 hover:text-blue-600"
                             >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                          {/* <Link href={`/admin/edit-product/${product.id}`}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-gray-400 hover:text-green-600"
-                            >
                               <Edit className="w-4 h-4" />
                             </Button>
-                          </Link> */}
+                          </Link>
                         </div>
                       </TableCell>
                     </motion.tr>

@@ -37,7 +37,7 @@ export default function SignOutButton() {
           className="group relative w-full overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 
             hover:from-orange-600 hover:to-orange-700 text-white font-medium py-5 px-4 
             rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 
-            disabled:cursor-not-allowed disabled:hover:shadow-md"
+            disabled:cursor-not-allowed disabled:hover:shadow-md cursor-pointer"
         >
           {/* Animated background effect */}
           <div

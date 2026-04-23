@@ -10,14 +10,11 @@ export async function specialOrders(
 ) {
   const email = formData.get("email") as string;
   const description = formData.get("description") as string;
+  const whatsapp = formData.get("whatsapp") as string;
 
-  if (!userId) {
-    throw new Error("User ID is required");
-  }
-
-  if (!email) {
-    throw new Error("User email not found!");
-  }
+  if (!userId) throw new Error("User ID is required");
+  if (!email) throw new Error("User email not found!");
+  if (!whatsapp) throw new Error("WhatsApp number is required");
 
   // upload images
   const uploadedImageUrls: string[] = [];
@@ -38,6 +35,7 @@ export async function specialOrders(
       description,
       userId,
       images: uploadedImageUrls,
+      whatsapp,
     });
   } catch {
     throw new Error("Could not submit special order.");

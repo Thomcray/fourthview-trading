@@ -192,6 +192,23 @@ export default function SpecialOrders() {
               )}
             </div>
 
+            {/* WhatsApp Number */}
+            <div className="space-y-2">
+              <Label className="text-gray-700 font-medium">
+                WhatsApp Number <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="tel"
+                name="whatsapp"
+                placeholder="+234 813 123 4567"
+                className="py-6 px-4 bg-gray-50 border-gray-200 focus:bg-white"
+                required
+              />
+              <p className="text-xs text-gray-500">
+                We'll contact you on WhatsApp with updates on your order
+              </p>
+            </div>
+
             {/* Order Description */}
             <div className="space-y-2">
               <Label className="text-gray-700 font-medium">

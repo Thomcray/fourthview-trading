@@ -1,4 +1,3 @@
-// app/account/purchased-items/page.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -356,7 +355,7 @@ export default function PurchasedPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="flex-1 cursor-pointer"
                       onClick={() => router.push(`/orders/${order.id}`)}
                     >
                       View Details
