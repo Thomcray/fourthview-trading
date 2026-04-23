@@ -84,14 +84,24 @@ export default function ViewProducts() {
       if (!res.ok) throw new Error("Failed to delete product");
 
       // Remove from cache optimistically
-      queryClient.setQueryData(["products", search], (old: any) => ({
-        ...old,
-        pages: old.pages.map((page: any) => ({
-          ...page,
-          products: page.products.filter((p: Product) => p.id !== product.id),
-          total: page.total - 1,
-        })),
-      }));
+      queryClient.setQueryData(
+        ["products", search],
+        (
+          old: { pages: { products: Product[]; total: number }[] } | undefined,
+        ) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              products: page.products.filter(
+                (p: Product) => p.id !== product.id,
+              ),
+              total: page.total - 1,
+            })),
+          };
+        },
+      );
 
       toast.success(`"${product.name}" deleted successfully`);
       setConfirmProduct(null);
