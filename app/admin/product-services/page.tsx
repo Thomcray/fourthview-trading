@@ -38,7 +38,7 @@ export default function ProductServicesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">

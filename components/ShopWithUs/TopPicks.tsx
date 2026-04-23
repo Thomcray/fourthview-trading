@@ -31,18 +31,18 @@ export default function TopPicks() {
       <div className="flex flex-col gap-5">
         {/* Header */}
         <Link href="/collection/top-picks">
-          <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
+          <div className="bg-linear-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-yellow-400" />
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                 <h1 className="font-semibold text-lg text-white">
                   Top Picks for You
                 </h1>
-                <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-2">
+                {/* <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-2">
                   {allProducts.filter((p) => p.slug === slug).length === 1
                     ? "1 item"
                     : `${allProducts.filter((p) => p.slug === slug).length} items`}
-                </span>
+                </span> */}
               </div>
             </div>
             <ChevronRight
@@ -85,18 +85,18 @@ export default function TopPicks() {
                           text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md
                           ${
                             item.badge.includes("%")
-                              ? "bg-gradient-to-r from-red-500 to-red-600"
+                              ? "bg-linear-to-r from-red-500 to-red-600"
                               : item.badge === "New"
-                                ? "bg-gradient-to-r from-green-500 to-green-600"
-                                : "bg-gradient-to-r from-blue-500 to-blue-600"
+                                ? "bg-linear-to-r from-green-500 to-green-600"
+                                : "bg-linear-to-r from-blue-500 to-blue-600"
                           }
                         `}
                         >
                           {item.badge}
                         </span>
                       )}
-                      {item.discount && !item.badge?.includes("%") && (
-                        <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">
+                      {!!item.discount && !item.badge?.includes("%") && (
+                        <span className="bg-linear-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">
                           -{item.discount}%
                         </span>
                       )}
@@ -154,7 +154,7 @@ export default function TopPicks() {
           </div>
 
           {/* Scroll Indicator */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-linear-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
         </div>
       </div>
     </section>

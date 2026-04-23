@@ -59,7 +59,7 @@ export default function CategoryPage() {
           </p>
           <Button
             onClick={() => router.push("/shop")}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
           >
             Back to Shop
           </Button>
@@ -74,7 +74,7 @@ export default function CategoryPage() {
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back

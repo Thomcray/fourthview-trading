@@ -1,15 +1,23 @@
-// components/Furniture/FurnitureCategoryFilter.tsx
 "use client";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sofa, Armchair, Home, LayoutGrid } from "lucide-react";
+import {
+  Sofa,
+  Armchair,
+  Home,
+  LayoutGrid,
+  Minus,
+  BriefcaseBusiness,
+} from "lucide-react";
 
 const FURNITURE_CATEGORIES = [
   { id: "All Categories", label: "All Categories", icon: LayoutGrid },
   { id: "Modern Style", label: "Modern Style", icon: Sofa },
   { id: "Antique", label: "Antique", icon: Armchair },
   { id: "Chinese Style", label: "Chinese Style", icon: Home },
+  { id: "Minimalist", label: "Minimalist", icon: Minus },
+  { id: "Office", label: "Office", icon: BriefcaseBusiness },
 ];
 
 type Props = {
@@ -40,7 +48,7 @@ export default function FurnitureCategoryFilter({ selected, onSelect }: Props) {
                 text-sm font-medium transition-all duration-300 cursor-pointer
                 ${
                   isSelected
-                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-200"
+                    ? "bg-linear-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-200"
                     : "bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:text-blue-700 hover:shadow-sm"
                 }
               `}
@@ -68,7 +76,7 @@ export default function FurnitureCategoryFilter({ selected, onSelect }: Props) {
 
       {/* Scroll Indicator for Mobile */}
       <div className="relative lg:hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-gray-50 to-transparent pointer-events-none" />
       </div>
     </div>
   );

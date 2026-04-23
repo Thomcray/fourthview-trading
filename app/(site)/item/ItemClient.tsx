@@ -15,7 +15,6 @@ type SortOption = "default" | "price-asc" | "price-desc" | "name";
 
 export default function ItemClient() {
   const { allProducts: products } = useApp();
-  const [wishlist, setWishlist] = useState<Set<number>>(new Set());
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -45,18 +44,6 @@ export default function ItemClient() {
   }, [categoryItems, sortBy]);
 
   const loading = products.length === 0;
-
-  const toggleWishlist = (itemId: number) => {
-    setWishlist((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  };
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value as SortOption);
@@ -122,7 +109,7 @@ export default function ItemClient() {
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -193,22 +180,6 @@ export default function ItemClient() {
                       -{item.discount}%
                     </span>
                   )}
-
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleWishlist(item.id);
-                    }}
-                    className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all duration-200 z-10"
-                  >
-                    <Heart
-                      className={`w-4 h-4 transition-colors ${
-                        wishlist.has(item.id)
-                          ? "fill-red-500 text-red-500"
-                          : "text-gray-600"
-                      }`}
-                    />
-                  </button>
 
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <span className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">

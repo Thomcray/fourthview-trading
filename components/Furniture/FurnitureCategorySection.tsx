@@ -1,14 +1,12 @@
-// components/Furniture/FurnitureCategorySection.tsx
 "use client";
 
 import { useApp } from "@/components/AppContext";
+import { ChevronRight, Eye } from "lucide-react";
+import { motion } from "framer-motion";
 import AddToCart from "@/components/AddToCart";
 import ProductPrice from "@/components/ProductPrice";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, Heart, Eye } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
 
 type Props = {
   categoryName: string;
@@ -16,7 +14,6 @@ type Props = {
 
 export default function FurnitureCategorySection({ categoryName }: Props) {
   const { allProducts } = useApp();
-  const [wishlist, setWishlist] = useState<Set<number>>(new Set());
 
   const items = allProducts.filter(
     (p) =>
@@ -24,27 +21,13 @@ export default function FurnitureCategorySection({ categoryName }: Props) {
       (p.target ?? "").toLowerCase().includes(categoryName.toLowerCase()),
   );
 
-  const toggleWishlist = (itemId: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setWishlist((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  };
-
   if (items.length === 0) return null;
 
   return (
     <div className="w-full flex flex-col gap-4">
       {/* Section Header */}
       <div className="group">
-        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md hover:shadow-lg transition-all duration-300">
+        <div className="bg-linear-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md hover:shadow-lg transition-all duration-300">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
               <span className="text-white text-lg">🪑</span>
@@ -91,26 +74,11 @@ export default function FurnitureCategorySection({ categoryName }: Props) {
                 />
 
                 {/* Discount Badge */}
-                {item.discount && (
-                  <span className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10">
+                {!!item.discount && item.discount > 0 && (
+                  <span className="absolute top-3 left-3 bg-linear-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10">
                     -{item.discount}%
                   </span>
                 )}
-
-                {/* Wishlist Button */}
-                <button
-                  onClick={(e) => toggleWishlist(item.id, e)}
-                  className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all duration-200 z-10"
-                  aria-label="Add to wishlist"
-                >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      wishlist.has(item.id)
-                        ? "fill-red-500 text-red-500"
-                        : "text-gray-600"
-                    }`}
-                  />
-                </button>
 
                 {/* Quick View Overlay */}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/product:opacity-100 transition-opacity duration-300">
@@ -129,7 +97,7 @@ export default function FurnitureCategorySection({ categoryName }: Props) {
 
                 {/* Price */}
                 <div className="mt-2">
-                  {item.discount ? (
+                  {!!item.discount && item.discount > 0 ? (
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400 line-through">
                         <ProductPrice yuanPrice={item.price} />

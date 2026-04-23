@@ -139,14 +139,6 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
                 <Package className="w-5 h-5" />
                 <span>My Orders</span>
               </Link>
-              <Link
-                href="/wishlist"
-                onClick={handleLinkClick}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Heart className="w-5 h-5" />
-                <span>Wishlist</span>
-              </Link>
               <button
                 onClick={() => signOut()}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-2"
@@ -256,14 +248,6 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
               >
                 <Package className="w-4 h-4" />
                 My Orders
-              </Link>
-              <Link
-                href="/wishlist"
-                onClick={handleLinkClick}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <Heart className="w-4 h-4" />
-                Wishlist
               </Link>
               <Link
                 href="/settings"

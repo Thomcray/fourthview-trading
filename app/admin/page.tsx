@@ -1,4 +1,3 @@
-// app/admin/dashboard/page.tsx
 "use client";
 
 import OrderRanking from "@/components/Admin/OrderRanking/OrderRanking";
@@ -205,19 +204,19 @@ export default function AdminDashboard() {
             title="Manage Products"
             description="Add, edit, or remove products"
             icon="🛍️"
-            href="/admin/products"
+            href="/admin/product-services"
           />
           <QuickActionCard
             title="View Orders"
             description="Process and track orders"
             icon="📦"
-            href="/admin/orders"
+            href="/admin/orders-request"
           />
           <QuickActionCard
             title="Manage Users"
             description="View and manage customers"
             icon="👥"
-            href="/admin/users"
+            href="/admin/customers"
           />
           <QuickActionCard
             title="Settings"

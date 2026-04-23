@@ -136,7 +136,7 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
     }
   };
 
-  // NEW: Update variant in place - no flash
+  // Update variant in place - no flash
   const updateVariant = async (
     id: number,
     updates: { colour?: string; size?: string },

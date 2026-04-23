@@ -90,7 +90,7 @@ export default function CollectionPage() {
           </p>
           <Button
             onClick={() => router.push("/shop")}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
           >
             Back to Shop
           </Button>
@@ -110,7 +110,7 @@ export default function CollectionPage() {
           <div className="max-w-7xl mx-auto">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
+              className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -151,7 +151,7 @@ export default function CollectionPage() {
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -239,7 +239,7 @@ export default function CollectionPage() {
                           {topPickData.badge}
                         </span>
                       )}
-                      {product.discount &&
+                      {!!product.discount &&
                         product.discount > 0 &&
                         !topPickData?.badge?.includes("%") && (
                           <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">

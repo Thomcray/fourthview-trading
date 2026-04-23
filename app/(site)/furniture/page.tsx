@@ -1,20 +1,27 @@
-// app/furniture/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Home, Sofa, Armchair, Minus, BriefcaseBusiness } from "lucide-react";
 import Banner from "@/components/ShopWithUs/Banner";
 import FurnitureCategoryFilter from "@/components/Furniture/FurnitureCategoryFilter";
 import FurnitureCategorySection from "@/components/Furniture/FurnitureCategorySection";
 import furnitureBanner from "@/public/furnitureBanner.png";
-import { Home, Sofa, Armchair } from "lucide-react";
 
-const CATEGORIES = ["Modern Style", "Antique", "Chinese Style"];
+const CATEGORIES = [
+  "Modern Style",
+  "Antique",
+  "Chinese Style",
+  "Minimalist",
+  "Office",
+];
 
 const categoryIcons = {
   "Modern Style": <Sofa className="w-5 h-5" />,
   Antique: <Armchair className="w-5 h-5" />,
   "Chinese Style": <Home className="w-5 h-5" />,
+  Minimalist: <Minus className="w-5 h-5" />,
+  Office: <BriefcaseBusiness className="w-5 h-5" />,
 };
 
 export default function FurniturePage() {
@@ -31,7 +38,7 @@ export default function FurniturePage() {
     selected === "All Categories" ? CATEGORIES : [selected];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <main className="min-h-screen bg-linear-to-b from-gray-50 to-white">
       {/* Banner Section */}
       <Banner
         banner={furnitureBanner}

@@ -1,9 +1,8 @@
-// components/Admin/AddProduct/Category.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Selection from "@/components/Selection";
-import { useFormData } from "./ProductForm"; // ADDED
+import { useFormData } from "./ProductForm";
 
 type CategoryItem = {
   id: number;
@@ -220,7 +219,13 @@ export default function Category({ productType, isCustom, product }: Props) {
             required
             placeholder="Select Style"
           >
-            {["Modern", "Antique", "Chinese", "Minimalist"].map((s) => (
+            {[
+              "Modern Style",
+              "Antique",
+              "Chinese Style",
+              "Minimalist",
+              "Office",
+            ].map((s) => (
               <option value={s} key={s}>
                 {s}
               </option>
