@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import MoneySection from "@/components/MoneySection/MoneySection";
 import OpenCompany from "@/components/OpenCompany";
 import ShopWithUs from "@/components/ShopWithUs";
+import StudyInChina from "@/components/StudyInChina";
 import TravelGuide from "@/components/TravelGuide";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
       <TravelGuide />
       <FurnitureSection />
       <OpenCompany />
+      <StudyInChina />
     </main>
   );
 }
