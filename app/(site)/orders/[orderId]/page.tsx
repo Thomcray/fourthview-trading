@@ -216,7 +216,7 @@ export default function OrderDetailPage() {
                       Order Details
                     </h1>
                     <p className="text-blue-200 text-sm mt-0.5">
-                      Order #{order.reference.slice(0, 12)}...
+                      Order Reference #{order.reference}
                     </p>
                   </div>
                   {getStatusBadge()}

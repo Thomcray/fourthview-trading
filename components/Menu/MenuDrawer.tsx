@@ -14,6 +14,7 @@ import {
   HelpCircle,
   ChevronRight,
   LogOut,
+  GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -55,6 +56,12 @@ const mainMenuItems = [
     path: "/open-a-company",
     icon: Building2,
     color: "text-indigo-600",
+  },
+  {
+    title: "Study in China",
+    path: "/study-in-china",
+    icon: GraduationCap,
+    color: "text-cyan-600",
   },
   {
     title: "Special Order",
