@@ -51,8 +51,8 @@ export function ApplicationConfirmationEmail({
             Hi {fullName},
           </Text>
           <Text style={{ color: "#374151", fontSize: "16px" }}>
-            We've received your study in China application. Our team will review
-            it and get back to you within 48 hours.
+            We&apos;ve received your study in China application. Our team will
+            review it and get back to you within 48 hours.
           </Text>
           <Section style={{ textAlign: "center", margin: "32px 0" }}>
             <Button

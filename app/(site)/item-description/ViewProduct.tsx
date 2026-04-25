@@ -42,8 +42,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
 
   const userInteractedRef = useRef(false);
 
-  const { cart, addToCart, removeFromCart, updateQuantity, updateVariant } =
-    useApp();
+  const { cart, updateQuantity, updateVariant } = useApp();
 
   const hasSizes = (selectedItem?.sizes?.length ?? 0) > 0;
   const hasColours = (selectedItem?.colours?.length ?? 0) > 0;
@@ -76,7 +75,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
       const colourIdx = selectedItem?.colours.indexOf(inCart.colour) ?? -1;
       if (colourIdx !== -1) setImageIdx(colourIdx);
     }
-  }, [selectedItem?.id]);
+  }, [selectedItem?.id, inCart, selectedItem?.colours]);
 
   // SIMPLIFIED: Use updateVariant instead of remove+add
   const handleImageColour = useCallback(
@@ -138,7 +137,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
         setIsSwitching(false);
       }
     },
-    [selectedItem, inCart, cart, selectedSize, updateVariant],
+    [selectedItem, inCart, cart, selectedSize, updateVariant, isSwitching],
   );
 
   // SIMPLIFIED: Use updateVariant instead of remove+add
@@ -186,7 +185,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
         setIsSwitching(false);
       }
     },
-    [selectedItem, inCart, cart, selectedColour, updateVariant],
+    [selectedItem, inCart, cart, selectedColour, updateVariant, isSwitching],
   );
 
   const handleQuantityChange = useCallback(

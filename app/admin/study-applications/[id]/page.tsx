@@ -210,7 +210,7 @@ export default function StudyApplicationDetailPage() {
             Application Not Found
           </h2>
           <p className="text-gray-500 mb-6">
-            The application you're looking for doesn't exist.
+            The application you&apos;re looking for doesn&apos;t exist.
           </p>
           <Button
             onClick={() => router.push("/admin/orders-request")}
