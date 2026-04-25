@@ -3,7 +3,7 @@ import { createClient } from "@/app/_lib/supabase-server";
 
 export async function GET() {
   try {
-    const supabase = await createClient(true); // admin
+    const supabase = await createClient(true);
 
     const { data, error } = await supabase
       .from("refunds")
@@ -24,11 +24,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient(true); // admin
+    const supabase = await createClient(true);
 
     const body = await request.json();
+
     const {
       orderId,
+      transactionReference,
       customerId,
       customerName,
       customerEmail,
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
     } = body;
 
     // Validate
-    if (!orderId || !customerId || !amount || !reason) {
+    if (!orderId || !amount || !reason) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
       .from("refunds")
       .insert({
         order_id: orderId,
+        transaction_reference: transactionReference,
         customer_id: customerId,
         customer_name: customerName,
         customer_email: customerEmail,

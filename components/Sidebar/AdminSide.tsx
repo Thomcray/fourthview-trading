@@ -87,7 +87,7 @@ export default function AdminSide() {
         <div
           className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2"}`}
         >
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 bg-linear-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-sm">FT</span>
           </div>
           {!isCollapsed && (
@@ -115,7 +115,7 @@ export default function AdminSide() {
                   px-3 py-2.5 rounded-lg transition-all duration-200
                   ${
                     active
-                      ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm"
+                      ? "bg-linear-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }
                 `}
@@ -148,7 +148,7 @@ export default function AdminSide() {
       <div className="p-4 border-t border-gray-100">
         <Link href="/shop">
           <Button
-            className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg py-5 font-medium ${isCollapsed ? "px-2" : ""}`}
+            className={`w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg py-5 font-medium cursor-pointer ${isCollapsed ? "px-2" : ""}`}
           >
             <Store
               className={`w-4 h-4 ${!isCollapsed && "mr-2"} group-hover:scale-110 transition-transform`}

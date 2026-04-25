@@ -18,14 +18,12 @@ export async function sendOrderStatusEmail({
   orderReference,
   status,
   customerName,
-  items,
   total,
 }: {
   to: string;
   orderReference: string;
   status: string;
   customerName: string;
-  items: OrderItem[];
   total: number;
 }) {
   const statusMessages: Record<string, string> = {
@@ -54,7 +52,6 @@ export async function sendOrderStatusEmail({
           <p><strong>Reference:</strong> ${orderReference}</p>
           <p><strong>Status:</strong> ${status.toUpperCase()}</p>
           <p><strong>Total:</strong> ₦${total.toLocaleString()}</p>
-          <p><strong>Items:</strong> ${items.length}</p>
         </div>
 
         <p>You can view your order details by logging into your account.</p>

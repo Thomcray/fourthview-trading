@@ -71,6 +71,8 @@ export async function GET(
       reference: order.reference || `ORD-${order.id}`,
       created_at: order.created_at || new Date().toISOString(),
       status: order.status || "pending",
+      order_status: order.order_status || "processing",
+      delivered_at: order.delivered_at ?? null,
       total: parseFloat(order.total) || 0,
       customerName: userData
         ? `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||

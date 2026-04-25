@@ -13,7 +13,7 @@ export async function DELETE() {
 
   const cart = await getOrCreateCart(userId);
 
-  const supabase = await createClient();
+  const supabase = await createClient(true);
 
   await supabase.from("cartItems").delete().eq("cartId", cart.id);
 

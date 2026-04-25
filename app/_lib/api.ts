@@ -23,7 +23,7 @@ export const fetchBookings = async () => {
 };
 
 export const fetchOrders = async () => {
-  const res = await fetch("/api/orders");
+  const res = await fetch("/api/admin/orders");
   if (!res.ok) throw new Error("Failed to fetch orders");
   return res.json();
 };

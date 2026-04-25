@@ -27,6 +27,7 @@ type Order = {
   reference: string;
   total: number;
   status: string;
+  order_status: string;
   customerName: string;
   customerEmail: string;
   customerId?: number;
@@ -35,11 +36,13 @@ type Order = {
 type RefundModalProps = {
   open: boolean;
   onClose: () => void;
-  order: Order | null; // Accept order directly instead of separate customer prop
+  order: Order | null; // Accept order directly
 };
 
 export function RefundModal({ open, onClose, order }: RefundModalProps) {
-  const [refundAmount, setRefundAmount] = useState(order?.total || 0);
+  const [refundAmount, setRefundAmount] = useState<number | "">(
+    order?.total || "",
+  );
   const [reason, setReason] = useState("");
   const [refundMethod, setRefundMethod] = useState("original");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -60,6 +63,7 @@ export function RefundModal({ open, onClose, order }: RefundModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId: order.id,
+          transactionReference: order.reference,
           customerId: order.customerId,
           customerName: order.customerName,
           customerEmail: order.customerEmail,
@@ -83,7 +87,7 @@ export function RefundModal({ open, onClose, order }: RefundModalProps) {
       onClose();
       // Reset form
       setReason("");
-      setRefundAmount(order.total);
+      setRefundAmount(order.total || "");
       setRefundMethod("original");
     } catch (error) {
       toast.error((error as Error).message);
@@ -127,11 +131,16 @@ export function RefundModal({ open, onClose, order }: RefundModalProps) {
               <Input
                 type="number"
                 value={refundAmount}
-                onChange={(e) => setRefundAmount(Number(e.target.value))}
+                onChange={(e) =>
+                  setRefundAmount(
+                    e.target.value === "" ? "" : Number(e.target.value),
+                  )
+                }
                 max={order.total}
                 min={0}
                 step={100}
                 className="pl-8"
+                placeholder="0"
               />
             </div>
             <p className="text-xs text-gray-400 mt-1">
@@ -196,8 +205,13 @@ export function RefundModal({ open, onClose, order }: RefundModalProps) {
             </Button>
             <Button
               onClick={handleRefund}
-              disabled={isProcessing || refundAmount <= 0 || !reason.trim()}
-              className="flex-1 bg-red-600 hover:bg-red-700"
+              disabled={
+                isProcessing ||
+                !refundAmount ||
+                refundAmount <= 0 ||
+                !reason.trim()
+              }
+              className="flex-1 bg-red-600 hover:bg-red-700 cursor-pointer"
             >
               {isProcessing ? "Processing..." : "Process Refund"}
             </Button>

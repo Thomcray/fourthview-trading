@@ -17,7 +17,6 @@ import {
   Check,
   X,
   Truck,
-  Package,
 } from "lucide-react";
 import { RefundModal } from "../Modals/RefundModal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -40,6 +39,7 @@ type Order = {
   reference: string;
   total: number;
   status: string;
+  order_status: string;
   customerName: string;
   customerEmail: string;
   customerId?: number;
@@ -55,12 +55,6 @@ const statusConfig: Record<
     nextStatuses: string[];
   }
 > = {
-  pending: {
-    label: "Pending",
-    color: "bg-yellow-100 text-yellow-700",
-    icon: <Package className="w-3 h-3" />,
-    nextStatuses: ["processing", "cancelled"],
-  },
   processing: {
     label: "Processing",
     color: "bg-blue-100 text-blue-700",
@@ -127,7 +121,7 @@ export default function OrdersTab() {
       status: string;
       notify?: boolean;
     }) => {
-      const res = await fetch("/api/orders/update-status", {
+      const res = await fetch("/api/admin/orders/update-status", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status, notify }),
@@ -159,7 +153,7 @@ export default function OrdersTab() {
   };
 
   const isEligibleForRefund = (order: Order) =>
-    ["delivered", "shipped", "processing"].includes(order.status);
+    ["delivered", "shipped", "processing"].includes(order.order_status);
 
   const filteredOrders = useMemo(() => {
     const q = search.toLowerCase();
@@ -172,16 +166,15 @@ export default function OrdersTab() {
           o.customerEmail.toLowerCase().includes(q) ||
           o.id.toString().includes(q),
       )
-      .filter((o) => statusFilter === "all" || o.status === statusFilter);
+      .filter((o) => statusFilter === "all" || o.order_status === statusFilter);
   }, [search, statusFilter, orders]);
 
   const stats = {
     total: orders.length,
-    pending: orders.filter((o) => o.status === "pending").length,
-    processing: orders.filter((o) => o.status === "processing").length,
-    shipped: orders.filter((o) => o.status === "shipped").length,
-    delivered: orders.filter((o) => o.status === "delivered").length,
-    cancelled: orders.filter((o) => o.status === "cancelled").length,
+    processing: orders.filter((o) => o.order_status === "processing").length,
+    shipped: orders.filter((o) => o.order_status === "shipped").length,
+    delivered: orders.filter((o) => o.order_status === "delivered").length,
+    cancelled: orders.filter((o) => o.order_status === "cancelled").length,
   };
 
   const getStatusBadge = (status: string) => {
@@ -216,7 +209,7 @@ export default function OrdersTab() {
         getItemCount(o),
         o.total.toFixed(2),
         new Date(o.created_at).toLocaleDateString(),
-        o.status,
+        o.order_status,
       ]),
     ]
       .map((row) => row.join(","))
@@ -259,12 +252,6 @@ export default function OrdersTab() {
             <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600">
-              {stats.pending}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <p className="text-sm text-gray-500">Processing</p>
             <p className="text-2xl font-bold text-blue-600">
               {stats.processing}
@@ -304,7 +291,6 @@ export default function OrdersTab() {
                 className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
               >
                 <option value="all">All Status</option>
-                <option value="pending">Pending</option>
                 <option value="processing">Processing</option>
                 <option value="shipped">Shipped</option>
                 <option value="delivered">Delivered</option>
@@ -386,17 +372,17 @@ export default function OrdersTab() {
                             )
                           }
                           disabled={updatingId === order.id}
-                          className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50"
+                          className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50 cursor-pointer"
                         >
-                          {getStatusBadge(order.status)}
-                          {statusConfig[order.status]?.nextStatuses.length >
-                            0 && (
+                          {getStatusBadge(order.order_status)}
+                          {statusConfig[order.order_status]?.nextStatuses
+                            .length > 0 && (
                             <ChevronDown className="w-3 h-3 text-gray-400" />
                           )}
                         </button>
                         {statusDropdownOpen === order.id && (
                           <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
-                            {statusConfig[order.status]?.nextStatuses.map(
+                            {statusConfig[order.order_status]?.nextStatuses.map(
                               (nextStatus) => (
                                 <button
                                   key={nextStatus}
@@ -421,11 +407,11 @@ export default function OrdersTab() {
                               onClick={() =>
                                 updateOrderStatus({
                                   id: order.id,
-                                  status: order.status,
+                                  status: order.order_status,
                                   notify: false,
                                 })
                               }
-                              className="w-full px-3 py-2 text-left text-xs text-gray-500 hover:bg-gray-50"
+                              className="w-full px-3 py-2 text-left text-xs text-gray-500 hover:bg-gray-50 cursor-pointer"
                             >
                               Update without notifying
                             </button>
@@ -441,7 +427,7 @@ export default function OrdersTab() {
                           onClick={() =>
                             router.push(`/admin/orders/${order.id}`)
                           }
-                          className="text-gray-400 hover:text-blue-600"
+                          className="text-gray-400 hover:text-blue-600 cursor-pointer"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -453,7 +439,7 @@ export default function OrdersTab() {
                               setSelectedOrder(order);
                               setShowRefundModal(true);
                             }}
-                            className="text-gray-400 hover:text-red-600"
+                            className="text-gray-400 hover:text-red-600 cursor-pointer"
                           >
                             <RefreshCw className="w-4 h-4" />
                           </Button>

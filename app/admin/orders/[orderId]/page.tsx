@@ -21,6 +21,7 @@ type Order = {
   reference: string;
   created_at: string;
   status: string;
+  order_status: string;
   customerName: string;
   customerEmail: string;
   total: number;

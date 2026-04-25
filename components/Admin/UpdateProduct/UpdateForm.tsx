@@ -381,7 +381,7 @@ export default function UpdateForm({ product }: UpdateFormProps) {
 
   if (!product) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
+      <div className="min-h-100 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 mb-4">Product not found.</p>
           <Button
@@ -401,7 +401,7 @@ export default function UpdateForm({ product }: UpdateFormProps) {
         {/* CRITICAL: Use div instead of form to prevent ANY native form submission */}
         <div className="flex flex-col gap-6">
           {/* Header */}
-          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b">
+          <div className="px-6 py-4 bg-linear-to-r from-gray-50 to-white border-b">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <div>
                 <h1 className="text-xl font-bold text-gray-800">

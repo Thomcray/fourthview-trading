@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -19,7 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
 import { useCurrency } from "@/components/CurrencyContext";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import RefundRequestModal from "@/components/RefundRequestModal";
 
 type OrderItem = {
   id: number;
@@ -38,6 +40,7 @@ type Order = {
   reference: string;
   total: number;
   status: string;
+  order_status: string;
   items: OrderItem[];
   shipping_address?: {
     street: string;
@@ -47,6 +50,7 @@ type Order = {
     zipCode: string;
   };
   payment_method?: string;
+  delivered_at?: string;
   payment_id?: string;
   tracking_number?: string;
   estimated_delivery?: string;
@@ -56,11 +60,6 @@ const statusConfig: Record<
   string,
   { label: string; color: string; icon: React.ElementType }
 > = {
-  pending: {
-    label: "Pending",
-    color: "bg-yellow-100 text-yellow-700",
-    icon: Clock,
-  },
   processing: {
     label: "Processing",
     color: "bg-blue-100 text-blue-700",
@@ -87,32 +86,40 @@ export default function OrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { formatFromNGN } = useCurrency();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const orderId = params.orderId as string;
 
-  useEffect(() => {
-    async function fetchOrder() {
-      try {
-        const res = await fetch(`/api/orders/${orderId}`);
-        if (!res.ok) throw new Error("Order not found");
-        const data = await res.json();
-        setOrder(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load order");
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
-    if (orderId) fetchOrder();
-  }, [orderId]);
+  const {
+    data: order,
+    isLoading,
+    isError,
+  } = useQuery<Order>({
+    queryKey: ["order", orderId],
+    queryFn: async () => {
+      const res = await fetch(`/api/orders/${orderId}`);
+      if (!res.ok) throw new Error("Order not found");
+
+      const data = await res.json();
+      return data;
+    },
+    refetchInterval: 30000, // refetch every 30 seconds
+    staleTime: 0,
+  });
+
+  // Eligibility check:
+  const canRequestRefund = () => {
+    if (!order || order.order_status !== "delivered") return false;
+    if (!order.delivered_at) return false;
+    const daysSince =
+      (new Date().getTime() - new Date(order.delivered_at).getTime()) /
+      (1000 * 60 * 60 * 24);
+    return daysSince <= 7;
+  };
 
   const getStatusBadge = () => {
     if (!order) return null;
-    const config = statusConfig[order.status] || statusConfig.pending;
+    const config = statusConfig[order.order_status] || statusConfig.processing;
     const Icon = config.icon;
     return (
       <span
@@ -128,7 +135,7 @@ export default function OrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-32 bg-gray-200 rounded" />
@@ -143,9 +150,9 @@ export default function OrderDetailPage() {
     );
   }
 
-  if (error || !order) {
+  if (isError || !order) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -179,7 +186,7 @@ export default function OrderDetailPage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-8">
         <div className="max-w-4xl mx-auto px-4">
           {/* Header — hidden on print */}
           <div className="flex items-center justify-between mb-6 no-print">
@@ -200,7 +207,6 @@ export default function OrderDetailPage() {
               <span className="hidden sm:inline">Print Receipt</span>
             </Button>
           </div>
-
           {/* Printable area */}
           <div id="printable-order">
             {/* Order Header Card */}
@@ -209,7 +215,7 @@ export default function OrderDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6"
             >
-              <div className="bg-gradient-to-r from-blue-900 to-blue-800 px-6 py-4">
+              <div className="bg-linear-to-r from-blue-900 to-blue-800 px-6 py-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h1 className="text-xl font-bold text-white">
@@ -433,10 +439,11 @@ export default function OrderDetailPage() {
               </div>
               <div className="p-6">
                 <div className="space-y-4">
+                  {/* Order Placed - always visible */}
                   <div className="flex gap-3">
                     <div className="relative">
                       <div className="w-3 h-3 mt-1.5 rounded-full bg-green-500 ring-4 ring-green-100" />
-                      {order.status !== "delivered" && (
+                      {order.order_status !== "delivered" && (
                         <div className="absolute top-6 left-1.5 w-0.5 h-full bg-gray-200" />
                       )}
                     </div>
@@ -457,9 +464,25 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
 
-                  {order.status === "processing" && (
+                  {/* Processing - show if processing, shipped, or delivered */}
+                  {["processing", "shipped", "delivered"].includes(
+                    order.order_status,
+                  ) && (
                     <div className="flex gap-3">
-                      <div className="w-3 h-3 mt-1.5 rounded-full bg-blue-500 ring-4 ring-blue-100 animate-pulse" />
+                      <div className="relative">
+                        <div
+                          className={`w-3 h-3 mt-1.5 rounded-full ring-4 ${
+                            order.order_status === "processing"
+                              ? "bg-blue-500 ring-blue-100 animate-pulse"
+                              : "bg-green-500 ring-green-100"
+                          }`}
+                        />
+                        {["shipped", "delivered"].includes(
+                          order.order_status,
+                        ) && (
+                          <div className="absolute top-6 left-1.5 w-0.5 h-full bg-gray-200" />
+                        )}
+                      </div>
                       <div>
                         <p className="font-medium text-gray-800">Processing</p>
                         <p className="text-sm text-gray-500">
@@ -469,38 +492,51 @@ export default function OrderDetailPage() {
                     </div>
                   )}
 
-                  {order.status === "shipped" && (
-                    <>
-                      <div className="flex gap-3">
-                        <div className="relative">
-                          <div className="w-3 h-3 mt-1.5 rounded-full bg-blue-500 ring-4 ring-blue-100" />
+                  {/* Shipped - show if shipped or delivered */}
+                  {["shipped", "delivered"].includes(order.order_status) && (
+                    <div className="flex gap-3">
+                      <div className="relative">
+                        <div
+                          className={`w-3 h-3 mt-1.5 rounded-full ring-4 ${
+                            order.order_status === "shipped"
+                              ? "bg-purple-500 ring-purple-100 animate-pulse"
+                              : "bg-green-500 ring-green-100"
+                          }`}
+                        />
+                        {order.order_status === "delivered" && (
                           <div className="absolute top-6 left-1.5 w-0.5 h-full bg-gray-200" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-800">Shipped</p>
-                          <p className="text-sm text-gray-500">
-                            Your order is on the way
-                          </p>
-                        </div>
+                        )}
                       </div>
-                      <div className="flex gap-3">
-                        <div className="w-3 h-3 mt-1.5 rounded-full bg-gray-300" />
-                        <div>
-                          <p className="font-medium text-gray-400">
-                            Out for Delivery
-                          </p>
-                        </div>
+                      <div>
+                        <p className="font-medium text-gray-800">Shipped</p>
+                        <p className="text-sm text-gray-500">
+                          Your order is on the way
+                        </p>
                       </div>
-                    </>
+                    </div>
                   )}
 
-                  {order.status === "delivered" && (
+                  {/* Delivered - show only if delivered */}
+                  {order.order_status === "delivered" && (
                     <div className="flex gap-3">
                       <div className="w-3 h-3 mt-1.5 rounded-full bg-green-500 ring-4 ring-green-100" />
                       <div>
                         <p className="font-medium text-gray-800">Delivered</p>
                         <p className="text-sm text-gray-500">
                           Your order has been delivered successfully
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cancelled */}
+                  {order.order_status === "cancelled" && (
+                    <div className="flex gap-3">
+                      <div className="w-3 h-3 mt-1.5 rounded-full bg-red-500 ring-4 ring-red-100" />
+                      <div>
+                        <p className="font-medium text-gray-800">Cancelled</p>
+                        <p className="text-sm text-gray-500">
+                          Your order has been cancelled
                         </p>
                       </div>
                     </div>
@@ -517,7 +553,6 @@ export default function OrderDetailPage() {
               </p>
             </div>
           </div>
-
           {/* Need Help — hidden on print */}
           <div className="mt-6 text-center no-print">
             <p className="text-sm text-gray-500">
@@ -527,6 +562,26 @@ export default function OrderDetailPage() {
               </button>
             </p>
           </div>
+
+          {canRequestRefund() && (
+            <div className="mt-4 text-center no-print">
+              <Button
+                variant="outline"
+                onClick={() => setShowRefundModal(true)}
+                className="border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+              >
+                Request a Refund
+              </Button>
+            </div>
+          )}
+
+          <RefundRequestModal
+            isOpen={showRefundModal}
+            onClose={() => setShowRefundModal(false)}
+            orderId={order.id}
+            orderTotal={order.total}
+            whatsappNumber="2348000000000" // replace with your actual WhatsApp number
+          />
         </div>
       </div>
     </>

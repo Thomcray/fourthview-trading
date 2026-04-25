@@ -6,46 +6,67 @@ import {
   ClipboardList,
   RefreshCw,
   PackageSearch,
+  GraduationCap,
 } from "lucide-react";
 import { useState } from "react";
 import OrdersTab from "@/components/Admin/Tabs/OrdersTab";
 import RequestsTab from "@/components/Admin/Tabs/RequestsTab";
 import SpecialOrdersTab from "@/components/Admin/Tabs/SpecialOrdersTab";
 import RefundsTab from "@/components/Admin/Tabs/RefundsTab";
+import StudyTab from "@/components/Admin/Tabs/StudyTab";
 
-type Tab = "orders" | "requests" | "special" | "refunds";
+type Tab = "orders" | "requests" | "special" | "study" | "refunds";
 
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<Tab>("orders");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
             Orders & Requests
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Manage customer orders, service requests, special orders, and
-            refunds
+            Manage customer orders, service requests, special orders, study in
+            China applications, and refunds
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
-          <TabsList className="grid w-full max-w-xl grid-cols-4">
-            <TabsTrigger value="orders" className="flex items-center gap-2">
+          <TabsList className="grid w-full max-w-xl grid-cols-5">
+            <TabsTrigger
+              value="orders"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <ShoppingBag className="w-4 h-4" />
               Orders
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex items-center gap-2">
+            <TabsTrigger
+              value="requests"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <ClipboardList className="w-4 h-4" />
               Requests
             </TabsTrigger>
-            <TabsTrigger value="special" className="flex items-center gap-2">
+            <TabsTrigger
+              value="special"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <PackageSearch className="w-4 h-4" />
               Special
             </TabsTrigger>
-            <TabsTrigger value="refunds" className="flex items-center gap-2">
+            <TabsTrigger
+              value="study"
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <GraduationCap className="w-4 h-4" />
+              Study
+            </TabsTrigger>
+            <TabsTrigger
+              value="refunds"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <RefreshCw className="w-4 h-4" />
               Refunds
             </TabsTrigger>
@@ -61,6 +82,10 @@ export default function OrdersPage() {
 
           <TabsContent value="special" className="mt-6">
             <SpecialOrdersTab />
+          </TabsContent>
+
+          <TabsContent value="study" className="mt-6">
+            <StudyTab />
           </TabsContent>
 
           <TabsContent value="refunds" className="mt-6">

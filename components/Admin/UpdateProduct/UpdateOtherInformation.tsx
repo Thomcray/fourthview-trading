@@ -4,57 +4,7 @@ import Selection from "@/components/Selection";
 import React, { useState, useEffect } from "react";
 import { useCurrency } from "@/components/CurrencyContext";
 import { useUpdateForm } from "./UpdateForm"; // ← added
-
-// SIZE_OPTIONS, WEIGHT_OPTIONS, SectionLabel, HintText, CurrentValueBadge stay identical...
-
-const SIZE_OPTIONS: Record<string, string[]> = {
-  Shirt: [
-    "XS (EU 42)",
-    "S (EU 44-46)",
-    "M (EU 48-50)",
-    "L (EU 52-54)",
-    "XL (EU 56-58)",
-    "XXL (EU 60-62)",
-  ],
-  Trouser: [
-    "28 (EU 38)",
-    "30 (EU 40)",
-    "32 (EU 42)",
-    "34 (EU 44)",
-    "36 (EU 46)",
-    "38 (EU 48)",
-  ],
-  Shoes: [
-    "6 (EU 39)",
-    "7 (EU 40)",
-    "8 (EU 41)",
-    "9 (EU 42)",
-    "10 (EU 43)",
-    "11 (EU 44)",
-  ],
-  Jewelry: ["One Size", "Adjustable", "Small", "Medium", "Large"],
-  Furniture: [
-    "Single (90x190cm)",
-    "Double (135x190cm)",
-    "Queen (150x200cm)",
-    "King (180x200cm)",
-    "1 Seater",
-    "2 Seater",
-    "3 Seater",
-  ],
-};
-
-const WEIGHT_OPTIONS = [
-  { value: "0.1", label: "0.1 kg (Very light)" },
-  { value: "0.25", label: "0.25 kg (Light)" },
-  { value: "0.5", label: "0.5 kg" },
-  { value: "1", label: "1 kg" },
-  { value: "2", label: "2 kg" },
-  { value: "5", label: "5 kg" },
-  { value: "10", label: "10 kg" },
-  { value: "20", label: "20 kg (Heavy)" },
-  { value: "50", label: "50 kg (Extra heavy)" },
-];
+import { SIZE_OPTIONS } from "@/app/_lib/data/product-sizes";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-sm font-medium text-slate-700">{children}</p>;
@@ -158,8 +108,8 @@ export default function UpdateOtherInformation({
               value={selectedSizes.join(", ")}
             />
           )}
-          <div className="w-96 max-sm:w-full p-4 border rounded-lg bg-white">
-            <div className="grid gap-1 grid-cols-3">
+          <div className="w-96 max-sm:w-full p-4 border rounded-lg bg-white max-h-72 overflow-y-auto">
+            <div className="grid gap-1 grid-cols-2">
               {predefinedSizes.map((size) => (
                 <label
                   key={size}
@@ -170,7 +120,7 @@ export default function UpdateOtherInformation({
                     name="sizes"
                     value={size}
                     defaultChecked={selectedSizes.includes(size)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 shrink-0"
                   />
                   <span className="text-xs text-slate-600">{size}</span>
                 </label>
@@ -243,23 +193,20 @@ export default function UpdateOtherInformation({
             value={`${selectedWeight} kg`}
           />
         )}
-        <Selection
+        <input
+          type="number"
+          name="weight"
           value={selectedWeight}
           onChange={(e) => setSelectedWeight(e.target.value)}
-          name="weight"
-          width="w-96 max-sm:w-full"
-          placeholder="Select Weight Range"
-        >
-          {WEIGHT_OPTIONS.map((opt) => (
-            <option value={opt.value} key={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </Selection>
+          placeholder="e.g. 1.5"
+          min="0.01"
+          step="0.01"
+          className="w-96 max-sm:w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none h-11"
+        />
         <HintText>
           {ratePerKg
             ? `Rate: ¥${ratePerKg}/kg from admin settings`
-            : "Select weight to calculate shipping"}
+            : "Enter weight to calculate shipping"}
         </HintText>
       </div>
 

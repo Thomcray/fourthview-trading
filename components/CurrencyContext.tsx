@@ -79,7 +79,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [locationLoading, setLocationLoading] = useState(true);
   const [countryCode, setCountryCode] = useState<string | null>(null);
 
-  // Fix: ref guard prevents re-running if rates reload (e.g. on a refresh interval)
+  // ref guard prevents re-running if rates reload (e.g. on a refresh interval)
   const hasDetected = useRef(false);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Fix: call our own API route instead of ipapi.co directly
+    // call our own API route instead of ipapi.co directly
     fetch("/api/location")
       .then((res) => res.json())
       .then((data) => {
@@ -126,13 +126,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     (code: string): number | null => {
       if (!rates) return null;
       const rate = rates[code as keyof ExchangeRates];
-      // Fix: return null instead of 0 so callers can show skeleton vs ₦0.00
+      // return null instead of 0 so callers can show skeleton vs ₦0.00
       return rate ?? null;
     },
     [rates],
   );
 
-  // Fix: returns null when rates aren't ready — callers should show skeleton
+  // returns null when rates aren't ready — callers should show skeleton
   const convertPrice = useCallback(
     (priceInCNY: number): number | null => {
       const rate = getRate(currencyCode);
@@ -142,7 +142,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     [currencyCode, getRate],
   );
 
-  // Fix: returns null when rates aren't ready — callers should show skeleton
+  // returns null when rates aren't ready — callers should show skeleton
   const formatPrice = useCallback(
     (priceInCNY: number): string | null => {
       const converted = convertPrice(priceInCNY);

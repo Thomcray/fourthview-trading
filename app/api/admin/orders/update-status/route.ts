@@ -5,18 +5,18 @@ import { createClient } from "@/app/_lib/supabase-server";
 import { sendOrderStatusEmail } from "@/app/_lib/email";
 
 // Define types
-type OrderItem = {
-  id: number;
-  quantity: number;
-  price: number;
-  product?: {
-    id: number;
-    name: string;
-  };
-};
+// type OrderItem = {
+//   id: number;
+//   quantity: number;
+//   price: number;
+//   product?: {
+//     id: number;
+//     name: string;
+//   };
+// };
 
 type UpdateData = {
-  status: string;
+  order_status: string;
   updated_at: string;
   shipped_at?: string;
   delivered_at?: string;
@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user || session.user.userRole !== "ADMIN") {
+    if (!session?.user || session.user.userRole !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -40,49 +40,32 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const validStatuses = [
-      "pending",
-      "processing",
-      "shipped",
-      "delivered",
-      "cancelled",
-    ];
+    const validStatuses = ["processing", "shipped", "delivered", "cancelled"];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ message: "Invalid status" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = await createClient(true);
 
     const { data: currentOrder, error: fetchError } = await supabase
       .from("orders")
-      .select(
-        `
-        *,
-        user:user_id (
-          id,
-          email,
-          firstName,
-          lastName
-        ),
-        items:order_items (
-          id,
-          quantity,
-          price,
-          product:product_id (
-            id,
-            name
-          )
-        )
-      `,
-      )
+      .select("*")
       .eq("id", id)
       .single();
 
     if (fetchError || !currentOrder) {
+      console.error("Fetch error:", fetchError);
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
-    if (currentOrder.status === status) {
+    // Fetch user separately
+    const { data: user } = await supabase
+      .from("users")
+      .select("id, email, firstName, lastName")
+      .eq("id", currentOrder.userId)
+      .single();
+
+    if (currentOrder.order_status === status) {
       return NextResponse.json(
         { message: "Order is already in this status" },
         { status: 400 },
@@ -90,41 +73,24 @@ export async function PATCH(req: NextRequest) {
     }
 
     const updateData: UpdateData = {
-      status,
+      order_status: status,
       updated_at: new Date().toISOString(),
     };
 
-    if (status === "shipped") {
-      updateData.shipped_at = new Date().toISOString();
-    }
+    // comment out for now. will add to db schema later.
+    // if (status === "shipped") {
+    //   updateData.shipped_at = new Date().toISOString();
+    // }
     if (status === "delivered") {
       updateData.delivered_at = new Date().toISOString();
     }
 
+    // Update order
     const { data: updatedOrder, error: updateError } = await supabase
       .from("orders")
       .update(updateData)
       .eq("id", id)
-      .select(
-        `
-        *,
-        user:user_id (
-          id,
-          email,
-          firstName,
-          lastName
-        ),
-        items:order_items (
-          id,
-          quantity,
-          price,
-          product:product_id (
-            id,
-            name
-          )
-        )
-      `,
-      )
+      .select("*")
       .single();
 
     if (updateError) {
@@ -136,19 +102,14 @@ export async function PATCH(req: NextRequest) {
     }
 
     let emailSent = false;
-    const customerEmail = currentOrder.user?.email;
-
+    const customerEmail = user?.email;
     if (notify && customerEmail) {
       try {
-        const customerName =
-          currentOrder.user?.firstName || currentOrder.user?.email;
-
         await sendOrderStatusEmail({
           to: customerEmail,
           orderReference: currentOrder.reference,
-          status: status,
-          customerName: customerName,
-          items: (currentOrder.items as OrderItem[]) || [],
+          status,
+          customerName: user?.firstName || customerEmail,
           total: currentOrder.total,
         });
         emailSent = true;
