@@ -175,7 +175,7 @@ export default function ProfileForm({
               type="button"
               variant="outline"
               onClick={() => setIsEditing(true)}
-              className="border-gray-300 hover:border-blue-500 hover:bg-blue-50"
+              className="border-gray-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer"
             >
               <SquarePen className="h-4 w-4 mr-2" />
               Edit Profile
@@ -365,7 +365,7 @@ export default function ProfileForm({
           </div>
 
           {/* Hidden field for compatibility */}
-          <input type="hidden" name="address" value={address} />
+          <input type="hidden" name="address" value={address ?? ""} />
 
           {/* Action Buttons */}
           {isEditing && (
@@ -373,7 +373,7 @@ export default function ProfileForm({
               <Button
                 type="submit"
                 disabled={isPending}
-                className="flex-1 py-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200"
+                className="flex-1 py-6 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 cursor-pointer"
               >
                 {isPending ? (
                   <div className="flex items-center justify-center gap-2">
@@ -393,7 +393,7 @@ export default function ProfileForm({
                   setDialCode(initialCountryCode);
                   setPhoneNumber(initialPhone);
                 }}
-                className="flex-1 py-6 border-gray-300 hover:bg-gray-50"
+                className="flex-1 py-6 border-gray-300 hover:bg-gray-50 cursor-pointer"
               >
                 Cancel
               </Button>

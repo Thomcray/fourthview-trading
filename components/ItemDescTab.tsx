@@ -46,7 +46,7 @@ export default function ItemDescTab() {
                   twice a month
                 </span>{" "}
                 — on the{" "}
-                <span className="font-medium text-slate-800">14th</span> and{" "}
+                <span className="font-medium text-slate-800">15th</span> and{" "}
                 <span className="font-medium text-slate-800">30th/31st</span>.
               </p>
 

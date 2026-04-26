@@ -24,7 +24,7 @@ export async function createUser(token: string) {
 
   const fullAddress = addressParts.join(", ");
 
-  const supabase = await createClient(true); // admin
+  const supabase = await createClient(true);
   const { data, error } = await supabase
     .from("users")
     .insert({
@@ -70,7 +70,7 @@ export async function updateUserProfile(
   city?: string,
   zipCode?: string,
 ) {
-  const supabase = await createClient(); // user context
+  const supabase = await createClient(true);
   const updateData = {
     phone,
     country,

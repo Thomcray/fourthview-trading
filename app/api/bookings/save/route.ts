@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = await createClient(); // user context - their own booking
+  const supabase = await createClient(true);
 
   const body = await req.json();
   const {

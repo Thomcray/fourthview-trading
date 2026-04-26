@@ -54,7 +54,7 @@ const serviceFeatures = [
   {
     icon: CreditCard,
     text: "Multiple Payments",
-    subtext: "Cards, Bank, Crypto",
+    subtext: "Cards, Bank",
   },
 ];
 

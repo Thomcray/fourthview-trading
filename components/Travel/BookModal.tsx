@@ -1,4 +1,3 @@
-// components/BookModal.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -25,11 +24,10 @@ import {
   Phone,
   Factory,
   MapPin,
-  Calendar as CalendarIcon,
   ArrowRight,
   CheckCircle,
-  X,
 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +39,51 @@ export default function BookModal() {
   const [purpose, setPurpose] = useState("");
   const [fDetails, setFDetails] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+
+  const { mutate: submitBooking, isPending } = useMutation({
+    mutationFn: async (bookingData: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      purpose: string;
+      visitDate: string | null;
+      factoryName: string | null;
+      factoryAddress: string | null;
+    }) => {
+      const res = await fetch("/api/bookings/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to submit booking");
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Booking submitted successfully! We'll contact you soon.");
+      setOpen(false);
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        factoryName: "",
+        factoryAddress: "",
+      });
+      setPurpose("");
+      setFDetails(false);
+      setStep(1);
+      setErrors({});
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message || "Failed to submit booking. Please try again.",
+      );
+    },
+  });
 
   const [form, setForm] = useState({
     firstName: "",
@@ -116,45 +156,15 @@ export default function BookModal() {
     setFDetails(false);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!validateFactoryDetails()) return;
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/bookings/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          purpose,
-          visitDate: date?.toISOString() || null,
-          factoryName: form.factoryName || null,
-          factoryAddress: form.factoryAddress || null,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to submit booking");
-
-      toast.success("Booking submitted successfully! We'll contact you soon.");
-      setOpen(false);
-      // Reset form
-      setForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        factoryName: "",
-        factoryAddress: "",
-      });
-      setPurpose("");
-      setFDetails(false);
-      setStep(1);
-      setErrors({});
-    } catch (error) {
-      toast.error("Failed to submit booking. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    submitBooking({
+      ...form,
+      purpose,
+      visitDate: date?.toISOString() || null,
+      factoryName: form.factoryName || null,
+      factoryAddress: form.factoryAddress || null,
+    });
   };
 
   const isFactoryVisit = purpose === "Factory Visit";
@@ -163,7 +173,7 @@ export default function BookModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+        <Button className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
           Book Your Experience
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
@@ -421,9 +431,9 @@ export default function BookModal() {
               type="button"
               className="bg-green-600 hover:bg-green-700 text-white"
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isPending}
             >
-              {isSubmitting ? (
+              {isPending ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Submitting...

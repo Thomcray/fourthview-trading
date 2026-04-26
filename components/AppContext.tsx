@@ -126,12 +126,15 @@ function AppProvider({ children, products, categories }: ChildrenProp) {
         body: JSON.stringify(item),
       });
 
-      if (!response.ok) throw new Error("Failed to add item");
-
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to add item");
+      }
+
       setCart(data.cart);
     } catch (error) {
       console.error("Failed to add to cart: ", error);
+      toast.error((error as Error).message || "Failed to add item to cart");
       throw error;
     }
   };
