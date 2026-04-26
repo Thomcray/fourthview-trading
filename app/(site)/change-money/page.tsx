@@ -1,4 +1,3 @@
-// app/change-money/page.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -13,11 +12,11 @@ import {
   Shield,
   Clock,
   ArrowRight,
-  Copy,
+  Construction,
 } from "lucide-react";
-import { ExchangeModal } from "@/components/ExchangeModal";
-import exchangerates from "@/components/ChangeMoney/exCurr";
+// import exchangerates from "@/components/ChangeMoney/exCurr";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
 type Steps = {
   id: number;
@@ -25,11 +24,10 @@ type Steps = {
   description?: string;
 };
 
-// Match the actual type from your exCurr file
 type ExchangeRate = {
   from: string;
   to: string;
-  rate: number; // Changed from string to number
+  rate: number;
   available: boolean;
 };
 
@@ -57,11 +55,6 @@ export default function CurrencyExchangePage() {
       step: "Make transfer",
       description: "Take a screenshot or print receipt",
     },
-    {
-      id: 5,
-      step: "Upload receipt",
-      description: "Receive barcode confirmation",
-    },
   ];
 
   const features = [
@@ -80,10 +73,17 @@ export default function CurrencyExchangePage() {
     setTimeout(() => setCopiedRate(null), 2000);
   };
 
+  const handleComingSoon = () => {
+    toast.info("Coming Soon!", {
+      position: "top-center",
+      autoClose: 2000,
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50">
+      <section className="relative bg-linear-to-br from-blue-50 via-white to-blue-50">
         <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
         <div className="container mx-auto px-4 py-16 lg:py-24">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -106,19 +106,20 @@ export default function CurrencyExchangePage() {
                   reliable currency exchange.
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-                  <ExchangeModal />
+                  {/* <ExchangeModal /> */}
                   <Button
                     variant="outline"
-                    className="border-blue-200 hover:bg-blue-50"
+                    className="border-blue-200 hover:bg-blue-50 cursor-pointer"
+                    onClick={handleComingSoon}
                   >
-                    Learn More
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    Get Started
+                    <ArrowRight className="w-4 h-4 ml-2 cursor-pointer" />
                   </Button>
                 </div>
               </motion.div>
             </div>
 
-            {/* Right Image - clip the glow inside its own wrapper */}
+            {/* Right Image */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -126,7 +127,7 @@ export default function CurrencyExchangePage() {
               className="flex-1 flex justify-center"
             >
               <div className="relative overflow-hidden rounded-full w-64 h-64 lg:w-80 lg:h-80">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-blue-400 to-purple-400 rounded-full blur-3xl opacity-20 animate-pulse"></div>
                 <Image
                   src={currencyImage}
                   alt="Currency Exchange"
@@ -173,7 +174,7 @@ export default function CurrencyExchangePage() {
         </div>
       </section>
 
-      {/* Current Rates Section */}
+      {/* Current Rates Section - Coming Soon */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -185,55 +186,32 @@ export default function CurrencyExchangePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {exchangerates.map((rate: ExchangeRate, index: number) => (
-              <motion.div
-                key={`${rate.from}-${rate.to}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 text-center border border-gray-100"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-md mx-auto"
+          >
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Construction className="w-10 h-10 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-blue-950 mb-3">
+                Coming Soon
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Our exchange rate dashboard is under development. Check back
+                soon for live rates!
+              </p>
+              <Button
+                onClick={handleComingSoon}
+                variant="outline"
+                className="border-blue-200 hover:bg-blue-50 cursor-pointer"
               >
-                <p className="text-sm font-semibold text-gray-700 mb-2">
-                  {rate.from} → {rate.to}
-                </p>
-                <div className="relative group">
-                  <div className="relative">
-                    <Button
-                      variant="outline"
-                      className="w-full bg-blue-950 text-white hover:bg-blue-800 font-mono text-lg mb-2"
-                    >
-                      {rate.rate.toFixed(4)}
-                    </Button>
-                    {/* Copy button is now a sibling, not nested inside Button */}
-                    <button
-                      onClick={() =>
-                        handleCopyRate(rate.rate, `${rate.from}-${rate.to}`)
-                      }
-                      className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity mb-2"
-                    >
-                      <Copy className="w-4 h-4 text-white" />
-                    </button>
-                  </div>
-                  {copiedRate === `${rate.from}-${rate.to}` && (
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs bg-green-500 text-white px-2 py-1 rounded whitespace-nowrap">
-                      Copied!
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-center gap-1">
-                  <div
-                    className={`w-2 h-2 rounded-full ${rate.available ? "bg-green-500" : "bg-red-500"} animate-pulse`}
-                  ></div>
-                  <p
-                    className={`text-xs font-medium ${rate.available ? "text-green-600" : "text-red-600"}`}
-                  >
-                    {rate.available ? "Available" : "Unavailable"}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                Notify Me When Live
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -243,41 +221,48 @@ export default function CurrencyExchangePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-4">How It Works</h2>
             <p className="text-blue-200 max-w-2xl mx-auto">
-              Exchange currency in 5 simple steps
+              Exchange currency in 4 simple steps
             </p>
           </div>
 
-          <div className="grid md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {steps.map((step, index) => (
               <motion.div
                 key={step.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="relative"
+                className="relative flex flex-col items-center"
               >
+                {/* Connector line - hidden on last item and mobile */}
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-blue-400/30 -translate-x-1/2"></div>
+                  <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-blue-400/30"></div>
                 )}
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-800 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-blue-400">
-                    <span className="text-white font-bold text-xl">
-                      {step.id}
-                    </span>
-                  </div>
-                  <div className="bg-blue-800/30 rounded-lg p-4 backdrop-blur-sm">
-                    <p className="text-white text-sm font-medium mb-2">
-                      {step.step}
-                    </p>
-                    <p className="text-blue-300 text-xs">{step.description}</p>
-                  </div>
+
+                <div className="w-16 h-16 bg-blue-800 rounded-full flex items-center justify-center mb-4 border-2 border-blue-400 shrink-0 relative z-10">
+                  <span className="text-white font-bold text-xl">
+                    {step.id}
+                  </span>
+                </div>
+
+                <div className="bg-blue-800/30 rounded-lg p-4 backdrop-blur-sm text-center w-full">
+                  <p className="text-white text-sm font-medium mb-2">
+                    {step.step}
+                  </p>
+                  <p className="text-blue-300 text-xs">{step.description}</p>
                 </div>
               </motion.div>
             ))}
           </div>
 
           <div className="text-center mt-12">
-            <ExchangeModal />
+            <Button
+              onClick={handleComingSoon}
+              className="bg-white text-blue-950 hover:bg-blue-50 cursor-pointer"
+            >
+              Get Started
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
         </div>
       </section>

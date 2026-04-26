@@ -13,21 +13,39 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
-  RefreshCw,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 type SideMenu = {
   title: string;
   link: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  badge?: number;
+  badgeKey?: string;
+};
+
+type BadgeCounts = {
+  orders: number;
+  requests: number;
+  tickets: number;
+  customers: number;
 };
 
 export default function AdminSide() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Fetch badge counts
+  const { data: badgeCounts } = useQuery<BadgeCounts>({
+    queryKey: ["adminBadgeCounts"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/badge-counts");
+      if (!res.ok) throw new Error("Failed to fetch badge counts");
+      return res.json();
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
 
   // Emit collapse state to parent layout
   useEffect(() => {
@@ -46,18 +64,23 @@ export default function AdminSide() {
       title: "Orders & Request",
       link: "/admin/orders-request",
       icon: ShoppingCart,
-      badge: 12,
+      badgeKey: "orders",
     },
     { title: "Customers", link: "/admin/customers", icon: UsersRound },
     {
       title: "Support & Tickets",
       link: "/admin/support-tickets",
       icon: MessageSquare,
-      badge: 3,
+      badgeKey: "tickets",
     },
     { title: "Analytics", link: "/admin/analytics", icon: TrendingUp },
     { title: "Settings", link: "/admin/settings", icon: Settings },
   ];
+
+  const getBadgeCount = (badgeKey?: string): number | undefined => {
+    if (!badgeKey || !badgeCounts) return undefined;
+    return badgeCounts[badgeKey as keyof BadgeCounts] || 0;
+  };
 
   const isActive = (link: string) => {
     if (link === "/admin") return pathname === link;
@@ -105,6 +128,7 @@ export default function AdminSide() {
           {sideMenu.map((item) => {
             const active = isActive(item.link);
             const Icon = item.icon;
+            const badgeCount = getBadgeCount(item.badgeKey);
 
             return (
               <Link
@@ -131,11 +155,11 @@ export default function AdminSide() {
                     <span className="text-sm font-medium">{item.title}</span>
                   )}
                 </div>
-                {!isCollapsed && item.badge && (
+                {!isCollapsed && badgeCount !== undefined && badgeCount > 0 && (
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-blue-200 text-blue-800" : "bg-gray-100 text-gray-600"}`}
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${active ? "bg-blue-200 text-blue-800" : "bg-red-100 text-red-600"}`}
                   >
-                    {item.badge}
+                    {badgeCount}
                   </span>
                 )}
               </Link>

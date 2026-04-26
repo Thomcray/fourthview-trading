@@ -16,6 +16,10 @@ declare module "next-auth" {
       country: string;
       address: string;
       userRole: string;
+      streetAddress?: string;
+      apartment?: string;
+      city?: string;
+      zipCode?: string;
     } & DefaultSession["user"];
   }
 }
@@ -30,6 +34,10 @@ interface User {
   country: string;
   address: string;
   userRole: string;
+  streetAddress?: string;
+  apartment?: string;
+  city?: string;
+  zipCode?: string;
 }
 
 declare module "next-auth/jwt" {
@@ -45,5 +53,9 @@ declare module "next-auth/jwt" {
     country: string;
     address: string;
     userRole: string;
+    streetAddress?: string;
+    apartment?: string;
+    city?: string;
+    zipCode?: string;
   }
 }

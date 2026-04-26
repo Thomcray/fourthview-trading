@@ -300,7 +300,7 @@ export default function RequestsTab() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedBooking(booking)}
-                      className="text-gray-400 hover:text-blue-600"
+                      className="text-gray-400 hover:text-blue-600 cursor-pointer"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>

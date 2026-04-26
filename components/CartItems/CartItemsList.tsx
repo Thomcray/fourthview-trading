@@ -222,7 +222,7 @@ export default function CartItemsList({
                       <button
                         onClick={() => handleRemove(id)}
                         disabled={isUpdating}
-                        className="p-1.5 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0"
+                        className="p-1.5 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 shrink-0 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -265,7 +265,7 @@ export default function CartItemsList({
                               key={size}
                               onClick={() => handleSizeUpdate(id, size)}
                               disabled={isUpdating}
-                              className={`px-2.5 py-1 text-xs rounded-md transition-all disabled:opacity-50 ${
+                              className={`px-2.5 py-1 text-xs rounded-md transition-all disabled:opacity-50 cursor-pointer ${
                                 item.size === size
                                   ? "bg-blue-600 text-white ring-2 ring-blue-300"
                                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -309,7 +309,7 @@ export default function CartItemsList({
                             )
                           }
                           disabled={isUpdating || itemQuantity <= 1}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer"
                         >
                           <MinusIcon className="w-3.5 h-3.5 text-gray-600" />
                         </button>
@@ -325,7 +325,7 @@ export default function CartItemsList({
                             handleQuantityUpdate(id, itemQuantity + 1)
                           }
                           disabled={isUpdating}
-                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 shrink-0"
+                          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
                         >
                           <PlusIcon className="w-3.5 h-3.5 text-gray-600" />
                         </button>

@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchDashboard } from "@/app/_lib/api";
 import { queryKeys } from "@/app/_lib/queryKeys";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import { TrendingDown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type DashboardData = {
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   // Loading Skeleton
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Skeleton */}
           <div className="mb-8">
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
 
   if (isError || !data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <TrendingDown className="w-10 h-10 text-red-500" />
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div

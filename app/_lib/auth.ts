@@ -13,6 +13,10 @@ type Helper = {
   country: string;
   address: string;
   userRole: string;
+  streetAddress?: string;
+  apartment?: string;
+  city?: string;
+  zipCode?: string;
 };
 
 type Credentials = {
@@ -71,6 +75,10 @@ export const authOptions: NextAuthOptions = {
           country: existingUser.country,
           address: existingUser.address,
           userRole: role,
+          streetAddress: existingUser.streetAddress ?? "",
+          apartment: existingUser.apartment ?? "",
+          city: existingUser.city ?? "",
+          zipCode: existingUser.zipCode ?? "",
         };
 
         return returnUser;
@@ -80,7 +88,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     // JWT
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id as string;
         token.email = user.email as string;
@@ -91,7 +99,22 @@ export const authOptions: NextAuthOptions = {
         token.country = (user as Helper).country;
         token.address = (user as Helper).address;
         token.userRole = (user as Helper).userRole;
+        token.userRole = (user as Helper).userRole;
+        token.streetAddress = (user as Helper).streetAddress;
+        token.apartment = (user as Helper).apartment;
+        token.city = (user as Helper).city;
+        token.zipCode = (user as Helper).zipCode;
       }
+
+      // ← add this block to handle update() calls
+      if (trigger === "update" && session?.user) {
+        token.streetAddress = session.user.streetAddress;
+        token.apartment = session.user.apartment;
+        token.city = session.user.city;
+        token.zipCode = session.user.zipCode;
+        token.country = session.user.country;
+      }
+
       return token;
     },
     //session
@@ -107,6 +130,10 @@ export const authOptions: NextAuthOptions = {
         session.user.country = token.country as string;
         session.user.address = token.address as string;
         session.user.userRole = token.userRole as string;
+        session.user.streetAddress = token.streetAddress;
+        session.user.apartment = token.apartment;
+        session.user.city = token.city;
+        session.user.zipCode = token.zipCode;
       }
 
       return session;

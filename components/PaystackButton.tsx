@@ -21,7 +21,23 @@ interface PaystackReference {
   trxref: string;
 }
 
-export default function PaystackButton({ total }: { total: number }) {
+interface ShippingAddress {
+  streetAddress: string;
+  apartment: string;
+  city: string;
+  zipCode: string;
+  country: string;
+}
+
+interface PaystackButtonProps {
+  total: number;
+  shippingAddress?: ShippingAddress;
+}
+
+export default function PaystackButton({
+  total,
+  shippingAddress,
+}: PaystackButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { convertPrice, currency, isLoading: currencyLoading } = useCurrency();
   const { data: session } = useSession();
@@ -29,12 +45,13 @@ export default function PaystackButton({ total }: { total: number }) {
   const router = useRouter();
 
   const user = session?.user;
-  const nairaTotal = convertPrice(total) ?? 0;
+  const localTotal = convertPrice(total) ?? 0;
 
   const config = {
     reference: new Date().getTime().toString(),
     email: user?.email ?? "",
-    amount: Math.round((nairaTotal ?? 0) * 100),
+    amount: Math.round((localTotal ?? 0) * 100),
+    currency: currency.code,
     publicKey: PAYSTACK_PUBLIC_KEY,
     metadata: {
       custom_fields: [
@@ -52,14 +69,16 @@ export default function PaystackButton({ total }: { total: number }) {
               : "",
         },
         {
-          display_name: "Address",
+          display_name: "Shipping Address",
           variable_name: "address",
-          value: user?.address ?? "",
+          value: shippingAddress?.streetAddress
+            ? `${shippingAddress.streetAddress}${shippingAddress.apartment ? `, ${shippingAddress.apartment}` : ""}, ${shippingAddress.city}${shippingAddress.zipCode ? `, ${shippingAddress.zipCode}` : ""}${shippingAddress.country ? `, ${shippingAddress.country}` : ""}`
+            : (user?.address ?? ""),
         },
         {
           display_name: "Country",
           variable_name: "country",
-          value: user?.country ?? "",
+          value: (shippingAddress?.country || user?.country) ?? "",
         },
       ],
     },
@@ -80,26 +99,37 @@ export default function PaystackButton({ total }: { total: number }) {
 
     const onSuccess = async (reference: PaystackReference) => {
       try {
-        // FIXED: Properly await and check response
+        // Verify transaction with Paystack first
+        const verifyRes = await fetch("/api/paystack/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reference: reference.reference }),
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (!verifyRes.ok || !verifyData.verified) {
+          throw new Error(verifyData.error || "Payment verification failed");
+        }
+
+        // Only save order if verification passed
         const response = await fetch("/api/orders/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             reference: reference.reference,
-            total: nairaTotal,
+            total: localTotal,
             items: cart,
+            shippingAddress: shippingAddress ?? null,
           }),
         });
 
-        // FIXED: Check if response is OK
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || "Failed to save order");
         }
 
-        const data = await response.json();
-
-        // Only clear cart and redirect if save succeeded
+        // Clear cart and redirect only after everything succeeded
         await clearCart();
         toast.success("Order placed successfully!");
         router.push("/account/purchased-items");
@@ -110,7 +140,6 @@ export default function PaystackButton({ total }: { total: number }) {
             ? error.message
             : "Failed to save order. Please contact support.",
         );
-        // Don't clear cart - let user retry
       } finally {
         setIsLoading(false);
       }
@@ -130,7 +159,7 @@ export default function PaystackButton({ total }: { total: number }) {
     >
       {isLoading
         ? "Processing..."
-        : `Pay ₦${Math.round(nairaTotal).toLocaleString()}`}
+        : `Pay ${currency.symbol}${Math.round(localTotal).toLocaleString()}`}
     </Button>
   );
 }

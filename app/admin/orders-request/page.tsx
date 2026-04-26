@@ -34,41 +34,46 @@ export default function OrdersPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
-          <TabsList className="grid w-full max-w-xl grid-cols-5">
+          <TabsList className="flex flex-wrap h-auto w-full gap-1 bg-gray-100 p-1">
             <TabsTrigger
               value="orders"
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1.5 cursor-pointer data-[state=active]:bg-white data-[state=active]:shadow-sm px-3 py-2 text-xs sm:text-sm"
             >
-              <ShoppingBag className="w-4 h-4" />
-              Orders
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Orders</span>
+              <span className="sm:hidden">Orders</span>
             </TabsTrigger>
             <TabsTrigger
               value="requests"
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1.5 cursor-pointer data-[state=active]:bg-white data-[state=active]:shadow-sm px-3 py-2 text-xs sm:text-sm"
             >
-              <ClipboardList className="w-4 h-4" />
-              Requests
+              <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Requests</span>
+              <span className="sm:hidden">Requests</span>
             </TabsTrigger>
             <TabsTrigger
               value="special"
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1.5 cursor-pointer data-[state=active]:bg-white data-[state=active]:shadow-sm px-3 py-2 text-xs sm:text-sm"
             >
-              <PackageSearch className="w-4 h-4" />
-              Special
+              <PackageSearch className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Special</span>
+              <span className="sm:hidden">Special</span>
             </TabsTrigger>
             <TabsTrigger
               value="study"
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1.5 cursor-pointer data-[state=active]:bg-white data-[state=active]:shadow-sm px-3 py-2 text-xs sm:text-sm"
             >
-              <GraduationCap className="w-4 h-4" />
-              Study
+              <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Study</span>
+              <span className="sm:hidden">Study</span>
             </TabsTrigger>
             <TabsTrigger
               value="refunds"
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-1.5 cursor-pointer data-[state=active]:bg-white data-[state=active]:shadow-sm px-3 py-2 text-xs sm:text-sm"
             >
-              <RefreshCw className="w-4 h-4" />
-              Refunds
+              <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Refunds</span>
+              <span className="sm:hidden">Refunds</span>
             </TabsTrigger>
           </TabsList>
 

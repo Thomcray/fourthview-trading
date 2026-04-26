@@ -2,7 +2,14 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Package, User, Calendar, Printer } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  User,
+  Calendar,
+  Printer,
+  MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/components/CurrencyContext";
@@ -26,6 +33,13 @@ type Order = {
   customerEmail: string;
   total: number;
   items: OrderItem[];
+  shipping_address?: {
+    streetAddress: string;
+    apartment?: string;
+    city: string;
+    zipCode?: string;
+    country?: string;
+  };
 };
 
 export default function OrderDetailPage() {
@@ -37,10 +51,16 @@ export default function OrderDetailPage() {
     queryKey: ["order", orderId],
     queryFn: async () => {
       const res = await fetch(`/api/orders/${orderId}`);
-      if (!res.ok) throw new Error("Failed to fetch order");
-      return res.json();
+      const data = await res.json();
+      console.log("API response:", data); // ← add here
+      return data;
     },
+    staleTime: 0,
   });
+
+  console.log("order:", order);
+  console.log("shipping_address:", order?.shipping_address);
+  console.log("streetAddress:", order?.shipping_address?.streetAddress);
 
   const { formatPrice, formatFromNGN } = useCurrency();
 
@@ -50,7 +70,7 @@ export default function OrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-4">
             <div className="h-8 w-32 bg-gray-200 rounded" />
@@ -63,7 +83,7 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-4xl mx-auto text-center py-12">
           <p className="text-gray-500">Order not found</p>
           <Button onClick={() => router.back()} className="mt-4">
@@ -86,7 +106,7 @@ export default function OrderDetailPage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-4xl mx-auto">
           {/* Action Buttons */}
           <div className="flex items-center justify-between mb-6 no-print">
@@ -177,6 +197,30 @@ export default function OrderDetailPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Shipping Address */}
+              {order.shipping_address?.streetAddress && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="w-5 h-5 text-gray-500" />
+                    <h3 className="font-semibold text-gray-800">
+                      Shipping Address
+                    </h3>
+                  </div>
+                  <p className="text-gray-700">
+                    {order.shipping_address.streetAddress}
+                    {order.shipping_address.apartment &&
+                      `, ${order.shipping_address.apartment}`}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {order.shipping_address.city}
+                    {order.shipping_address.zipCode &&
+                      `, ${order.shipping_address.zipCode}`}
+                    {order.shipping_address.country &&
+                      `, ${order.shipping_address.country}`}
+                  </p>
+                </div>
+              )}
 
               {/* Order Items */}
               <div>

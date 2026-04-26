@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 type ExchangeRates = {
   NGN: number;
+  GHS: number;
   USD: number;
   EUR: number;
   GBP: number;
@@ -27,7 +28,7 @@ export function useExchangeRate() {
         const data = await res.json();
 
         // Validate that all required rates exist
-        const requiredRates = ["NGN", "USD", "EUR", "GBP", "CAD", "AUD"];
+        const requiredRates = ["NGN", "GHS", "USD", "EUR", "GBP", "CAD", "AUD"];
         const missingRates = requiredRates.filter((rate) => !data[rate]);
 
         if (missingRates.length > 0) {
@@ -38,6 +39,7 @@ export function useExchangeRate() {
 
         setRates({
           NGN: data.NGN,
+          GHS: data.GHS,
           USD: data.USD,
           EUR: data.EUR,
           GBP: data.GBP,

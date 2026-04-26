@@ -1,12 +1,21 @@
 "use client";
 
-import AddToCart from "@/components/AddToCart";
 import { useApp } from "@/components/AppContext";
-import ProductPrice from "@/components/ProductPrice";
-import { MinusIcon, PlusIcon, ShoppingCart, Truck, Weight } from "lucide-react";
-import Image from "next/image";
-import React, { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "react-toastify";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import {
+  MapPin,
+  MinusIcon,
+  PlusIcon,
+  ShoppingCart,
+  Truck,
+  Weight,
+} from "lucide-react";
+import AddToCart from "@/components/AddToCart";
+import ProductPrice from "@/components/ProductPrice";
+import Image from "next/image";
+import ShippingAddressModal from "@/components/ShippingAddressModal";
 
 type Item = {
   id: number;
@@ -39,7 +48,6 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
   const [colourUpdated, setColourUpdated] = useState(false);
   const [imageIdx, setImageIdx] = useState(0);
   const [isSwitching, setIsSwitching] = useState(false);
-
   const userInteractedRef = useRef(false);
 
   const { cart, updateQuantity, updateVariant } = useApp();
@@ -53,6 +61,8 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
       item.colour === selectedColour &&
       item.size === selectedSize,
   );
+
+  const { data: session, update } = useSession();
 
   // Reset state when switching products
   useEffect(() => {
@@ -77,7 +87,58 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
     }
   }, [selectedItem?.id, inCart, selectedItem?.colours]);
 
-  // SIMPLIFIED: Use updateVariant instead of remove+add
+  const [shippingAddress, setShippingAddress] = useState({
+    streetAddress: session?.user?.streetAddress ?? "",
+    apartment: session?.user?.apartment ?? "",
+    city: session?.user?.city ?? "",
+    zipCode: session?.user?.zipCode ?? "",
+    country: session?.user?.country ?? "",
+  });
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+
+  const handleAddressConfirm = async (
+    address: typeof shippingAddress,
+    saveToProfile: boolean,
+  ) => {
+    setShippingAddress(address);
+    setShowAddressModal(false);
+
+    if (saveToProfile) {
+      setIsSavingAddress(true);
+      try {
+        const res = await fetch("/api/users/shipping-address", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(address),
+        });
+        if (!res.ok) throw new Error("Failed to save address");
+
+        // Update the session immediately so it reflects without re-login
+        await update({
+          ...session,
+          user: {
+            ...session?.user,
+            streetAddress: address.streetAddress,
+            apartment: address.apartment,
+            city: address.city,
+            zipCode: address.zipCode,
+            country: address.country,
+          },
+        });
+
+        toast.success("Address saved to your profile!");
+      } catch {
+        toast.error("Failed to save address");
+      } finally {
+        setIsSavingAddress(false);
+      }
+    } else {
+      toast.success("Address confirmed for this order!");
+    }
+  };
+
+  // Use updateVariant instead of remove+add
   const handleImageColour = useCallback(
     async (idx: number) => {
       if (!selectedItem || isSwitching) return;
@@ -206,7 +267,7 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
     <div className="w-full px-8 max-sm:px-2 py-8 flex flex-col lg:flex-row gap-8">
       {/* Left — image + colour swatches */}
       <div className="flex flex-col gap-4 lg:w-2/5">
-        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-[#E4E8F6] to-[#B6C1E7]">
+        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-linear-to-br from-[#E4E8F6] to-[#B6C1E7]">
           <Image
             src={selectedItem.imageUrl[imageIdx] ?? selectedItem.imageUrl[0]}
             alt={selectedItem.name}
@@ -306,6 +367,37 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
                 Shipping: <ProductPrice yuanPrice={selectedItem.shippingCost} />
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Shipping Address */}
+        {session?.user && (
+          <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <p className="text-sm font-medium text-gray-700">Deliver to</p>
+              </div>
+              <button
+                onClick={() => setShowAddressModal(true)}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
+              >
+                {shippingAddress.streetAddress ? "Change" : "Add Address"}
+              </button>
+            </div>
+            {shippingAddress.streetAddress ? (
+              <p className="text-xs text-gray-600">
+                {shippingAddress.streetAddress}
+                {shippingAddress.apartment &&
+                  `, ${shippingAddress.apartment}`}, {shippingAddress.city}
+                {shippingAddress.zipCode && `, ${shippingAddress.zipCode}`}
+                {shippingAddress.country && `, ${shippingAddress.country}`}
+              </p>
+            ) : (
+              <p className="text-xs text-amber-600">
+                ⚠️ No shipping address set. Please add one before checkout.
+              </p>
+            )}
           </div>
         )}
 
@@ -426,6 +518,14 @@ export default function ViewProduct({ selectedItem }: ViewProductProps) {
           </p>
         </div>
       </div>
+
+      <ShippingAddressModal
+        isOpen={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        initialAddress={shippingAddress}
+        onConfirm={handleAddressConfirm}
+        isSaving={isSavingAddress}
+      />
     </div>
   );
 }

@@ -10,7 +10,7 @@ import Jewelry from "@/components/ShopWithUs/Women/Jewelry";
 import Shoes from "@/components/ShopWithUs/Men/Shoes";
 import { usePathname } from "next/navigation";
 
-export default function Page() {
+export default function WomenPage() {
   const pathName = usePathname();
 
   const currLocation = pathName === "/shop/women";

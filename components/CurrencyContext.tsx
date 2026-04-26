@@ -19,6 +19,7 @@ type Currency = {
 
 type ExchangeRates = {
   NGN: number;
+  GHS: number;
   USD: number;
   EUR: number;
   GBP: number;
@@ -42,16 +43,18 @@ type CurrencyContextType = {
 
 const CURRENCY_META: Record<string, Currency> = {
   NGN: { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
+  GHS: { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi" },
   USD: { code: "USD", symbol: "$", name: "US Dollar" },
   EUR: { code: "EUR", symbol: "€", name: "Euro" },
   GBP: { code: "GBP", symbol: "£", name: "British Pound" },
   CAD: { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
   AUD: { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-  CNY: { code: "CNY", symbol: "¥", name: "Chinese Yuan" }, // Fix: was missing
+  CNY: { code: "CNY", symbol: "¥", name: "Chinese Yuan" },
 };
 
 const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   NG: "NGN",
+  GH: "GHS",
   US: "USD",
   GB: "GBP",
   CA: "CAD",

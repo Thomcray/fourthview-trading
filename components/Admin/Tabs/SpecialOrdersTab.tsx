@@ -344,7 +344,7 @@ export default function SpecialOrdersTab() {
                             )
                           }
                           disabled={updatingId === order.id}
-                          className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50"
+                          className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50 cursor-pointer"
                         >
                           {getStatusBadge(order.status)}
                           {statusConfig[order.status]?.nextStatuses.length >
@@ -364,7 +364,7 @@ export default function SpecialOrdersTab() {
                                       status: nextStatus,
                                     })
                                   }
-                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <span
                                     className={`w-2 h-2 rounded-full ${statusConfig[nextStatus]?.color.split(" ")[0].replace("100", "500")}`}
@@ -382,7 +382,7 @@ export default function SpecialOrdersTab() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setSelectedOrder(order)}
-                        className="text-gray-400 hover:text-blue-600"
+                        className="text-gray-400 hover:text-blue-600 cursor-pointer"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -521,7 +521,7 @@ export default function SpecialOrdersTab() {
                                 status: nextStatus,
                               });
                             }}
-                            className="capitalize"
+                            className="capitalize cursor-pointer"
                           >
                             Mark as {statusConfig[nextStatus].label}
                           </Button>

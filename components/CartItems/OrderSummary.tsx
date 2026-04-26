@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import ProductPrice from "../ProductPrice";
 import { useCurrency } from "../CurrencyContext";
 import { ShoppingCart, Truck, Tag, Mail } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const CheckoutButton = dynamic(() => import("../CheckoutButton"), {
   ssr: false,
@@ -32,12 +33,23 @@ export default function OrderSummary({
   total,
 }: Props) {
   const { country } = useCurrency();
+  const { data: session } = useSession();
   const isNigeria = country === "NG";
+  const isGhana = country === "GH"; // Ghana gets Paystack but no shipping
+
+  // Build shipping address from session
+  const shippingAddress = {
+    streetAddress: session?.user?.streetAddress ?? "",
+    apartment: session?.user?.apartment ?? "",
+    city: session?.user?.city ?? "",
+    zipCode: session?.user?.zipCode ?? "",
+    country: session?.user?.country ?? "",
+  };
 
   return (
     <div className="w-full lg:w-96 shrink-0">
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4">
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 px-5 py-4">
           <h2 className="text-white font-semibold text-lg">Order Summary</h2>
           <p className="text-blue-100 text-sm">
             {selectedCount} item{selectedCount !== 1 ? "s" : ""} selected
@@ -87,8 +99,8 @@ export default function OrderSummary({
                 <div className="flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-3">
                   <Mail className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-700">
-                    International shipping cost will be calculated and sent to
-                    your email after checkout.
+                    Shipping to countries outside Nigeria and Ghana will be
+                    calculated and sent to your email after checkout.
                   </p>
                 </div>
               )}
@@ -123,7 +135,10 @@ export default function OrderSummary({
               </div>
 
               <div className="pt-2">
-                <CheckoutButton total={isNigeria ? total : subtotal} />
+                <CheckoutButton
+                  total={isNigeria ? total : subtotal}
+                  shippingAddress={shippingAddress}
+                />
               </div>
             </>
           )}

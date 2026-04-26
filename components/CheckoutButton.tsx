@@ -6,7 +6,23 @@ import PaystackButton from "./PaystackButton";
 
 import { Button } from "./ui/button";
 
-export default function CheckoutButton({ total }: { total: number }) {
+interface ShippingAddress {
+  streetAddress: string;
+  apartment: string;
+  city: string;
+  zipCode: string;
+  country: string;
+}
+
+interface CheckoutButtonProps {
+  total: number;
+  shippingAddress?: ShippingAddress;
+}
+
+export default function CheckoutButton({
+  total,
+  shippingAddress,
+}: CheckoutButtonProps) {
   const { country, isLoading, currency } = useCurrency();
 
   if (isLoading) {
@@ -18,15 +34,30 @@ export default function CheckoutButton({ total }: { total: number }) {
     );
   }
 
-  // Nigeria → Paystack
+  // Nigeria → Paystack with NGN
   if (country === "NG" && currency.code === "NGN") {
-    return <PaystackButton total={total} />;
+    return <PaystackButton total={total} shippingAddress={shippingAddress} />;
   }
 
+  // Ghana → Paystack with GHS
+  if (country === "GH" && currency.code === "GHS") {
+    return <PaystackButton total={total} shippingAddress={shippingAddress} />;
+  }
+
+  // Nigeria but switched to non-NGN currency
   if (country === "NG" && currency.code !== "NGN") {
     return (
       <Button disabled className="cursor-pointer h-10 w-full">
         Switch to NGN to checkout
+      </Button>
+    );
+  }
+
+  // Ghana but switched to non-GHS currency
+  if (country === "GH" && currency.code !== "GHS") {
+    return (
+      <Button disabled className="cursor-pointer h-10 w-full">
+        Switch to GHS to checkout
       </Button>
     );
   }

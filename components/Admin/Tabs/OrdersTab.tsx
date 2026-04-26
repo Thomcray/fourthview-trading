@@ -393,7 +393,7 @@ export default function OrdersTab() {
                                       notify: true,
                                     })
                                   }
-                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
                                 >
                                   <span
                                     className={`w-2 h-2 rounded-full ${statusConfig[nextStatus].color.split(" ")[0].replace("100", "500")}`}

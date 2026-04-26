@@ -18,6 +18,7 @@ import Image from "next/image";
 import { useState, useTransition, useCallback } from "react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function SpecialOrders() {
   const [orderImages, setOrderImages] = useState<File[]>([]);
@@ -30,6 +31,8 @@ export default function SpecialOrders() {
 
   const MAX_IMAGES = 2;
   const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+  const router = useRouter();
 
   const validateImage = (file: File): boolean => {
     if (!file.type.startsWith("image/")) {
@@ -131,6 +134,8 @@ export default function SpecialOrders() {
         form.reset();
         setOrderImages([]);
         setError("");
+
+        router.push("/");
       } catch (error) {
         const errorMessage = (error as Error).message;
         setError(errorMessage);
@@ -142,7 +147,7 @@ export default function SpecialOrders() {
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 sm:py-12">
+    <section className="min-h-screen bg-linear-to-b from-gray-50 to-white py-8 sm:py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
@@ -217,7 +222,7 @@ export default function SpecialOrders() {
               <Textarea
                 name="description"
                 placeholder="Describe your special order, request, or enquiry in detail..."
-                className="min-h-[150px] resize-y p-4"
+                className="min-h-37.5 resize-y p-4"
                 required
               />
             </div>
@@ -335,7 +340,7 @@ export default function SpecialOrders() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isPending ? (
                 <div className="flex items-center justify-center gap-2">

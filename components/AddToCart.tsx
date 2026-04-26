@@ -71,15 +71,13 @@ export default function AddToCart({
   };
 
   const handleCart = async () => {
-    if (hasSizes && !selectedSize) {
-      if (disableIfNoSize) return;
+    // If missing size or colour — redirect to product page
+    if ((hasSizes && !selectedSize) || (hasColours && !selectedColour)) {
       router.push(
         `/item-description?id=${data.id}&name=${data.name.toLowerCase()}`,
       );
       return;
     }
-
-    if (hasColours && !selectedColour) return;
 
     setIsAdding(true);
     try {
@@ -92,11 +90,7 @@ export default function AddToCart({
     }
   };
 
-  const isDisabled =
-    isAdding ||
-    disabled ||
-    (disableIfNoSize && hasSizes && !selectedSize) ||
-    (hasColours && !selectedColour);
+  const isDisabled = isAdding || disabled;
 
   return (
     <Button

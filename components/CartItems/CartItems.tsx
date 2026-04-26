@@ -97,7 +97,7 @@ export default function CartItems() {
       {/* Header */}
       <div className="relative flex items-center py-4 mb-6">
         <Link href="/shop">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2 cursor-pointer">
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>

@@ -24,7 +24,7 @@ export async function GET() {
     const data = await res.json();
 
     // Validate required rates exist
-    const requiredRates = ["NGN", "USD", "EUR", "GBP", "CAD", "AUD"];
+    const requiredRates = ["NGN", "GHS", "USD", "EUR", "GBP", "CAD", "AUD"];
     const missingRates = requiredRates.filter((rate) => !data.rates[rate]);
 
     if (missingRates.length > 0) {
@@ -33,6 +33,7 @@ export async function GET() {
 
     exchangeData = {
       NGN: data.rates.NGN,
+      GHS: data.rates.GHS,
       USD: data.rates.USD,
       EUR: data.rates.EUR,
       GBP: data.rates.GBP,

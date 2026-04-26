@@ -1,3 +1,4 @@
+import AudienceBanner from "@/components/AudienceBanner";
 import Banner from "@/components/ShopWithUs/Banner";
 import BannerOverlay from "@/components/ShopWithUs/BannerOverlay";
 import OnSale from "@/components/ShopWithUs/OnSale";
@@ -11,6 +12,7 @@ export default function page() {
     <section className="flex flex-col w-full items-center border-0 space-y-4">
       <Banner banner={shopBanner} />
       <BannerOverlay />
+      <AudienceBanner />
       <ShopByCategory />
       <TopPicks />
       <OnSale />

@@ -27,6 +27,11 @@ type Products = {
   weight: string;
   shippingCost: number;
   slug: string;
+  // computed at normalisation time — not from API
+  _groupKeys: {
+    byProductType: string;
+    byTarget: string;
+  };
 };
 
 type Categories = {
@@ -39,7 +44,7 @@ type Categories = {
 
 type ChildrenProp = {
   children: React.ReactNode;
-  products: Omit<Products, "slug">[];
+  products: Omit<Products, "slug" | "_groupKeys">[];
   categories: Categories[];
 };
 
@@ -82,13 +87,26 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-function deriveSlug(product: Omit<Products, "slug">): string {
-  const source = product.target ?? product.productType;
-  return source.toLowerCase().replace(/\s+/g, "-");
+function deriveSlug(product: { name: string }): string {
+  return product.name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 60);
 }
 
-function normaliseProducts(raw: Omit<Products, "slug">[]): Products[] {
-  return raw.map((p) => ({ ...p, slug: deriveSlug(p) }));
+function normaliseProducts(
+  raw: Omit<Products, "slug" | "_groupKeys">[],
+): Products[] {
+  return raw.map((p) => ({
+    ...p,
+    slug: deriveSlug(p),
+    _groupKeys: {
+      byProductType: (p.productType ?? "Other").toLowerCase().trim(),
+      byTarget: (p.target ?? "General").toLowerCase().trim(),
+    },
+  }));
 }
 
 function AppProvider({ children, products, categories }: ChildrenProp) {

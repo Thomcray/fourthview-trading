@@ -43,11 +43,11 @@ type Order = {
   order_status: string;
   items: OrderItem[];
   shipping_address?: {
-    street: string;
+    streetAddress: string;
+    apartment?: string;
     city: string;
-    state: string;
-    country: string;
-    zipCode: string;
+    zipCode?: string;
+    country?: string;
   };
   payment_method?: string;
   delivered_at?: string;
@@ -299,8 +299,7 @@ export default function OrderDetailPage() {
               </div>
             </motion.div>
 
-            {/* Shipping Address */}
-            {order.shipping_address && (
+            {order.shipping_address?.streetAddress && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -317,19 +316,16 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="p-6">
                   <p className="text-gray-700">
-                    {order.shipping_address.street}
-                    {order.shipping_address.city && (
-                      <>, {order.shipping_address.city}</>
-                    )}
-                    {order.shipping_address.state && (
-                      <>, {order.shipping_address.state}</>
-                    )}
-                    {order.shipping_address.zipCode && (
-                      <>, {order.shipping_address.zipCode}</>
-                    )}
-                    {order.shipping_address.country && (
-                      <>, {order.shipping_address.country}</>
-                    )}
+                    {order.shipping_address.streetAddress}
+                    {order.shipping_address.apartment &&
+                      `, ${order.shipping_address.apartment}`}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {order.shipping_address.city}
+                    {order.shipping_address.zipCode &&
+                      `, ${order.shipping_address.zipCode}`}
+                    {order.shipping_address.country &&
+                      `, ${order.shipping_address.country}`}
                   </p>
                 </div>
               </motion.div>

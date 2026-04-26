@@ -13,20 +13,55 @@ import ProductPrice from "@/components/ProductPrice";
 
 type SortOption = "default" | "price-asc" | "price-desc" | "name";
 
+type FilterConfig = {
+  mode: "productType" | "target" | "none";
+  value: string;
+  label: string;
+};
+
+function useFilterConfig(searchParams: URLSearchParams): FilterConfig {
+  const query = searchParams.get("q");
+  const target = searchParams.get("target");
+
+  if (target) {
+    return {
+      mode: "target",
+      value: target,
+      label: target.charAt(0).toUpperCase() + target.slice(1),
+    };
+  }
+
+  if (query) {
+    return {
+      mode: "productType",
+      value: query,
+      label: query.charAt(0).toUpperCase() + query.slice(1),
+    };
+  }
+
+  return { mode: "none", value: "", label: "All Products" };
+}
+
 export default function ItemClient() {
   const { allProducts: products } = useApp();
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const category = searchParams.get("q");
+  const filter = useFilterConfig(searchParams);
 
   const categoryItems = useMemo(() => {
-    if (!category) return [];
-    return products.filter(
-      (product) => product.productType.toLowerCase() === category.toLowerCase(),
-    );
-  }, [products, category]);
+    if (filter.mode === "none") return products;
+
+    const searchValue = filter.value.toLowerCase();
+
+    return products.filter((product) => {
+      if (filter.mode === "target") {
+        return product.target?.toLowerCase() === searchValue;
+      }
+      return product.productType.toLowerCase() === searchValue;
+    });
+  }, [products, filter]);
 
   // Sort products
   const sortedItems = useMemo(() => {
@@ -49,13 +84,9 @@ export default function ItemClient() {
     setSortBy(e.target.value as SortOption);
   };
 
-  const displayName = category
-    ? category.charAt(0).toUpperCase() + category.slice(1)
-    : "Products";
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -78,7 +109,7 @@ export default function ItemClient() {
 
   if (categoryItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -88,7 +119,8 @@ export default function ItemClient() {
               No Products Found
             </h2>
             <p className="text-gray-500 mb-6">
-              We couldn&apos;t find any products in the {displayName} category.
+              We couldn&apos;t find any products matching &quot;{filter.label}
+              &quot;.
             </p>
             <Button
               onClick={() => router.push("/shop")}
@@ -103,9 +135,9 @@ export default function ItemClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-900 to-blue-800 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-linear-to-r from-blue-900 to-blue-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
@@ -116,10 +148,12 @@ export default function ItemClient() {
           </button>
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-              {displayName}
+              {filter.label}
             </h1>
             <p className="text-blue-100 max-w-2xl mx-auto">
-              Explore our collection of {displayName.toLowerCase()} products
+              {filter.mode === "target"
+                ? `Explore our ${filter.label.toLowerCase()} collection`
+                : `Explore our collection of ${filter.label.toLowerCase()} products`}
             </p>
             <div className="inline-block mt-4 px-3 py-1 bg-white/20 rounded-full text-white text-sm">
               {categoryItems.length}{" "}
@@ -176,7 +210,7 @@ export default function ItemClient() {
                   />
 
                   {item.discount && item.discount > 0 && (
-                    <span className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10">
+                    <span className="absolute top-3 left-3 bg-linear-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10">
                       -{item.discount}%
                     </span>
                   )}

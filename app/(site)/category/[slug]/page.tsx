@@ -46,7 +46,7 @@ export default function CategoryPage() {
 
   if (!currentCategory) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-10 h-10 text-gray-400" />
@@ -69,8 +69,8 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <div className="relative bg-gradient-to-r from-blue-900 to-blue-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
+      <div className="relative bg-linear-to-r from-blue-900 to-blue-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <button
             onClick={() => router.back()}
@@ -151,7 +151,7 @@ export default function CategoryPage() {
                       className="w-full h-56 object-cover hover:scale-105 transition-transform duration-500"
                     />
                     {product.discount && (
-                      <span className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">
+                      <span className="absolute top-2 left-2 bg-linear-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">
                         -{product.discount}%
                       </span>
                     )}

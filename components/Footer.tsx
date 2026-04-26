@@ -59,9 +59,13 @@ const serviceFeatures = [
 ];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
   const [settings, setSettings] = useState<StoreSettings | null>(null);
-  const pathname = usePathname(); // Added
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -144,7 +148,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-white">
+    <footer className="bg-linear-to-b from-gray-900 to-gray-950 text-white">
       {/* Main Footer */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
@@ -156,7 +160,7 @@ export default function Footer() {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
               {settings?.storeName}
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -261,8 +265,9 @@ export default function Footer() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm text-center sm:text-left">
-              &copy; {currentYear} {settings?.storeName || "Fourthview Trading"}
-              . All rights reserved.
+              &copy; {currentYear ?? ""}{" "}
+              {settings?.storeName || "Fourthview Trading"}. All rights
+              reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link

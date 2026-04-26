@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShoppingBag, ArrowRight, Home } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 
 import cartEmpty from "@/public/cartEmpty.png";
 import { useApp } from "@/components/AppContext";
@@ -15,7 +15,7 @@ export default function Cart() {
   const cartLen = cart.length;
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <section className="min-h-screen bg-linear-to-br from-gray-50 to-white">
       {cartLen === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -24,7 +24,7 @@ export default function Cart() {
         >
           <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-4">
+            <div className="bg-linear-to-r from-blue-900 to-blue-700 px-6 py-4">
               <h2 className="text-white font-semibold text-lg text-center">
                 Your Cart
               </h2>

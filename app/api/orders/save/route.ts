@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { reference, total, items } = await req.json();
+    const { reference, total, items, shippingAddress } = await req.json();
 
     // Validate required fields
     if (!reference || total === undefined || !items || !Array.isArray(items)) {
@@ -30,7 +30,9 @@ export async function POST(req: Request) {
           reference,
           total,
           status: "paid",
+          order_status: "processing",
           items: items,
+          shipping_address: shippingAddress ?? null,
         },
       ])
       .select()

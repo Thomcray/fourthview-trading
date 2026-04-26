@@ -74,6 +74,7 @@ export async function GET(
       order_status: order.order_status || "processing",
       delivered_at: order.delivered_at ?? null,
       total: parseFloat(order.total) || 0,
+      shipping_address: order.shipping_address ?? null,
       customerName: userData
         ? `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
           userData.email ||
