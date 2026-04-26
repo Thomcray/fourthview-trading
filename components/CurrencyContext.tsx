@@ -103,7 +103,6 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     fetch("/api/location")
       .then((res) => res.json())
       .then((data) => {
-        console.log("location response:", data);
         const code = data.country_code;
         setCountryCode(code);
         if (code) localStorage.setItem("detectedCountry", code);

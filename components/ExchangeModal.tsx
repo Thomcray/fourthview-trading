@@ -100,13 +100,13 @@ export function ExchangeModal() {
 
   const handleSubmit = () => {
     if (isFormValid()) {
-      console.log({
-        currency: selectedCurr,
-        amount: toValue,
-        convertedAmount: fromValue,
-        paymentMethod: method,
-        receipt: uploadedFile,
-      });
+      // console.log({
+      //   currency: selectedCurr,
+      //   amount: toValue,
+      //   convertedAmount: fromValue,
+      //   paymentMethod: method,
+      //   receipt: uploadedFile,
+      // });
       alert("Exchange request submitted successfully!");
       handleOpenChange(false);
     }
@@ -117,7 +117,7 @@ export function ExchangeModal() {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white flex cursor-pointer py-6 px-8 font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg"
+          className="bg-linear-to-r from-blue-600 to-blue-700 text-white flex cursor-pointer py-6 px-8 font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg"
         >
           <ArrowRightLeft className="w-4 h-4 mr-2" />
           Get Started
@@ -295,7 +295,7 @@ export function ExchangeModal() {
             type="button"
             onClick={handleSubmit}
             disabled={!isFormValid()}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6"
+            className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6"
           >
             Submit Exchange Request
           </Button>

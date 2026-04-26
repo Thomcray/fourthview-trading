@@ -52,15 +52,11 @@ export default function OrderDetailPage() {
     queryFn: async () => {
       const res = await fetch(`/api/orders/${orderId}`);
       const data = await res.json();
-      console.log("API response:", data); // ← add here
+
       return data;
     },
     staleTime: 0,
   });
-
-  console.log("order:", order);
-  console.log("shipping_address:", order?.shipping_address);
-  console.log("streetAddress:", order?.shipping_address?.streetAddress);
 
   const { formatPrice, formatFromNGN } = useCurrency();
 

@@ -12,8 +12,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ country_code: country });
     }
 
-    console.log("COUNTRY", country);
-
     // Last resort: proxy to ipapi.co (only hits if neither header is present)
     const res = await fetch("https://ipapi.co/json/", {
       headers: { "User-Agent": "currency-detector/1.0" },

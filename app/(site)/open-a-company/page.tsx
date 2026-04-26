@@ -128,7 +128,6 @@ export default function OpenCompanyPage() {
   };
 
   const handleDocumentsComplete = (files: Record<string, File>) => {
-    console.log("All documents uploaded:", files);
     setUploadedFiles(files);
     setIsUploadComplete(true);
     toast.success("All documents uploaded successfully!");
