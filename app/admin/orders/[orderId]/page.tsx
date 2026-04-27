@@ -58,7 +58,8 @@ export default function OrderDetailPage() {
     staleTime: 0,
   });
 
-  const { formatPrice, formatFromNGN } = useCurrency();
+  const { formatPrice, formatFromNGN, margin } = useCurrency();
+  // console.log(margin);
 
   const handlePrint = () => {
     window.print();

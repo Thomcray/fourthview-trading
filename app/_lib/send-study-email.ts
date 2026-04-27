@@ -6,7 +6,10 @@ import {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = "noreply@yourdomain.com"; // replace later
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  "http://localhost:3000" ||
+  "http://localhost:3001";
 
 export async function sendApplicationConfirmation({
   fullName,

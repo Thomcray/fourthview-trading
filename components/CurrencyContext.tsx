@@ -7,9 +7,11 @@ import {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
-import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { useExchangeSettings } from "@/hooks/useExchangeSettings";
+import { useExchangeRates } from "@/hooks/useExchangeRates";
 
 type Currency = {
   code: string;
@@ -39,6 +41,7 @@ type CurrencyContextType = {
   error: string | null;
   rates: ExchangeRates | null;
   country: string | null;
+  margin: number; // expose margin for transparency
 };
 
 const CURRENCY_META: Record<string, Currency> = {
@@ -71,25 +74,45 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(
 );
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
+  // Use React Query hook
   const {
-    rates,
+    data: rates,
     isLoading: ratesLoading,
     error: ratesError,
-  } = useExchangeRate();
+  } = useExchangeRates();
+  const {
+    data: settings,
+    isLoading: settingsLoading,
+    error: settingsError,
+  } = useExchangeSettings();
 
   const [currencyCode, setCurrencyCode] = useState<string>("NGN");
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [countryCode, setCountryCode] = useState<string | null>(null);
 
-  // ref guard prevents re-running if rates reload (e.g. on a refresh interval)
   const hasDetected = useRef(false);
 
+  // Apply margin to rates
+  const effectiveRates = useMemo<ExchangeRates | null>(() => {
+    if (!rates || !settings) return null;
+    const multiplier = 1 + settings.rateMargin / 100;
+    return {
+      NGN: rates.NGN * multiplier,
+      GHS: rates.GHS * multiplier,
+      USD: rates.USD * multiplier,
+      EUR: rates.EUR * multiplier,
+      GBP: rates.GBP * multiplier,
+      CAD: rates.CAD * multiplier,
+      AUD: rates.AUD * multiplier,
+      CNY: rates.CNY * multiplier,
+    };
+  }, [rates, settings]);
+
   useEffect(() => {
-    if (ratesLoading || hasDetected.current) return;
+    if (ratesLoading || settingsLoading || hasDetected.current) return;
     hasDetected.current = true;
 
-    // Honour explicit user preference first
     const saved = localStorage.getItem("preferredCurrency");
     if (saved && CURRENCY_META[saved]) {
       setCurrencyCode(saved);
@@ -99,7 +122,6 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // call our own API route instead of ipapi.co directly
     fetch("/api/location")
       .then((res) => res.json())
       .then((data) => {
@@ -116,7 +138,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       .finally(() => {
         setLocationLoading(false);
       });
-  }, [ratesLoading]);
+  }, [ratesLoading, settingsLoading]);
 
   const setCurrency = useCallback((code: string) => {
     if (!CURRENCY_META[code]) return;
@@ -126,15 +148,13 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const getRate = useCallback(
     (code: string): number | null => {
-      if (!rates) return null;
-      const rate = rates[code as keyof ExchangeRates];
-      // return null instead of 0 so callers can show skeleton vs ₦0.00
+      if (!effectiveRates) return null;
+      const rate = effectiveRates[code as keyof ExchangeRates];
       return rate ?? null;
     },
-    [rates],
+    [effectiveRates],
   );
 
-  // returns null when rates aren't ready — callers should show skeleton
   const convertPrice = useCallback(
     (priceInCNY: number): number | null => {
       const rate = getRate(currencyCode);
@@ -144,7 +164,6 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     [currencyCode, getRate],
   );
 
-  // returns null when rates aren't ready — callers should show skeleton
   const formatPrice = useCallback(
     (priceInCNY: number): string | null => {
       const converted = convertPrice(priceInCNY);
@@ -160,12 +179,16 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   const formatFromNGN = useCallback(
     (amountInNGN: number): string | null => {
-      if (!rates) return null;
-      const inCNY = amountInNGN / rates.NGN;
+      if (!effectiveRates) return null;
+      const inCNY = amountInNGN / effectiveRates.NGN;
       return formatPrice(inCNY);
     },
-    [rates, formatPrice],
+    [effectiveRates, formatPrice],
   );
+
+  const isLoading = ratesLoading || settingsLoading || locationLoading;
+  const error = ratesError?.message || locationError || null;
+  const margin = settings?.rateMargin ?? 0;
 
   return (
     <CurrencyContext.Provider
@@ -176,10 +199,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         formatPrice,
         formatFromNGN,
         availableCurrencies: Object.values(CURRENCY_META),
-        isLoading: ratesLoading || locationLoading,
-        error: ratesError || locationError,
-        rates: rates ?? null,
+        isLoading,
+        error,
+        rates: effectiveRates,
         country: countryCode,
+        margin,
       }}
     >
       {children}

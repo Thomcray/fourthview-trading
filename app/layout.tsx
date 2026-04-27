@@ -1,4 +1,3 @@
-// app/layout.tsx
 import { Outfit } from "next/font/google";
 import { Bounce, ToastContainer } from "react-toastify";
 import { Providers } from "./providers";

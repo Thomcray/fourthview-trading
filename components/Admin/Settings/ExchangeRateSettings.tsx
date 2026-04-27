@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   RefreshCw,
   TrendingUp,
@@ -14,177 +15,213 @@ import {
   Clock,
   Percent,
   Info,
+  History,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  useExchangeSettings,
+  useUpdateExchangeSettings,
+} from "@/hooks/useExchangeSettings";
+import { useExchangeRates, useRefreshRates } from "@/hooks/useExchangeRates";
 
-type ExchangeRates = {
-  NGN: number;
-  USD: number;
-  EUR: number;
-  GBP: number;
-  CAD: number;
-  AUD: number;
-  CNY: number;
-};
-
-const CURRENCY_LABELS: Record<string, { name: string; symbol: string }> = {
-  NGN: { name: "Nigerian Naira", symbol: "₦" },
-  USD: { name: "US Dollar", symbol: "$" },
-  EUR: { name: "Euro", symbol: "€" },
-  GBP: { name: "British Pound", symbol: "£" },
-  CAD: { name: "Canadian Dollar", symbol: "C$" },
-  AUD: { name: "Australian Dollar", symbol: "A$" },
+const CURRENCY_LABELS: Record<string, { name: string }> = {
+  NGN: { name: "Nigerian Naira" },
+  GHS: { name: "Ghanaian Cedi" },
+  USD: { name: "US Dollar" },
+  EUR: { name: "Euro" },
+  GBP: { name: "British Pound" },
+  CAD: { name: "Canadian Dollar" },
+  AUD: { name: "Australian Dollar" },
 };
 
 export default function ExchangeRateSettings() {
-  const [settings, setSettings] = useState({
+  const { data: serverSettings, isLoading: isLoadingSettings } =
+    useExchangeSettings();
+  const updateSettings = useUpdateExchangeSettings();
+  const { data: rates, isLoading: isLoadingRates } = useExchangeRates();
+  const { refresh: refreshRates, isRefreshing } = useRefreshRates();
+
+  const [localSettings, setLocalSettings] = useState({
     autoUpdate: true,
     updateInterval: 60,
     rateMargin: 0,
+    rateMarginInput: "0", // ← raw input string
   });
-  const [rates, setRates] = useState<ExchangeRates | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+  const [showReason, setShowReason] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
+  // Sync with server settings
   useEffect(() => {
-    fetchCurrentRates();
-  }, []);
-
-  const fetchCurrentRates = async () => {
-    try {
-      const res = await fetch("/api/exchange-rate");
-      if (!res.ok) throw new Error("Failed to fetch rates");
-      const data: ExchangeRates = await res.json();
-      setRates(data);
-      setLastUpdated(new Date().toLocaleString());
-    } catch (err) {
-      console.error("Failed to fetch rates:", err);
-      toast.error("Failed to fetch exchange rates");
-    }
-  };
-
-  const handleManualUpdate = async () => {
-    setIsLoading(true);
-    try {
-      // Force a cache bypass by appending a timestamp
-      const res = await fetch(`/api/exchange-rate?t=${Date.now()}`);
-      if (!res.ok) throw new Error("Failed to refresh rates");
-      const data: ExchangeRates = await res.json();
-      setRates(data);
-      setLastUpdated(new Date().toLocaleString());
-      toast.success("Exchange rates updated successfully!");
-    } catch (err) {
-      console.error("Failed to update rates:", err);
-      toast.error("Failed to update exchange rates");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // Settings are UI-only for now (autoUpdate/interval are server-side concerns)
-      // Persist margin to localStorage until a settings API is available
-      localStorage.setItem("exchangeRateSettings", JSON.stringify(settings));
-      toast.success("Settings saved!");
+    if (serverSettings) {
+      const margin = serverSettings.rateMargin ?? 0;
+      setLocalSettings({
+        autoUpdate: serverSettings.autoUpdate ?? true,
+        updateInterval: serverSettings.updateInterval ?? 60,
+        rateMargin: margin,
+        rateMarginInput: String(margin),
+      });
       setIsDirty(false);
-    } catch (err) {
-      console.error("Failed to save settings:", err);
-      toast.error("Failed to save settings");
-    } finally {
-      setIsSaving(false);
     }
-  };
+  }, [serverSettings]);
 
-  const handleSettingChange = (
-    key: string,
-    value: string | number | boolean,
-  ) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  const handleChange = (key: keyof typeof localSettings, value: unknown) => {
+    setLocalSettings((prev) => ({ ...prev, [key]: value }));
     setIsDirty(true);
   };
 
-  const handleCancel = () => {
-    const saved = localStorage.getItem("exchangeRateSettings");
-    if (saved) setSettings(JSON.parse(saved));
-    setIsDirty(false);
+  const handleMarginChange = (raw: string) => {
+    setLocalSettings((prev) => ({
+      ...prev,
+      rateMarginInput: raw,
+      rateMargin: raw === "" ? 0 : Number(raw),
+    }));
+    setIsDirty(true);
+    if (Number(raw) !== (serverSettings?.rateMargin ?? 0)) {
+      setShowReason(true);
+    }
   };
 
-  const getEffectiveRate = (rate: number) =>
-    rate * (1 + settings.rateMargin / 100);
+  const handleSave = () => {
+    if (
+      localSettings.rateMargin !== (serverSettings?.rateMargin ?? 0) &&
+      !reason.trim()
+    ) {
+      toast.error("Please provide a reason for changing the margin");
+      return;
+    }
+
+    updateSettings.mutate(
+      {
+        autoUpdate: localSettings.autoUpdate,
+        updateInterval: localSettings.updateInterval,
+        rateMargin: localSettings.rateMargin,
+        reason: reason.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Settings saved and applied globally!");
+          setIsDirty(false);
+          setShowReason(false);
+          setReason("");
+        },
+        onError: (err) => {
+          toast.error(err.message);
+        },
+      },
+    );
+  };
+
+  const handleCancel = () => {
+    if (serverSettings) {
+      const margin = serverSettings.rateMargin ?? 0;
+      setLocalSettings({
+        autoUpdate: serverSettings.autoUpdate ?? true,
+        updateInterval: serverSettings.updateInterval ?? 60,
+        rateMargin: margin,
+        rateMarginInput: String(margin),
+      });
+    }
+    setIsDirty(false);
+    setShowReason(false);
+    setReason("");
+  };
+
+  const getEffectiveRate = (rate: number) => {
+    const margin =
+      localSettings.rateMarginInput === ""
+        ? 0
+        : Number(localSettings.rateMarginInput);
+    return rate * (1 + margin / 100);
+  };
+
+  const isLoading = isLoadingSettings || isLoadingRates;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-100">
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
             Exchange Rate Configuration
           </h3>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Live rates from CNY to all supported currencies
+          <p className="text-sm text-gray-500">
+            Global margin applied to all customer-facing prices
           </p>
         </div>
-        {isDirty && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full"
-          >
-            <AlertCircle className="w-3 h-3" />
-            Unsaved changes
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {isDirty && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full"
+            >
+              <AlertCircle className="w-3 h-3" />
+              Unsaved changes
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* All Rates Grid */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+      {/* Live Rates */}
+      <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-blue-600" />
             <p className="text-sm font-medium text-blue-800">
-              Current Exchange Rates (Base: CNY)
+              Effective Rates (
+              {localSettings.rateMarginInput === ""
+                ? "0"
+                : localSettings.rateMarginInput}
+              % margin)
             </p>
           </div>
           <Button
-            onClick={handleManualUpdate}
-            disabled={isLoading}
+            onClick={() => refreshRates()}
+            disabled={isRefreshing}
             variant="outline"
-            className="bg-white hover:bg-blue-50 border-blue-300"
+            size="sm"
+            className="bg-white hover:bg-blue-50 border-blue-300 cursor-pointer"
           >
             <RefreshCw
-              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
             />
-            {isLoading ? "Updating..." : "Refresh"}
+            {isRefreshing ? "Refreshing..." : "Refresh Rates"}
           </Button>
         </div>
 
         {rates ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {Object.entries(CURRENCY_LABELS).map(([code, { name }]) => {
-              const rate = rates[code as keyof ExchangeRates];
-              const effective = getEffectiveRate(rate);
+              const rate = rates[code as keyof typeof rates];
+              if (typeof rate !== "number") return null;
               return (
                 <div
                   key={code}
                   className="bg-white rounded-lg p-3 border border-blue-100"
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
-                      {code}
-                    </span>
-                  </div>
-                  <p className="text-lg font-bold text-blue-900">
-                    {rate.toFixed(4)}
+                  <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                    {code}
+                  </span>
+                  <p className="text-lg font-bold text-blue-900 mt-1">
+                    {getEffectiveRate(rate).toFixed(4)}
                   </p>
                   <p className="text-xs text-gray-500">{name}</p>
-                  {settings.rateMargin > 0 && (
+                  {(localSettings.rateMarginInput === ""
+                    ? 0
+                    : Number(localSettings.rateMarginInput)) > 0 && (
                     <p className="text-xs text-amber-600 mt-1">
-                      +{settings.rateMargin}%: {effective.toFixed(4)}
+                      base: {rate.toFixed(4)}
                     </p>
                   )}
                 </div>
@@ -192,80 +229,59 @@ export default function ExchangeRateSettings() {
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {Object.keys(CURRENCY_LABELS).map((code) => (
-              <div
-                key={code}
-                className="bg-white rounded-lg p-3 border border-blue-100 animate-pulse"
-              >
-                <div className="h-4 bg-gray-200 rounded mb-2 w-12" />
-                <div className="h-6 bg-gray-200 rounded mb-1" />
-                <div className="h-3 bg-gray-200 rounded w-3/4" />
-              </div>
-            ))}
+          <div className="text-center py-8 text-gray-500">
+            Failed to load rates
           </div>
-        )}
-
-        {lastUpdated && (
-          <p className="text-xs text-blue-600 mt-3">
-            Last updated: {lastUpdated}
-          </p>
         )}
       </div>
 
       {/* Settings Form */}
       <div className="space-y-6">
-        {/* Auto Update Toggle */}
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
           <div>
             <Label className="font-medium text-gray-800">
               Auto-update Rates
             </Label>
             <p className="text-sm text-gray-500">
-              Automatically fetch the latest exchange rates
+              Fetch latest rates automatically
             </p>
           </div>
           <Switch
-            checked={settings.autoUpdate}
-            onCheckedChange={(checked) =>
-              handleSettingChange("autoUpdate", checked)
-            }
+            checked={localSettings.autoUpdate}
+            onCheckedChange={(checked) => handleChange("autoUpdate", checked)}
           />
         </div>
 
-        {/* Update Interval */}
-        {settings.autoUpdate && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="pl-4 border-l-2 border-blue-200"
-          >
-            <Label className="font-medium text-gray-800 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-500" />
-              Update Interval
-            </Label>
-            <div className="flex items-center gap-3 mt-2">
-              <Input
-                type="number"
-                value={settings.updateInterval}
-                onChange={(e) =>
-                  handleSettingChange("updateInterval", Number(e.target.value))
-                }
-                className="w-32"
-                min={15}
-                max={1440}
-                step={15}
-              />
-              <span className="text-sm text-gray-500">minutes</span>
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              How often to fetch new rates (15–1440 minutes)
-            </p>
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {localSettings.autoUpdate && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="pl-4 border-l-2 border-blue-200 overflow-hidden"
+            >
+              <Label className="font-medium text-gray-800 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-500" />
+                Update Interval
+              </Label>
+              <div className="flex items-center gap-3 mt-2">
+                <Input
+                  type="number"
+                  value={localSettings.updateInterval}
+                  onChange={(e) =>
+                    handleChange("updateInterval", Number(e.target.value))
+                  }
+                  className="w-32"
+                  min={15}
+                  max={1440}
+                  step={15}
+                />
+                <span className="text-sm text-gray-500">minutes</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Rate Margin */}
         <div className="pt-2">
           <Label className="font-medium text-gray-800 flex items-center gap-2">
             <Percent className="w-4 h-4 text-gray-500" />
@@ -274,89 +290,94 @@ export default function ExchangeRateSettings() {
           <div className="flex items-center gap-3 mt-2">
             <Input
               type="number"
-              value={settings.rateMargin}
-              onChange={(e) =>
-                handleSettingChange("rateMargin", Number(e.target.value))
-              }
+              value={localSettings.rateMarginInput}
+              onChange={(e) => handleMarginChange(e.target.value)}
               className="w-32"
               step={0.5}
               min={0}
-              max={20}
+              max={100}
             />
-            <span className="text-sm text-gray-500">markup</span>
+            <span className="text-sm text-gray-500">
+              markup on all conversions
+            </span>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            Add a percentage margin to cover transaction fees
+            Applied globally to cover fees, risk, or profit
           </p>
         </div>
 
-        {/* Effective Rate Preview */}
-        {settings.rateMargin > 0 && rates && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-amber-50 rounded-lg p-4 border border-amber-200"
-          >
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-amber-800">
-                  Effective Rates with {settings.rateMargin}% margin
-                </p>
-                <div className="mt-2 space-y-1">
-                  {Object.keys(CURRENCY_LABELS).map((code) => (
-                    <p key={code} className="text-sm text-amber-700">
-                      1 CNY ={" "}
-                      {getEffectiveRate(
-                        rates[code as keyof ExchangeRates],
-                      ).toFixed(4)}{" "}
-                      {code}
-                    </p>
-                  ))}
-                </div>
-                <p className="text-xs text-amber-600 mt-2">
-                  These are the rates customers will see at checkout
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleCancel}
-          disabled={isSaving || !isDirty}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving || !isDirty}
-          className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </>
+        <AnimatePresence>
+          {showReason && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-2"
+            >
+              <Label className="text-sm font-medium text-amber-700 flex items-center gap-2">
+                <History className="w-4 h-4" />
+                Reason for Margin Change (required for audit log)
+              </Label>
+              <Textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g., Increased processing fees from payment provider"
+                className="w-full"
+                rows={2}
+              />
+            </motion.div>
           )}
-        </Button>
+        </AnimatePresence>
       </div>
 
-      {!isDirty && !isSaving && (
-        <div className="flex items-center justify-end gap-1 text-xs text-green-600">
-          <CheckCircle className="w-3 h-3" />
-          All settings saved
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+        <div className="text-xs text-gray-400">
+          {serverSettings?.updatedAt && (
+            <span>
+              Last updated:{" "}
+              {new Date(serverSettings.updatedAt).toLocaleString()}
+            </span>
+          )}
         </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={updateSettings.isPending || !isDirty}
+            className="cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={updateSettings.isPending || !isDirty}
+            className="bg-blue-600 hover:bg-blue-700 text-white gap-2 cursor-pointer"
+          >
+            {updateSettings.isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {!isDirty && !updateSettings.isPending && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center justify-end gap-1 text-xs text-green-600"
+        >
+          <CheckCircle className="w-3 h-3" />
+          All settings saved and active
+        </motion.div>
       )}
     </div>
   );

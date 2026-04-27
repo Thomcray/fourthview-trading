@@ -164,7 +164,7 @@ export default function OrderDetailPage() {
             </p>
             <Button
               onClick={() => router.push("/account/purchased-items")}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
             >
               Back to Orders
             </Button>

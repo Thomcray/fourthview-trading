@@ -1,37 +1,45 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/app/_lib/supabase-server";
 
-let exchangeData: Record<string, number> | null = null;
-let lastFetched = 0;
-let fetchAttempts = 0;
+const EXTERNAL_API = "https://open.er-api.com/v6/latest/CNY";
+const CACHE_TTL_MINUTES = 60; // 1 hour, matching your current setup
 
-export async function GET() {
-  const now = Date.now();
-
-  // Return cached data if still valid
-  if (exchangeData && now - lastFetched < 3600000) {
-    return NextResponse.json(exchangeData);
-  }
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.has("force");
 
   try {
-    const res = await fetch("https://open.er-api.com/v6/latest/CNY", {
-      next: { revalidate: 3600 },
-    });
+    const supabase = await createClient(true);
 
-    if (!res.ok) {
-      throw new Error(`API returned ${res.status}`);
+    // Check Supabase cache
+    if (!force) {
+      const { data: cached } = await supabase
+        .from("ExchangeRateCache")
+        .select("*")
+        .order("fetchedAt", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (cached) {
+        const ageMs = Date.now() - new Date(cached.fetchedAt).getTime();
+        if (ageMs < CACHE_TTL_MINUTES * 60 * 1000) {
+          return NextResponse.json(cached.rates);
+        }
+      }
     }
+
+    // Fetch fresh from your existing API
+    const res = await fetch(EXTERNAL_API, { next: { revalidate: 3600 } });
+    if (!res.ok) throw new Error(`API returned ${res.status}`);
 
     const data = await res.json();
 
-    // Validate required rates exist
     const requiredRates = ["NGN", "GHS", "USD", "EUR", "GBP", "CAD", "AUD"];
-    const missingRates = requiredRates.filter((rate) => !data.rates[rate]);
+    const missing = requiredRates.filter((rate) => !data.rates[rate]);
+    if (missing.length > 0)
+      throw new Error(`Missing rates: ${missing.join(", ")}`);
 
-    if (missingRates.length > 0) {
-      throw new Error(`Missing rates: ${missingRates.join(", ")}`);
-    }
-
-    exchangeData = {
+    const rates = {
       NGN: data.rates.NGN,
       GHS: data.rates.GHS,
       USD: data.rates.USD,
@@ -42,20 +50,28 @@ export async function GET() {
       CNY: 1,
     };
 
-    lastFetched = now;
-    fetchAttempts = 0;
+    // Save to Supabase cache
+    await supabase.from("ExchangeRateCache").insert({ base: "CNY", rates });
 
-    return NextResponse.json(exchangeData);
+    return NextResponse.json(rates);
   } catch (error) {
     console.error("Failed to fetch exchange rates:", error);
-    fetchAttempts++;
 
-    // Return 503 Service Unavailable instead of stale/incorrect data
+    // Fallback to Supabase stale cache
+    const supabase = await createClient(true);
+    const { data: fallback } = await supabase
+      .from("ExchangeRateCache")
+      .select("rates")
+      .order("fetchedAt", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (fallback) {
+      return NextResponse.json(fallback.rates);
+    }
+
     return NextResponse.json(
-      {
-        error: "Exchange rates temporarily unavailable",
-        message: "Please try again later",
-      },
+      { error: "Exchange rates temporarily unavailable" },
       { status: 503 },
     );
   }
