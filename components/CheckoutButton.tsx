@@ -2,7 +2,7 @@
 
 import { useCurrency } from "./CurrencyContext";
 import PaystackButton from "./PaystackButton";
-// import StripeButton from "./StripeButton"; // Uncomment when Stripe is ready
+// import StripeButton from "./StripeButton"; // Uncomment when ready
 
 import { Button } from "./ui/button";
 
@@ -19,6 +19,9 @@ interface CheckoutButtonProps {
   shippingAddress?: ShippingAddress;
 }
 
+// Countries where Paystack works natively or auto-converts
+const PAYSTACK_COUNTRIES = ["NG", "GH", "KE", "ZA"];
+
 export default function CheckoutButton({
   total,
   shippingAddress,
@@ -34,32 +37,9 @@ export default function CheckoutButton({
     );
   }
 
-  // Nigeria → Paystack with NGN
-  if (country === "NG" && currency.code === "NGN") {
+  // Paystack-supported countries, always charge in NGN
+  if (country && PAYSTACK_COUNTRIES.includes(country)) {
     return <PaystackButton total={total} shippingAddress={shippingAddress} />;
-  }
-
-  // Ghana → Paystack with GHS
-  if (country === "GH" && currency.code === "GHS") {
-    return <PaystackButton total={total} shippingAddress={shippingAddress} />;
-  }
-
-  // Nigeria but switched to non-NGN currency
-  if (country === "NG" && currency.code !== "NGN") {
-    return (
-      <Button disabled className="cursor-pointer h-10 w-full">
-        Switch to NGN to checkout
-      </Button>
-    );
-  }
-
-  // Ghana but switched to non-GHS currency
-  if (country === "GH" && currency.code !== "GHS") {
-    return (
-      <Button disabled className="cursor-pointer h-10 w-full">
-        Switch to GHS to checkout
-      </Button>
-    );
   }
 
   // Everyone else → Stripe (uncomment when ready)
@@ -67,8 +47,14 @@ export default function CheckoutButton({
 
   // Temporary fallback until Stripe is set up
   return (
-    <Button disabled className="cursor-pointer h-10 w-full">
-      International checkout coming soon
-    </Button>
+    <div className="space-y-2">
+      <Button disabled className="cursor-pointer h-10 w-full">
+        Checkout unavailable in {country || "your region"}
+      </Button>
+      <p className="text-xs text-gray-500 text-center">
+        We currently only accept payments from Nigeria, Ghana, Kenya, and South
+        Africa.
+      </p>
+    </div>
   );
 }

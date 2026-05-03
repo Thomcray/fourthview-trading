@@ -8,6 +8,7 @@ import { useApp } from "./AppContext";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
+import { ExchangeRates } from "@/types/database";
 
 const PAYSTACK_PUBLIC_KEY = process.env
   .NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY as string;
@@ -39,19 +40,28 @@ export default function PaystackButton({
   shippingAddress,
 }: PaystackButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { convertPrice, currency, isLoading: currencyLoading } = useCurrency();
+  const { rates, currency, isLoading: currencyLoading } = useCurrency();
   const { data: session } = useSession();
   const { cart, clearCart } = useApp();
   const router = useRouter();
 
   const user = session?.user;
-  const localTotal = convertPrice(total) ?? 0;
+
+  // total is in CNY (base currency)
+  // Display amount: convert to user's selected currency
+  const displayRate = rates?.[currency.code as keyof ExchangeRates] ?? 1;
+  const displayAmount = total * displayRate;
+
+  // Paystack amount: always convert to NGN
+  const ngnRate = rates?.NGN ?? 1;
+  const ngnAmount = total * ngnRate;
+  const paystackAmount = Math.round(ngnAmount * 100);
 
   const config = {
     reference: new Date().getTime().toString(),
     email: user?.email ?? "",
-    amount: Math.round((localTotal ?? 0) * 100),
-    currency: currency.code,
+    amount: paystackAmount, // NGN in kobo
+    currency: "NGN",
     publicKey: PAYSTACK_PUBLIC_KEY,
     metadata: {
       custom_fields: [
@@ -99,7 +109,6 @@ export default function PaystackButton({
 
     const onSuccess = async (reference: PaystackReference) => {
       try {
-        // Verify transaction with Paystack first
         const verifyRes = await fetch("/api/paystack/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -107,18 +116,17 @@ export default function PaystackButton({
         });
 
         const verifyData = await verifyRes.json();
-
         if (!verifyRes.ok || !verifyData.verified) {
           throw new Error(verifyData.error || "Payment verification failed");
         }
 
-        // Only save order if verification passed
+        // Save order with NGN amount
         const response = await fetch("/api/orders/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             reference: reference.reference,
-            total: localTotal,
+            total: ngnAmount, // Save NGN amount, not display currency
             items: cart,
             shippingAddress: shippingAddress ?? null,
           }),
@@ -129,7 +137,6 @@ export default function PaystackButton({
           throw new Error(errorData.error || "Failed to save order");
         }
 
-        // Clear cart and redirect only after everything succeeded
         await clearCart();
         toast.success("Order placed successfully!");
         router.push("/account/purchased-items");
@@ -146,7 +153,6 @@ export default function PaystackButton({
     };
 
     const onClose = () => setIsLoading(false);
-
     initializePayment({ onSuccess, onClose });
   };
 
@@ -159,7 +165,7 @@ export default function PaystackButton({
     >
       {isLoading
         ? "Processing..."
-        : `Pay ${currency.symbol}${Math.round(localTotal).toLocaleString()}`}
+        : `Pay ${currency.symbol}${Math.round(displayAmount).toLocaleString()}`}
     </Button>
   );
 }
