@@ -1,8 +1,7 @@
-// app/admin/customers/[customerId]/page.tsx
 "use client";
 
 import AdminTable from "@/components/Admin/AdminTable";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { TableCell } from "@/components/ui/table";
 import {
   ArrowLeft,
   CreditCard,
@@ -69,7 +68,7 @@ export default function CustomerPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-10 w-24 bg-gray-200 rounded"></div>
@@ -88,7 +87,7 @@ export default function CustomerPage({
 
   if (isError || !data?.customer) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-7xl mx-auto text-center py-12">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <XCircle className="w-10 h-10 text-red-500" />
@@ -136,7 +135,7 @@ export default function CustomerPage({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <motion.div
@@ -163,7 +162,7 @@ export default function CustomerPage({
           >
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-6">
               {/* Header with Avatar */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-center">
+              <div className="bg-linear-to-r from-blue-600 to-blue-700 px-6 py-8 text-center">
                 <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto shadow-lg">
                   <p className="text-3xl font-bold text-blue-700">
                     {customer.firstName.charAt(0)}
@@ -276,7 +275,7 @@ export default function CustomerPage({
               transition={{ delay: 0.2 }}
               className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
             >
-              <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <div className="px-6 py-4 border-b border-gray-100 bg-linear-to-r from-gray-50 to-white">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                   <ListOrdered className="w-5 h-5 text-blue-600" />
                   Order History
@@ -296,57 +295,111 @@ export default function CustomerPage({
                   </p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <AdminTable
-                    headers={orderHeaders}
-                    caption={`Orders by ${customer.firstName} ${customer.lastName}`}
-                    sortable={true}
-                  >
+                <>
+                  {/* Mobile: Card layout */}
+                  <div className="md:hidden divide-y divide-gray-100">
                     {orders.map((order, index) => (
-                      <motion.tr
+                      <motion.div
                         key={order.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        className="p-4 hover:bg-gray-50 transition-colors"
                       >
-                        <TableCell className="font-mono text-sm text-gray-600">
-                          {order.reference.slice(0, 12)}...
-                        </TableCell>
-                        <TableCell className="font-semibold text-gray-800">
-                          ₦
-                          {Number(order.total).toLocaleString("en-NG", {
-                            minimumFractionDigits: 2,
-                          })}
-                        </TableCell>
-                        <TableCell className="text-gray-500 whitespace-nowrap">
-                          {new Date(order.created_at).toLocaleDateString(
-                            "en-NG",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            },
-                          )}
-                        </TableCell>
-                        <TableCell>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-mono text-sm text-gray-600">
+                            {order.reference.slice(0, 12)}...
+                          </span>
                           <span
                             className={`
-                            inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium
-                            ${order.status === "delivered" ? "bg-green-100 text-green-700" : ""}
-                            ${order.status === "processing" ? "bg-blue-100 text-blue-700" : ""}
-                            ${order.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
-                            ${order.status === "cancelled" ? "bg-red-100 text-red-700" : ""}
-                            capitalize
-                          `}
+                  inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium
+                  ${order.status === "delivered" ? "bg-green-100 text-green-700" : ""}
+                  ${order.status === "processing" ? "bg-blue-100 text-blue-700" : ""}
+                  ${order.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
+                  ${order.status === "cancelled" ? "bg-red-100 text-red-700" : ""}
+                  capitalize
+                `}
                           >
                             {order.status}
                           </span>
-                        </TableCell>
-                      </motion.tr>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-lg font-bold text-gray-800">
+                              ₦
+                              {Number(order.total).toLocaleString("en-NG", {
+                                minimumFractionDigits: 2,
+                              })}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {new Date(order.created_at).toLocaleDateString(
+                                "en-NG",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
                     ))}
-                  </AdminTable>
-                </div>
+                  </div>
+
+                  {/* Desktop: Table layout */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <AdminTable
+                      headers={orderHeaders}
+                      caption={`Orders by ${customer.firstName} ${customer.lastName}`}
+                      sortable={true}
+                    >
+                      {orders.map((order, index) => (
+                        <motion.tr
+                          key={order.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        >
+                          <TableCell className="font-mono text-sm text-gray-600">
+                            {order.reference.slice(0, 12)}...
+                          </TableCell>
+                          <TableCell className="font-semibold text-gray-800">
+                            ₦
+                            {Number(order.total).toLocaleString("en-NG", {
+                              minimumFractionDigits: 2,
+                            })}
+                          </TableCell>
+                          <TableCell className="text-gray-500 whitespace-nowrap">
+                            {new Date(order.created_at).toLocaleDateString(
+                              "en-NG",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className={`
+                    inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium
+                    ${order.status === "delivered" ? "bg-green-100 text-green-700" : ""}
+                    ${order.status === "processing" ? "bg-blue-100 text-blue-700" : ""}
+                    ${order.status === "pending" ? "bg-yellow-100 text-yellow-700" : ""}
+                    ${order.status === "cancelled" ? "bg-red-100 text-red-700" : ""}
+                    capitalize
+                  `}
+                            >
+                              {order.status}
+                            </span>
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </AdminTable>
+                  </div>
+                </>
               )}
             </motion.div>
           </div>

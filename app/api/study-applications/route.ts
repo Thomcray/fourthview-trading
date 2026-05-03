@@ -3,8 +3,9 @@ import { authOptions } from "@/app/_lib/auth";
 import { createClient } from "@/app/_lib/supabase-server";
 import { NextResponse } from "next/server";
 import { sendApplicationConfirmation } from "@/app/_lib/send-study-email";
+import { createNotification } from "@/app/_lib/create-notification";
 
-// ─── GET: Admin only - list all applications ───
+// GET: Admin only - list all applications
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -42,7 +43,7 @@ export async function GET(req: Request) {
   }
 }
 
-// ─── POST: Public - create new application ───
+// POST: Public - create new application
 export async function POST(req: Request) {
   try {
     const supabase = await createClient(true);
@@ -77,6 +78,13 @@ export async function POST(req: Request) {
       email: body.email,
       applicationId: application.id,
     }).catch((err) => console.error("Confirmation email error:", err));
+
+    await createNotification({
+      title: "New Study Application",
+      message: `${body.fullName} applied for ${body.preferredProgram || "a program"}`,
+      type: "study_application",
+      referenceId: application.id.toString(),
+    }).catch((err) => console.error("Notification error:", err));
 
     return NextResponse.json(application);
   } catch (error) {

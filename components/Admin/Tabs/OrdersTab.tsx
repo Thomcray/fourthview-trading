@@ -309,6 +309,7 @@ export default function OrdersTab() {
         </div>
 
         {/* Table */}
+        {/* Orders List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {filteredOrders.length === 0 ? (
             <div className="text-center py-12">
@@ -319,51 +320,27 @@ export default function OrdersTab() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <AdminTable
-                headers={orderHeaders}
-                caption="A list of customer orders."
-              >
+            <>
+              {/* Mobile: Card layout */}
+              <div className="md:hidden divide-y divide-gray-100">
                 {filteredOrders.map((order, index) => (
-                  <motion.tr
+                  <motion.div
                     key={order.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.02 }}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="p-4 hover:bg-gray-50 transition-colors space-y-3"
                   >
-                    <TableCell className="font-mono text-sm text-gray-500">
-                      #{order.id}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm font-medium text-gray-800">
-                      {order.reference}
-                    </TableCell>
-                    <TableCell>
-                      <p className="font-medium text-gray-800">
-                        {order.customerName}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {order.customerEmail}
-                      </p>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {getItemCount(order)} item
-                      {getItemCount(order) !== 1 ? "s" : ""}
-                    </TableCell>
-                    <TableCell className="font-semibold text-gray-800">
-                      ₦
-                      {typeof order.total === "number"
-                        ? order.total.toLocaleString()
-                        : Number(order.total).toLocaleString()}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                      {new Date(order.created_at).toLocaleDateString("en-NG", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell>
+                    {/* Top row: ID + Reference + Status */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-mono text-xs text-gray-400">
+                          #{order.id}
+                        </p>
+                        <p className="font-mono text-sm font-medium text-gray-800">
+                          {order.reference}
+                        </p>
+                      </div>
                       <div className="relative">
                         <button
                           onClick={() =>
@@ -381,7 +358,7 @@ export default function OrdersTab() {
                           )}
                         </button>
                         {statusDropdownOpen === order.id && (
-                          <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
+                          <div className="absolute right-0 z-10 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
                             {statusConfig[order.order_status]?.nextStatuses.map(
                               (nextStatus) => (
                                 <button
@@ -418,38 +395,207 @@ export default function OrdersTab() {
                           </div>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                    </div>
+
+                    {/* Customer info */}
+                    <div>
+                      <p className="font-medium text-gray-800">
+                        {order.customerName}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {order.customerEmail}
+                      </p>
+                    </div>
+
+                    {/* Items + Total + Date row */}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">
+                        {getItemCount(order)} item
+                        {getItemCount(order) !== 1 ? "s" : ""}
+                      </span>
+                      <span className="font-semibold text-gray-800">
+                        ₦
+                        {typeof order.total === "number"
+                          ? order.total.toLocaleString()
+                          : Number(order.total).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      {new Date(order.created_at).toLocaleDateString("en-NG", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push(`/admin/orders/${order.id}`)}
+                        className="flex-1 justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        View
+                      </Button>
+                      {isEligibleForRefund(order) && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() =>
-                            router.push(`/admin/orders/${order.id}`)
-                          }
-                          className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowRefundModal(true);
+                          }}
+                          className="flex-1 justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 cursor-pointer text-xs"
                         >
-                          <Eye className="w-4 h-4" />
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Refund
                         </Button>
-                        {isEligibleForRefund(order) && (
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Desktop: Table layout */}
+              <div className="hidden md:block overflow-x-auto">
+                <AdminTable
+                  headers={orderHeaders}
+                  caption="A list of customer orders."
+                >
+                  {filteredOrders.map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <TableCell className="font-mono text-sm text-gray-500">
+                        #{order.id}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm font-medium text-gray-800">
+                        {order.reference}
+                      </TableCell>
+                      <TableCell>
+                        <p className="font-medium text-gray-800">
+                          {order.customerName}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {order.customerEmail}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {getItemCount(order)} item
+                        {getItemCount(order) !== 1 ? "s" : ""}
+                      </TableCell>
+                      <TableCell className="font-semibold text-gray-800">
+                        ₦
+                        {typeof order.total === "number"
+                          ? order.total.toLocaleString()
+                          : Number(order.total).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.created_at).toLocaleDateString(
+                          "en-NG",
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="relative">
+                          <button
+                            onClick={() =>
+                              setStatusDropdownOpen(
+                                statusDropdownOpen === order.id
+                                  ? null
+                                  : order.id,
+                              )
+                            }
+                            disabled={updatingId === order.id}
+                            className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50 cursor-pointer"
+                          >
+                            {getStatusBadge(order.order_status)}
+                            {statusConfig[order.order_status]?.nextStatuses
+                              .length > 0 && (
+                              <ChevronDown className="w-3 h-3 text-gray-400" />
+                            )}
+                          </button>
+                          {statusDropdownOpen === order.id && (
+                            <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
+                              {statusConfig[
+                                order.order_status
+                              ]?.nextStatuses.map((nextStatus) => (
+                                <button
+                                  key={nextStatus}
+                                  onClick={() =>
+                                    updateOrderStatus({
+                                      id: order.id,
+                                      status: nextStatus,
+                                      notify: true,
+                                    })
+                                  }
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
+                                >
+                                  <span
+                                    className={`w-2 h-2 rounded-full ${statusConfig[nextStatus].color.split(" ")[0].replace("100", "500")}`}
+                                  />
+                                  Mark as {statusConfig[nextStatus].label}
+                                </button>
+                              ))}
+                              <div className="border-t border-gray-100 my-1" />
+                              <button
+                                onClick={() =>
+                                  updateOrderStatus({
+                                    id: order.id,
+                                    status: order.order_status,
+                                    notify: false,
+                                  })
+                                }
+                                className="w-full px-3 py-2 text-left text-xs text-gray-500 hover:bg-gray-50 cursor-pointer"
+                              >
+                                Update without notifying
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setShowRefundModal(true);
-                            }}
-                            className="text-gray-400 hover:text-red-600 cursor-pointer"
+                            onClick={() =>
+                              router.push(`/admin/orders/${order.id}`)
+                            }
+                            className="text-gray-400 hover:text-blue-600 cursor-pointer"
                           >
-                            <RefreshCw className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </motion.tr>
-                ))}
-              </AdminTable>
-            </div>
+                          {isEligibleForRefund(order) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setShowRefundModal(true);
+                              }}
+                              className="text-gray-400 hover:text-red-600 cursor-pointer"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AdminTable>
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -59,7 +59,6 @@ export default function OrderDetailPage() {
   });
 
   const { formatPrice, formatFromNGN, margin } = useCurrency();
-  // console.log(margin);
 
   const handlePrint = () => {
     window.print();
@@ -225,7 +224,46 @@ export default function OrderDetailPage() {
                   <Package className="w-5 h-5 text-gray-500" />
                   Order Items
                 </h3>
-                <div className="border rounded-lg overflow-hidden">
+
+                {/* Mobile: Card layout */}
+                <div className="md:hidden space-y-3">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="border rounded-lg p-4 bg-white"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {item.itemName}
+                          </p>
+                          {item.size && (
+                            <p className="text-xs text-gray-400">
+                              Size: {item.size}
+                            </p>
+                          )}
+                        </div>
+                        <p className="font-bold text-blue-600">
+                          {formatPrice(item.price * item.quantity) ?? "—"}
+                        </p>
+                      </div>
+                      <div className="flex justify-between mt-2 text-sm text-gray-500">
+                        <span>Qty: {item.quantity}</span>
+                        <span>Unit: {formatPrice(item.price) ?? "—"}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="border-t pt-3 flex justify-between items-center">
+                    <span className="font-semibold text-gray-800">Total:</span>
+                    <span className="font-bold text-blue-600 text-lg">
+                      {formatFromNGN(order.total) ??
+                        `₦${order.total?.toLocaleString()}`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Desktop: Table layout */}
+                <div className="hidden md:block border rounded-lg overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
@@ -257,7 +295,6 @@ export default function OrderDetailPage() {
                           <td className="px-4 py-3 text-sm text-gray-700">
                             {item.quantity}
                           </td>
-                          {/* ✅ Fixed: was nested <td> inside <td> */}
                           <td className="px-4 py-3 text-sm text-gray-700">
                             {formatPrice(item.price) ?? "—"}
                           </td>

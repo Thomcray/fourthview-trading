@@ -244,7 +244,7 @@ export default function StudyTab() {
         </div>
       </div>
 
-      {/* Applications Table */}
+      {/* Applications List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {filteredApplications.length === 0 ? (
           <div className="text-center py-12">
@@ -255,81 +255,170 @@ export default function StudyTab() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <AdminTable
-              headers={headers}
-              caption="A list of study in China applications."
-            >
+          <>
+            {/* Mobile: Card layout */}
+            <div className="md:hidden divide-y divide-gray-100">
               {filteredApplications.map((app, index) => (
-                <motion.tr
+                <motion.div
                   key={app.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  className="p-4 hover:bg-gray-50 transition-colors space-y-3"
                 >
-                  <TableCell className="font-mono text-sm text-gray-500">
-                    #{app.id}
-                  </TableCell>
-                  <TableCell>
+                  {/* Top row: ID + Status */}
+                  <div className="flex items-center justify-between">
+                    <p className="font-mono text-xs text-gray-400">#{app.id}</p>
+                    {getStatusBadge(app.status)}
+                  </div>
+
+                  {/* Name + Email */}
+                  <div>
                     <p className="font-medium text-gray-800">{app.full_name}</p>
                     <div className="flex items-center gap-1 mt-0.5">
                       <Mail className="w-3 h-3 text-gray-400" />
                       <p className="text-xs text-gray-400">{app.email}</p>
                     </div>
-                  </TableCell>
-                  <TableCell>
+                  </div>
+
+                  {/* Contact info */}
+                  <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <Phone className="w-3 h-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-gray-600">
                         {app.whatsapp_number}
                       </span>
                     </div>
                     {app.country && (
-                      <div className="flex items-center gap-1 mt-0.5">
+                      <div className="flex items-center gap-1">
                         <MapPin className="w-3 h-3 text-gray-400" />
-                        <span className="text-xs text-gray-400">
-                          {app.country}
-                        </span>
+                        <span className="text-gray-400">{app.country}</span>
                       </div>
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </div>
+
+                  {/* Program + University */}
+                  <div>
                     <p className="font-medium text-gray-800">
                       {app.preferred_program}
                     </p>
                     <p className="text-xs text-gray-400">
                       {app.preferred_university || "—"}
                     </p>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(app.status)}</TableCell>
-                  <TableCell>
+                  </div>
+
+                  {/* Documents + Date row */}
+                  <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-1">
                       <FileText className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-gray-600">
                         {app.documents ? Object.keys(app.documents).length : 0}{" "}
                         files
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                    {new Date(app.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
+                    <span className="text-xs text-gray-400">
+                      {new Date(app.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-gray-100">
                     <Link href={`/admin/study-applications/${app.id}`}>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 mr-1" />
+                        View Details
                       </Button>
                     </Link>
-                  </TableCell>
-                </motion.tr>
+                  </div>
+                </motion.div>
               ))}
-            </AdminTable>
-          </div>
+            </div>
+
+            {/* Desktop: Table layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <AdminTable
+                headers={headers}
+                caption="A list of study in China applications."
+              >
+                {filteredApplications.map((app, index) => (
+                  <motion.tr
+                    key={app.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <TableCell className="font-mono text-sm text-gray-500">
+                      #{app.id}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium text-gray-800">
+                        {app.full_name}
+                      </p>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Mail className="w-3 h-3 text-gray-400" />
+                        <p className="text-xs text-gray-400">{app.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {app.whatsapp_number}
+                        </span>
+                      </div>
+                      {app.country && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-gray-400">
+                            {app.country}
+                          </span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium text-gray-800">
+                        {app.preferred_program}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {app.preferred_university || "—"}
+                      </p>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(app.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <FileText className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {app.documents
+                            ? Object.keys(app.documents).length
+                            : 0}{" "}
+                          files
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                      {new Date(app.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Link href={`/admin/study-applications/${app.id}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </motion.tr>
+                ))}
+              </AdminTable>
+            </div>
+          </>
         )}
       </div>
     </div>

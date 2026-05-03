@@ -1,4 +1,5 @@
 import { authOptions } from "@/app/_lib/auth";
+import { createNotification } from "@/app/_lib/create-notification";
 import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
@@ -42,6 +43,14 @@ export async function POST(req: Request) {
       console.error("Supabase insert error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Notification
+    await createNotification({
+      title: "New Order Placed",
+      message: `Order #${data.reference} — ₦${total.toLocaleString()}`,
+      type: "order",
+      referenceId: data.id.toString(),
+    }).catch((err) => console.error("Notification error:", err));
 
     return NextResponse.json({ order: data }, { status: 201 });
   } catch (error) {

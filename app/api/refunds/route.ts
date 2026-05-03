@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/app/_lib/supabase-server";
+import { createNotification } from "@/app/_lib/create-notification";
 
 export async function GET() {
   try {
@@ -80,6 +81,14 @@ export async function POST(request: Request) {
       .from("orders")
       .update({ status: "refund_requested" })
       .eq("id", orderId);
+
+    // Notification
+    await createNotification({
+      title: "New Refund Request",
+      message: `${customerName} requested ₦${amount.toLocaleString()} refund`,
+      type: "refund",
+      referenceId: data.id.toString(),
+    }).catch((err) => console.error("Notification error:", err));
 
     return NextResponse.json({
       refund: data,

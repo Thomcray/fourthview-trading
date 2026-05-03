@@ -9,7 +9,6 @@ import AdminTable from "@/components/Admin/AdminTable";
 import { Search, CloudDownload, Eye, RefreshCw } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchRefunds } from "@/app/_lib/api";
-import { queryKeys } from "@/app/_lib/queryKeys";
 import { toast } from "react-toastify";
 import Link from "next/link";
 
@@ -208,7 +207,7 @@ export default function RefundsTab() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Refunds List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {filteredRefunds.length === 0 ? (
           <div className="text-center py-12">
@@ -219,64 +218,142 @@ export default function RefundsTab() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <AdminTable headers={headers} caption="A list of customer refunds.">
+          <>
+            {/* Mobile: Card layout */}
+            <div className="md:hidden divide-y divide-gray-100">
               {filteredRefunds.map((refund, index) => (
-                <motion.tr
+                <motion.div
                   key={refund.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  className="p-4 hover:bg-gray-50 transition-colors space-y-3"
                 >
-                  <TableCell className="font-mono text-sm text-gray-500">
-                    #{refund.id}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    #{refund.order_id}
-                  </TableCell>
-                  <TableCell>
+                  {/* Top row: ID + Status */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-mono text-xs text-gray-400">
+                        Refund #{refund.id}
+                      </p>
+                      <p className="font-mono text-sm text-gray-600">
+                        Order #{refund.order_id}
+                      </p>
+                    </div>
+                    {getStatusBadge(refund.status)}
+                  </div>
+
+                  {/* Customer info */}
+                  <div>
                     <p className="font-medium text-gray-800">
                       {refund.customer_name}
                     </p>
                     <p className="text-xs text-gray-400">
                       {refund.customer_email}
                     </p>
-                  </TableCell>
-                  <TableCell className="font-semibold text-red-600">
-                    ₦{refund.amount.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <p className="text-sm truncate" title={refund.reason}>
-                      {refund.reason.length > 50
-                        ? refund.reason.substring(0, 50) + "..."
-                        : refund.reason}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs capitalize">
+                  </div>
+
+                  {/* Amount + Method row */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-red-600">
+                      ₦{refund.amount.toLocaleString()}
+                    </span>
+                    <span className="text-xs capitalize text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                       {refund.refund_method}
                     </span>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(refund.status)}</TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                  </div>
+
+                  {/* Reason */}
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {refund.reason.length > 100
+                      ? refund.reason.substring(0, 100) + "..."
+                      : refund.reason}
+                  </p>
+
+                  {/* Date */}
+                  <p className="text-xs text-gray-400">
                     {new Date(refund.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
+                  </p>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-gray-100">
                     <Link href={`/admin/refunds/${refund.id}`}>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 mr-1" />
+                        View Details
                       </Button>
                     </Link>
-                  </TableCell>
-                </motion.tr>
+                  </div>
+                </motion.div>
               ))}
-            </AdminTable>
-          </div>
+            </div>
+
+            {/* Desktop: Table layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <AdminTable
+                headers={headers}
+                caption="A list of customer refunds."
+              >
+                {filteredRefunds.map((refund, index) => (
+                  <motion.tr
+                    key={refund.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <TableCell className="font-mono text-sm text-gray-500">
+                      #{refund.id}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      #{refund.order_id}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium text-gray-800">
+                        {refund.customer_name}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {refund.customer_email}
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-semibold text-red-600">
+                      ₦{refund.amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <p className="text-sm truncate" title={refund.reason}>
+                        {refund.reason.length > 50
+                          ? refund.reason.substring(0, 50) + "..."
+                          : refund.reason}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-xs capitalize">
+                        {refund.refund_method}
+                      </span>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(refund.status)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                      {new Date(refund.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Link href={`/admin/refunds/${refund.id}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </motion.tr>
+                ))}
+              </AdminTable>
+            </div>
+          </>
         )}
       </div>
     </div>

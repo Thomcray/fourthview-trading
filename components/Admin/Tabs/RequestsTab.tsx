@@ -235,7 +235,7 @@ export default function RequestsTab() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Requests List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {filteredRequests.length === 0 ? (
           <div className="text-center py-12">
@@ -246,69 +246,146 @@ export default function RequestsTab() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <AdminTable
-              headers={requestHeaders}
-              caption="A list of customer requests."
-            >
+          <>
+            {/* Mobile: Card layout */}
+            <div className="md:hidden divide-y divide-gray-100">
               {filteredRequests.map((booking, index) => (
-                <motion.tr
+                <motion.div
                   key={booking.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  className="p-4 hover:bg-gray-50 transition-colors space-y-3"
                 >
-                  <TableCell className="font-mono text-sm text-gray-500">
-                    #{booking.id}
-                  </TableCell>
-                  <TableCell>
+                  {/* Top row: ID + Status */}
+                  <div className="flex items-center justify-between">
+                    <p className="font-mono text-xs text-gray-400">
+                      #{booking.id}
+                    </p>
+                    {getStatusBadge(booking.status)}
+                  </div>
+
+                  {/* Customer info */}
+                  <div>
                     <p className="font-medium text-gray-800">
                       {booking.firstName} {booking.lastName}
                     </p>
                     <p className="text-xs text-gray-400">{booking.email}</p>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                      {booking.purpose}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-500">
-                    {booking.factoryName ? (
-                      <div>
-                        <p className="font-medium">{booking.factoryName}</p>
-                        {booking.visitDate && (
-                          <p className="text-xs text-gray-400">
-                            {new Date(booking.visitDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                  </div>
+
+                  {/* Purpose */}
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                    {booking.purpose}
+                  </span>
+
+                  {/* Factory + Visit Date */}
+                  {booking.factoryName && (
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-700">
+                        {booking.factoryName}
+                      </p>
+                      {booking.visitDate && (
+                        <p className="text-xs text-gray-400">
+                          {new Date(booking.visitDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Submitted Date */}
+                  <p className="text-xs text-gray-400">
+                    Submitted:{" "}
                     {new Date(booking.created_at).toLocaleDateString("en-NG", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
                     })}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                  <TableCell>
+                  </p>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-gray-100">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setSelectedBooking(booking)}
-                      className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                      className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 mr-1" />
+                      View Details
                     </Button>
-                  </TableCell>
-                </motion.tr>
+                  </div>
+                </motion.div>
               ))}
-            </AdminTable>
-          </div>
+            </div>
+
+            {/* Desktop: Table layout */}
+            <div className="hidden md:block overflow-x-auto">
+              <AdminTable
+                headers={requestHeaders}
+                caption="A list of customer requests."
+              >
+                {filteredRequests.map((booking, index) => (
+                  <motion.tr
+                    key={booking.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <TableCell className="font-mono text-sm text-gray-500">
+                      #{booking.id}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium text-gray-800">
+                        {booking.firstName} {booking.lastName}
+                      </p>
+                      <p className="text-xs text-gray-400">{booking.email}</p>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                        {booking.purpose}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500">
+                      {booking.factoryName ? (
+                        <div>
+                          <p className="font-medium">{booking.factoryName}</p>
+                          {booking.visitDate && (
+                            <p className="text-xs text-gray-400">
+                              {new Date(booking.visitDate).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                      {new Date(booking.created_at).toLocaleDateString(
+                        "en-NG",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedBooking(booking)}
+                        className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </motion.tr>
+                ))}
+              </AdminTable>
+            </div>
+          </>
         )}
       </div>
 

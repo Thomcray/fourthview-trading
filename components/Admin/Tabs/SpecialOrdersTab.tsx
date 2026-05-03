@@ -269,7 +269,7 @@ export default function SpecialOrdersTab() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Orders List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {filteredOrders.length === 0 ? (
             <div className="text-center py-12">
@@ -280,62 +280,22 @@ export default function SpecialOrdersTab() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <AdminTable headers={headers} caption="A list of special orders.">
+            <>
+              {/* Mobile: Card layout */}
+              <div className="md:hidden divide-y divide-gray-100">
                 {filteredOrders.map((order, index) => (
-                  <motion.tr
+                  <motion.div
                     key={order.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.02 }}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="p-4 hover:bg-gray-50 transition-colors space-y-3"
                   >
-                    <TableCell className="font-mono text-sm text-gray-500">
-                      #{order.id}
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm text-gray-700">{order.email}</p>
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      <p
-                        className="text-sm text-gray-600 truncate"
-                        title={order.description}
-                      >
-                        {order.description?.length > 60
-                          ? order.description.substring(0, 60) + "..."
-                          : order.description || "—"}
+                    {/* Top row: ID + Status with dropdown */}
+                    <div className="flex items-center justify-between">
+                      <p className="font-mono text-xs text-gray-400">
+                        #{order.id}
                       </p>
-                    </TableCell>
-                    <TableCell>
-                      {order.images?.length > 0 ? (
-                        <div className="flex gap-1">
-                          {order.images.slice(0, 2).map((img, i) => (
-                            <div
-                              key={i}
-                              className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 shrink-0"
-                            >
-                              <Image
-                                src={img}
-                                alt={`Order image ${i + 1}`}
-                                width={40}
-                                height={40}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">No images</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                      {new Date(order.created_at).toLocaleDateString("en-NG", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell>
                       <div className="relative">
                         <button
                           onClick={() =>
@@ -353,7 +313,7 @@ export default function SpecialOrdersTab() {
                           )}
                         </button>
                         {statusDropdownOpen === order.id && (
-                          <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
+                          <div className="absolute right-0 z-10 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
                             {statusConfig[order.status]?.nextStatuses.map(
                               (nextStatus) => (
                                 <button
@@ -376,21 +336,191 @@ export default function SpecialOrdersTab() {
                           </div>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </div>
+
+                    {/* Customer email */}
+                    <p className="text-sm text-gray-700">{order.email}</p>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {order.description?.length > 100
+                        ? order.description.substring(0, 100) + "..."
+                        : order.description || "—"}
+                    </p>
+
+                    {/* Images preview */}
+                    {order.images?.length > 0 && (
+                      <div className="flex gap-2">
+                        {order.images.slice(0, 3).map((img, i) => (
+                          <div
+                            key={i}
+                            className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 shrink-0"
+                          >
+                            <Image
+                              src={img}
+                              alt={`Order image ${i + 1}`}
+                              width={64}
+                              height={64}
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        ))}
+                        {order.images.length > 3 && (
+                          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-500">
+                            +{order.images.length - 3}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Date */}
+                    <p className="text-xs text-gray-400">
+                      {new Date(order.created_at).toLocaleDateString("en-NG", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+
+                    {/* Actions */}
+                    <div className="pt-2 border-t border-gray-100">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setSelectedOrder(order)}
-                        className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 mr-1" />
+                        View Details
                       </Button>
-                    </TableCell>
-                  </motion.tr>
+                    </div>
+                  </motion.div>
                 ))}
-              </AdminTable>
-            </div>
+              </div>
+
+              {/* Desktop: Table layout */}
+              <div className="hidden md:block overflow-x-auto">
+                <AdminTable
+                  headers={headers}
+                  caption="A list of special orders."
+                >
+                  {filteredOrders.map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <TableCell className="font-mono text-sm text-gray-500">
+                        #{order.id}
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm text-gray-700">{order.email}</p>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <p
+                          className="text-sm text-gray-600 truncate"
+                          title={order.description}
+                        >
+                          {order.description?.length > 60
+                            ? order.description.substring(0, 60) + "..."
+                            : order.description || "—"}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        {order.images?.length > 0 ? (
+                          <div className="flex gap-1">
+                            {order.images.slice(0, 2).map((img, i) => (
+                              <div
+                                key={i}
+                                className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 shrink-0"
+                              >
+                                <Image
+                                  src={img}
+                                  alt={`Order image ${i + 1}`}
+                                  width={40}
+                                  height={40}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            No images
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.created_at).toLocaleDateString(
+                          "en-NG",
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="relative">
+                          <button
+                            onClick={() =>
+                              setStatusDropdownOpen(
+                                statusDropdownOpen === order.id
+                                  ? null
+                                  : order.id,
+                              )
+                            }
+                            disabled={updatingId === order.id}
+                            className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50 cursor-pointer"
+                          >
+                            {getStatusBadge(order.status)}
+                            {statusConfig[order.status]?.nextStatuses.length >
+                              0 && (
+                              <ChevronDown className="w-3 h-3 text-gray-400" />
+                            )}
+                          </button>
+                          {statusDropdownOpen === order.id && (
+                            <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
+                              {statusConfig[order.status]?.nextStatuses.map(
+                                (nextStatus) => (
+                                  <button
+                                    key={nextStatus}
+                                    onClick={() =>
+                                      updateStatus({
+                                        id: order.id,
+                                        status: nextStatus,
+                                      })
+                                    }
+                                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
+                                  >
+                                    <span
+                                      className={`w-2 h-2 rounded-full ${statusConfig[nextStatus]?.color.split(" ")[0].replace("100", "500")}`}
+                                    />
+                                    Mark as {statusConfig[nextStatus]?.label}
+                                  </button>
+                                ),
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AdminTable>
+              </div>
+            </>
           )}
         </div>
       </div>

@@ -124,7 +124,7 @@ export default function ViewProducts() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-4">
             <div className="h-8 w-48 bg-gray-200 rounded" />
@@ -138,7 +138,7 @@ export default function ViewProducts() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto text-center py-12">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-red-500" />
@@ -163,7 +163,7 @@ export default function ViewProducts() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-6">
@@ -225,7 +225,7 @@ export default function ViewProducts() {
             </div>
           </div>
 
-          {/* Table */}
+          {/* Products List */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {allProducts.length === 0 ? (
               <div className="text-center py-12">
@@ -237,7 +237,89 @@ export default function ViewProducts() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile: Card layout */}
+                <div className="md:hidden divide-y divide-gray-100">
+                  {allProducts.map((product: Product, index: number) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index * 0.02, 0.5) }}
+                      className="p-4 hover:bg-gray-50 transition-colors space-y-3"
+                    >
+                      {/* Top row: ID + Category */}
+                      <div className="flex items-center justify-between">
+                        <p className="font-mono text-xs text-gray-400">
+                          #{product.id}
+                        </p>
+                        <span className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
+                          {product.categoryName ||
+                            `Category ${product.categoryId}`}
+                        </span>
+                      </div>
+
+                      {/* Product name */}
+                      <p className="font-medium text-gray-800 text-lg">
+                        {product.name}
+                      </p>
+
+                      {/* Description */}
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {product.description?.length > 80
+                          ? `${product.description.substring(0, 80)}...`
+                          : product.description || "—"}
+                      </p>
+
+                      {/* Price + Stock row */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-blue-600">
+                          ¥{product.price.toLocaleString()}
+                        </span>
+                        {product.stock !== undefined && (
+                          <span
+                            className={`text-sm ${product.stock <= 5 ? "text-red-500 font-medium" : "text-gray-500"}`}
+                          >
+                            {product.stock} in stock
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                        <Link
+                          href={`/admin/view-products/${product.id}`}
+                          className="flex-1"
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setConfirmProduct(product)}
+                          disabled={deletingId === product.id}
+                          className="flex-1 justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 cursor-pointer text-xs"
+                        >
+                          {deletingId === product.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                          ) : (
+                            <Trash2 className="w-4 h-4 mr-1" />
+                          )}
+                          Delete
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Desktop: Table layout */}
+                <div className="hidden md:block overflow-x-auto">
                   <AdminTable
                     headers={headers}
                     caption="A list of all products."
@@ -306,13 +388,14 @@ export default function ViewProducts() {
                   </AdminTable>
                 </div>
 
+                {/* Load More - shared between mobile and desktop */}
                 {hasNextPage && (
                   <div className="px-6 py-4 border-t border-gray-100 flex justify-center">
                     <Button
                       onClick={() => fetchNextPage()}
                       disabled={isFetchingNextPage}
                       variant="outline"
-                      className="gap-2 min-w-[150px]"
+                      className="gap-2 min-w-37.5"
                     >
                       {isFetchingNextPage ? (
                         <>
