@@ -33,6 +33,12 @@ interface PaystackButtonProps {
   paymentMethod?: string;
 }
 
+interface CustomField {
+  display_name: string;
+  variable_name: string;
+  value: string;
+}
+
 export default function PaystackButton({
   total,
   shippingAddress,
@@ -45,7 +51,7 @@ export default function PaystackButton({
     amount: 0,
     currency: "NGN",
     publicKey: PAYSTACK_PUBLIC_KEY,
-    metadata: { signature: "", custom_fields: [] as any[] },
+    metadata: { signature: "", custom_fields: [] as CustomField[] },
   });
 
   const { currency, isLoading: currencyLoading } = useCurrency();
