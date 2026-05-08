@@ -28,7 +28,7 @@ interface ShippingAddress {
 }
 
 interface PaystackButtonProps {
-  total: number; // CNY base amount (for display only)
+  total: number;
   shippingAddress?: ShippingAddress;
   paymentMethod?: string;
 }
@@ -39,12 +39,23 @@ export default function PaystackButton({
   paymentMethod = "paystack",
 }: PaystackButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [paystackConfig, setPaystackConfig] = useState({
+    reference: "",
+    email: "",
+    amount: 0,
+    currency: "NGN",
+    publicKey: PAYSTACK_PUBLIC_KEY,
+    metadata: { signature: "", custom_fields: [] as any[] },
+  });
+
   const { currency, isLoading: currencyLoading } = useCurrency();
   const { data: session } = useSession();
   const { cart, clearCart } = useApp();
   const router = useRouter();
 
   const user = session?.user;
+
+  const initializePayment = usePaystackPayment(paystackConfig);
 
   const handlePayment = async () => {
     if (!user) {
@@ -60,7 +71,6 @@ export default function PaystackButton({
     setIsLoading(true);
 
     try {
-      // Create payment intent (server calculates exact amount)
       const intentRes = await fetch("/api/payment/intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,11 +89,10 @@ export default function PaystackButton({
 
       const { reference, amount, signature } = intentData;
 
-      // Initialize Paystack with SERVER-PROVIDED amount
-      const config = {
+      setPaystackConfig({
         reference,
         email: user.email ?? "",
-        amount, // Exact amount from server, never client-calculated
+        amount,
         currency: "NGN",
         publicKey: PAYSTACK_PUBLIC_KEY,
         metadata: {
@@ -109,14 +118,11 @@ export default function PaystackButton({
             },
           ],
         },
-      };
-
-      const initializePayment = usePaystackPayment(config);
+      });
 
       initializePayment({
         onSuccess: async (paystackRef: PaystackReference) => {
           try {
-            // Verify and save order
             const saveRes = await fetch("/api/orders/save", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -132,15 +138,13 @@ export default function PaystackButton({
             const saveData = await saveRes.json();
 
             if (!saveRes.ok) {
-              // If order save fails but payment succeeded, log for manual review
               console.error("Order save failed after payment:", saveData);
               throw new Error(
                 saveData.error ||
-                  "Payment succeeded but order failed. Please contact support."
+                  "Payment succeeded but order failed. Please contact support.",
               );
             }
 
-            // Handle duplicate (user refreshed page)
             if (saveData.duplicate) {
               toast.info("Order already processed!");
             } else {
@@ -154,7 +158,7 @@ export default function PaystackButton({
             toast.error(
               error instanceof Error
                 ? error.message
-                : "Something went wrong. Please contact support."
+                : "Something went wrong. Please contact support.",
             );
           } finally {
             setIsLoading(false);
@@ -170,7 +174,7 @@ export default function PaystackButton({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to start payment. Please try again."
+          : "Failed to start payment. Please try again.",
       );
       setIsLoading(false);
     }
@@ -185,8 +189,7 @@ export default function PaystackButton({
     );
   }
 
-  // Display amount in user's selected currency (for UI only)
-  const displayAmount = total; // CurrencyContext already converts this
+  const displayAmount = total;
 
   return (
     <div className="w-full">
