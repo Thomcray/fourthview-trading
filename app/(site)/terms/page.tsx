@@ -35,7 +35,8 @@ export default function TermsPage() {
         >
           <div className="prose prose-lg max-w-none">
             <p className="text-gray-700 leading-relaxed mb-6">
-              By using Fourth View Trading Company's services, you agree to the following terms and conditions.
+              By using Fourth View Trading Company&apos;s services, you agree to
+              the following terms and conditions.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4 flex items-center gap-2">
@@ -43,21 +44,27 @@ export default function TermsPage() {
               Service Agreement
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              Fourth View provides sourcing, procurement, verification, trading support, and related business services based on client requests and available supplier information.
+              Fourth View provides sourcing, procurement, verification, trading
+              support, and related business services based on client requests
+              and available supplier information.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4">
               Client Responsibility
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              Clients are responsible for providing accurate product details, specifications, shipping information, and required documentation where applicable.
+              Clients are responsible for providing accurate product details,
+              specifications, shipping information, and required documentation
+              where applicable.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4">
               Supplier & Product Verification
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              While we make reasonable efforts to verify suppliers and product quality, final purchase decisions remain the responsibility of the client.
+              While we make reasonable efforts to verify suppliers and product
+              quality, final purchase decisions remain the responsibility of the
+              client.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4 flex items-center gap-2">
@@ -65,7 +72,8 @@ export default function TermsPage() {
               Payments
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              All payments for services, sourcing, shipping, or factory-related transactions must be made according to agreed terms and timelines.
+              All payments for services, sourcing, shipping, or factory-related
+              transactions must be made according to agreed terms and timelines.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4 flex items-center gap-2">
@@ -73,7 +81,9 @@ export default function TermsPage() {
               Delivery & Shipping
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              Delivery timelines may vary depending on supplier processing, shipping method, customs procedures, and other external factors beyond our direct control.
+              Delivery timelines may vary depending on supplier processing,
+              shipping method, customs procedures, and other external factors
+              beyond our direct control.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4 flex items-center gap-2">
@@ -81,21 +91,26 @@ export default function TermsPage() {
               Limitation of Liability
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              Fourth View Trading Company shall not be held liable for delays, damages, or losses caused by third-party logistics providers, manufacturers, customs authorities, or unforeseen circumstances.
+              Fourth View Trading Company shall not be held liable for delays,
+              damages, or losses caused by third-party logistics providers,
+              manufacturers, customs authorities, or unforeseen circumstances.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4">
               Intellectual Property
             </h2>
             <p className="text-gray-700 leading-relaxed mb-8">
-              All content, branding, logos, and materials on this website remain the property of Fourth View Trading Company unless otherwise stated.
+              All content, branding, logos, and materials on this website remain
+              the property of Fourth View Trading Company unless otherwise
+              stated.
             </p>
 
             <h2 className="text-2xl font-bold text-blue-900 mt-8 mb-4">
               Policy Updates
             </h2>
             <p className="text-gray-700 leading-relaxed">
-              We reserve the right to update or modify these terms and policies at any time without prior notice.
+              We reserve the right to update or modify these terms and policies
+              at any time without prior notice.
             </p>
           </div>
         </motion.div>
