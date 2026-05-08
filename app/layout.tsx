@@ -4,9 +4,11 @@ import { Providers } from "./providers";
 import { getAllProducts, getCategories } from "./_lib/data-services";
 import QueryProvider from "./_lib/providers/QueryProvider";
 import { AppProvider } from "@/components/AppContext";
-import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyContext";
 import { NetworkProvider } from "@/components/NetworkContext";
+import { SettingsProvider } from "@/components/SettingsProvider";
+import { getStoreSettings } from "./_lib/settings";
+import "./globals.css";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -32,16 +34,20 @@ export default async function RootLayout({
     getCategories(),
   ]);
 
+  const settings = await getStoreSettings();
+
   return (
     <html lang="en">
       <body className={`${outfit.className} antialiased`}>
         <QueryProvider>
           <AppProvider products={products || []} categories={categories || []}>
-            <NetworkProvider>
-              <CurrencyProvider>
-                <Providers>{children}</Providers>
-              </CurrencyProvider>
-            </NetworkProvider>
+            <SettingsProvider initialSettings={settings}>
+              <NetworkProvider>
+                <CurrencyProvider>
+                  <Providers>{children}</Providers>
+                </CurrencyProvider>
+              </NetworkProvider>
+            </SettingsProvider>
 
             <ToastContainer
               position="top-center"

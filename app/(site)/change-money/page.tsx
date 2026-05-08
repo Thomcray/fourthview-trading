@@ -17,6 +17,7 @@ import {
 // import exchangerates from "@/components/ChangeMoney/exCurr";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { useSettings } from "@/components/SettingsProvider";
 
 type Steps = {
   id: number;
@@ -32,6 +33,7 @@ type ExchangeRate = {
 };
 
 export default function CurrencyExchangePage() {
+  const settings = useSettings();
   const [copiedRate, setCopiedRate] = useState<string | null>(null);
 
   const steps: Steps[] = [
@@ -278,39 +280,58 @@ export default function CurrencyExchangePage() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-8">
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <PhoneIncoming className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Call us</p>
-                <p className="font-semibold text-gray-900">+234 813 123 4567</p>
-              </div>
-            </div>
+            {settings.storePhone && (
+              <a
+                href={`tel:${settings.storePhone.replace(/\s+/g, "")}`}
+                className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow"
+              >
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <PhoneIncoming className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Call us</p>
+                  <p className="font-semibold text-gray-900">
+                    {settings.storePhone}
+                  </p>
+                </div>
+              </a>
+            )}
 
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Mail className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Email us</p>
-                <p className="font-semibold text-gray-900">
-                  support@fourthview.com
-                </p>
-              </div>
-            </div>
+            {settings.storeEmail && (
+              <a
+                href={`mailto:${settings.storeEmail}`}
+                className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email us</p>
+                  <p className="font-semibold text-gray-900">
+                    {settings.storeEmail}
+                  </p>
+                </div>
+              </a>
+            )}
 
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Live chat</p>
-                <p className="font-semibold text-gray-900">
-                  Start conversation
-                </p>
-              </div>
-            </div>
+            {settings.whatsapp && (
+              <a
+                href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:shadow-md transition-shadow"
+              >
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Live chat</p>
+                  <p className="font-semibold text-gray-900">
+                    Start conversation
+                  </p>
+                </div>
+              </a>
+            )}
           </div>
         </div>
       </section>

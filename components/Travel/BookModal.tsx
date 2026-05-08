@@ -104,8 +104,12 @@ export default function BookModal() {
     }
   };
 
+  const isFactoryVisit = purpose === "Factory Visit";
+  const needsPersonalInfo =
+    purpose === "Factory Visit" || purpose === "Tour Guide";
+
   useEffect(() => {
-    if (purpose !== "Factory Visit") {
+    if (!needsPersonalInfo) {
       setFDetails(false);
       setStep(1);
     }
@@ -167,9 +171,6 @@ export default function BookModal() {
     });
   };
 
-  const isFactoryVisit = purpose === "Factory Visit";
-  const canSubmit = purpose && (isFactoryVisit ? step === 2 : true);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -183,7 +184,7 @@ export default function BookModal() {
         className={`${geistSans.className} antialiased sm:max-w-lg max-h-[90vh] overflow-y-auto`}
       >
         {/* Progress Indicator */}
-        {isFactoryVisit && purpose && (
+        {needsPersonalInfo && purpose && (
           <div className="flex items-center justify-center gap-2 mb-4">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step >= 1 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}
@@ -202,19 +203,23 @@ export default function BookModal() {
         )}
 
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-blue-950">
+          <DialogTitle>
             {!purpose
               ? "Book Your Experience"
-              : isFactoryVisit && step === 1
+              : needsPersonalInfo && step === 1
                 ? "Personal Information"
-                : "Factory Visit Details"}
+                : isFactoryVisit && step === 2
+                  ? "Factory Visit Details"
+                  : "Confirm Booking"}
           </DialogTitle>
           <DialogDescription>
             {!purpose
               ? "Tell us about your visit so we can prepare the best experience for you."
-              : isFactoryVisit && step === 1
+              : needsPersonalInfo && step === 1
                 ? "Please provide your contact details to continue."
-                : "Let us know which factory you'd like to visit."}
+                : isFactoryVisit && step === 2
+                  ? "Let us know which factory you'd like to visit."
+                  : "You're all set! Submit your booking request below."}
           </DialogDescription>
         </DialogHeader>
 
@@ -227,7 +232,7 @@ export default function BookModal() {
             />
           ) : (
             <AnimatePresence mode="wait">
-              {isFactoryVisit && step === 1 && (
+              {needsPersonalInfo && step === 1 && (
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -387,7 +392,7 @@ export default function BookModal() {
                 </motion.div>
               )}
 
-              {!isFactoryVisit && purpose && (
+              {purpose === "Tour Guide" && step === 2 && (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-green-600" />
@@ -406,7 +411,7 @@ export default function BookModal() {
         </div>
 
         <DialogFooter className="gap-2">
-          {isFactoryVisit && step === 2 && (
+          {needsPersonalInfo && step === 2 && (
             <Button
               type="button"
               variant="outline"
@@ -416,7 +421,7 @@ export default function BookModal() {
               Back
             </Button>
           )}
-          {isFactoryVisit && step === 1 && purpose && (
+          {needsPersonalInfo && step === 1 && purpose && (
             <Button
               type="button"
               className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
@@ -426,11 +431,36 @@ export default function BookModal() {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           )}
-          {canSubmit && (!isFactoryVisit || step === 2) && (
+          {isFactoryVisit && step === 2 && (
             <Button
               type="button"
               className="bg-green-600 hover:bg-green-700 text-white"
               onClick={handleSubmit}
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Booking"
+              )}
+            </Button>
+          )}
+          {purpose === "Tour Guide" && step === 2 && (
+            <Button
+              type="button"
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={() =>
+                submitBooking({
+                  ...form,
+                  purpose,
+                  visitDate: null,
+                  factoryName: null,
+                  factoryAddress: null,
+                })
+              }
               disabled={isPending}
             >
               {isPending ? (

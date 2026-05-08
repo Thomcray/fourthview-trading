@@ -1,5 +1,4 @@
-"use client";
-
+import Link from "next/link";
 import {
   Facebook,
   Mail,
@@ -14,30 +13,7 @@ import {
   CreditCard,
   Video,
 } from "lucide-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation"; // Added
-
-type StoreSettings = {
-  storeName: string;
-  storeEmail: string;
-  storePhone: string;
-  storeAddress: string;
-  websiteUrl: string;
-  description: string;
-  whatsapp: string;
-  instagram: string;
-  facebook: string;
-  twitter: string;
-  tiktok: string;
-  youtube: string;
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+import { getStoreSettings } from "@/app/_lib/settings";
 
 const quickLinks = [
   { name: "About Us", href: "/about" },
@@ -51,117 +27,87 @@ const quickLinks = [
 const serviceFeatures = [
   { icon: RefreshCw, text: "Easy Returns", subtext: "30-day return policy" },
   { icon: Shield, text: "Secure Payment", subtext: "100% secure transactions" },
-  {
-    icon: CreditCard,
-    text: "Multiple Payments",
-    subtext: "Cards, Bank",
-  },
+  { icon: CreditCard, text: "Multiple Payments", subtext: "Cards, Bank" },
 ];
 
-export default function Footer() {
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
-  const [settings, setSettings] = useState<StoreSettings | null>(null);
-  const pathname = usePathname();
+export default async function Footer() {
+  const settings = await getStoreSettings();
+  const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.settings) setSettings(data.settings);
-      })
-      .catch(() => {
-        // Fail silently — footer still renders with fallbacks
-      });
-  }, []);
-
-  // Check if on account page
-  const isAccountPage = pathname?.includes("account");
-
-  // Build social links dynamically from DB — only show if value exists
   const socialLinks = [
-    {
+    settings?.facebook && {
       icon: Facebook,
-      href: settings?.facebook
-        ? `https://facebook.com/${settings.facebook}`
-        : null,
+      href: `https://facebook.com/${settings.facebook}`,
       label: "Facebook",
       color: "hover:text-blue-500",
     },
-    {
+    settings?.twitter && {
       icon: Twitter,
-      href: settings?.twitter ? `https://x.com/${settings.twitter}` : null,
+      href: `https://x.com/${settings.twitter}`,
       label: "X (Twitter)",
       color: "hover:text-sky-500",
     },
-    {
+    settings?.instagram && {
       icon: Instagram,
-      href: settings?.instagram
-        ? `https://instagram.com/${settings.instagram}`
-        : null,
+      href: `https://instagram.com/${settings.instagram}`,
       label: "Instagram",
       color: "hover:text-pink-500",
     },
-    {
+    settings?.youtube && {
       icon: Youtube,
-      href: settings?.youtube
-        ? `https://youtube.com/${settings.youtube}`
-        : null,
+      href: `https://youtube.com/${settings.youtube}`,
       label: "YouTube",
       color: "hover:text-red-600",
     },
-    {
+    settings?.tiktok && {
       icon: Video,
-      href: settings?.tiktok ? `https://tiktok.com/${settings.tiktok}` : null,
+      href: `https://tiktok.com/${settings.tiktok}`,
       label: "TikTok",
       color: "hover:text-white",
     },
-    {
+    settings?.whatsapp && {
       icon: MessageCircle,
-      href: settings?.whatsapp
-        ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`
-        : null,
+      href: `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`,
       label: "WhatsApp",
       color: "hover:text-green-500",
     },
-  ].filter((s) => s.href !== null); // Hide socials with no value
+  ].filter(Boolean) as Array<{
+    icon: typeof Facebook;
+    href: string;
+    label: string;
+    color: string;
+  }>;
 
   const contactInfo = [
-    {
+    settings?.storePhone && {
       icon: Phone,
-      text: settings?.storePhone,
-      href: `tel:${settings?.storePhone?.replace(/\s/g, "") || ""}`,
+      text: settings.storePhone,
+      href: `tel:${settings.storePhone.replace(/\s/g, "")}`,
     },
-    {
+    settings?.storeEmail && {
       icon: Mail,
-      text: settings?.storeEmail,
-      href: `mailto:${settings?.storeEmail || ""}`,
+      text: settings.storeEmail,
+      href: `mailto:${settings.storeEmail}`,
     },
     {
       icon: MapPin,
       text: settings?.storeAddress || "Lagos, Nigeria",
       href: `https://maps.google.com/?q=${encodeURIComponent(settings?.storeAddress || "Lagos, Nigeria")}`,
     },
-  ];
+  ].filter(Boolean) as Array<{
+    icon: typeof Phone;
+    text: string;
+    href: string;
+  }>;
 
   return (
     <footer className="bg-linear-to-b from-gray-900 to-gray-950 text-white">
-      {/* Main Footer */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand Section */}
-          <motion.div
-            variants={itemVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
+          {/* Brand */}
+          <div className="space-y-4">
             <h2 className="text-2xl font-bold bg-linear-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-              {settings?.storeName}
+              {settings?.storeName || "Fourthview"}
             </h2>
             <p className="text-gray-400 text-sm leading-relaxed">
               {settings?.description ||
@@ -172,7 +118,7 @@ export default function Footer() {
                 {socialLinks.map((social) => (
                   <Link
                     key={social.label}
-                    href={social.href!}
+                    href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-300 ${social.color}`}
@@ -183,16 +129,10 @@ export default function Footer() {
                 ))}
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Quick Links */}
-          <motion.div
-            variants={itemVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Quick Links</h3>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
@@ -206,16 +146,10 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
-          {/* Contact Info */}
-          <motion.div
-            variants={itemVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
+          {/* Contact */}
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Contact Us</h3>
             <ul className="space-y-3">
               {contactInfo.map((info, idx) => (
@@ -232,16 +166,10 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
-          {/* Service Features */}
-          <motion.div
-            variants={itemVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="space-y-4"
-          >
+          {/* Features */}
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Why Choose Us</h3>
             <div className="space-y-3">
               {serviceFeatures.map((feature) => (
@@ -256,7 +184,7 @@ export default function Footer() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -265,9 +193,8 @@ export default function Footer() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm text-center sm:text-left">
-              &copy; {currentYear ?? ""}{" "}
-              {settings?.storeName || "Fourthview Trading"}. All rights
-              reserved.
+              &copy; {currentYear} {settings?.storeName || "Fourthview Trading"}
+              . All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link
@@ -293,14 +220,13 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* WhatsApp Floating Button — only shows if whatsapp is set */}
+      {/* WhatsApp Button */}
       {settings?.whatsapp && (
         <Link
           href={`https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`}
           target="_blank"
           rel="noopener noreferrer"
-          className={`fixed z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110
-            ${isAccountPage ? "bottom-18 right-4 sm:bottom-6 sm:right-6" : "bottom-6 right-6"}`}
+          className="fixed z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 bottom-6 right-6"
           aria-label="Chat on WhatsApp"
         >
           <MessageCircle className="w-6 h-6" />

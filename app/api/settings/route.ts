@@ -1,21 +1,20 @@
+import { getStoreSettings } from "@/app/_lib/settings";
 import { createClient } from "@/app/_lib/supabase-server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/_lib/auth";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("storeSettings")
-    .select("*")
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const settings = await getStoreSettings();
+  
+  if (!settings) {
+    return NextResponse.json(
+      { error: "Failed to fetch settings" },
+      { status: 500 }
+    );
   }
 
-  return NextResponse.json({ settings: data });
+  return NextResponse.json({ settings });
 }
 
 export async function PUT(req: Request) {
@@ -25,8 +24,7 @@ export async function PUT(req: Request) {
   }
 
   const body = await req.json();
-
-  const supabase = await createClient(true); // service role for update
+  const supabase = await createClient(true);
 
   const { data, error } = await supabase
     .from("storeSettings")

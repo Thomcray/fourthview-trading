@@ -138,7 +138,10 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error("Error deleting product:", error);
     return NextResponse.json(
-      { error: "Failed to delete product" },
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to delete product",
+      },
       { status: 500 },
     );
   }

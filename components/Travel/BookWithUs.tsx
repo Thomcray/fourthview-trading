@@ -1,4 +1,3 @@
-// components/BookWithUs.tsx
 "use client";
 
 import BookModal from "./BookModal";
@@ -108,13 +107,13 @@ export default function BookWithUs() {
             >
               <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
                 {/* Gradient Top Bar */}
-                <div className={`h-2 bg-gradient-to-r ${reason.color}`} />
+                <div className={`h-2 bg-linear-to-r ${reason.color}`} />
 
                 <div className="p-6 sm:p-8">
                   {/* Icon and Title */}
                   <div className="flex items-start gap-4 mb-4">
                     <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-r ${reason.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
+                      className={`w-12 h-12 rounded-xl bg-linear-to-r ${reason.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}
                     >
                       <reason.icon className="w-6 h-6 text-white" />
                     </div>

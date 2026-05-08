@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSettings } from "@/components/SettingsProvider";
 
 const benefits = [
   {
@@ -61,10 +62,11 @@ const steps = [
 ];
 
 export default function StudyInChinaPage() {
+  const settings = useSettings();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
       {/* Hero */}
-      <section className="relative bg-gradient-to-r from-blue-900 to-blue-800 py-24 px-4 overflow-hidden">
+      <section className="relative bg-linear-to-r from-blue-900 to-blue-800 py-24 px-4 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
@@ -191,7 +193,7 @@ export default function StudyInChinaPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-2xl p-10 text-center"
+            className="bg-linear-to-r from-blue-900 to-blue-800 rounded-2xl p-10 text-center"
           >
             <h2 className="text-3xl font-bold text-white mb-4">
               Ready to Start Your Journey?
@@ -219,18 +221,28 @@ export default function StudyInChinaPage() {
             Our education consultants are here to help you
           </p>
           <div className="flex flex-wrap justify-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <Mail className="w-5 h-5 text-blue-600" />
-              </div>
-              <span className="text-gray-700">study@fourthview.com</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <Phone className="w-5 h-5 text-green-600" />
-              </div>
-              <span className="text-gray-700">+234 813 123 4567</span>
-            </div>
+            {settings.storeEmail && (
+              <a
+                href={`mailto:${settings.storeEmail}`}
+                className="flex items-center gap-3"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-blue-600" />
+                </div>
+                <span className="text-gray-700">{settings.storeEmail}</span>
+              </a>
+            )}
+            {settings.storePhone && (
+              <a
+                href={`tel:${settings.storePhone.replace(/\s+/g, "")}`}
+                className="flex items-center gap-3"
+              >
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="text-gray-700">{settings.storePhone}</span>
+              </a>
+            )}
           </div>
         </div>
       </section>

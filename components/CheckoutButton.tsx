@@ -26,7 +26,7 @@ export default function CheckoutButton({
   total,
   shippingAddress,
 }: CheckoutButtonProps) {
-  const { country, isLoading, currency } = useCurrency();
+  const { country, isLoading } = useCurrency();
 
   if (isLoading) {
     return (
@@ -39,11 +39,11 @@ export default function CheckoutButton({
 
   // Paystack-supported countries, always charge in NGN
   if (country && PAYSTACK_COUNTRIES.includes(country)) {
-    return <PaystackButton total={total} shippingAddress={shippingAddress} />;
+    return <PaystackButton total={total} shippingAddress={shippingAddress} paymentMethod="paystack" />;
   }
 
   // Everyone else → Stripe (uncomment when ready)
-  // return <StripeButton total={total} />;
+  // return <StripeButton total={total} shippingAddress={shippingAddress} paymentMethod="stripe" />;
 
   // Temporary fallback until Stripe is set up
   return (

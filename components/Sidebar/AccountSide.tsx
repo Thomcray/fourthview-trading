@@ -96,7 +96,7 @@ export default function AccountSide() {
           {/* User Info Section */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-xl">
+              <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-xl">
                 {session?.user?.firstName?.charAt(0) || "U"}
               </div>
               <div className="flex-1 min-w-0">

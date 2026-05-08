@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { usePaystackPayment } from "react-paystack";
 import { Button } from "./ui/button";
 import { useSession } from "next-auth/react";
@@ -8,15 +8,12 @@ import { useApp } from "./AppContext";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
-import { ExchangeRates } from "@/types/database";
 
-const PAYSTACK_PUBLIC_KEY = process.env
-  .NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY as string;
+const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
 
 interface PaystackReference {
   reference: string;
   status: string;
-  message: string;
   trans: string;
   transaction: string;
   trxref: string;
@@ -31,141 +28,186 @@ interface ShippingAddress {
 }
 
 interface PaystackButtonProps {
-  total: number;
+  total: number; // CNY base amount (for display only)
   shippingAddress?: ShippingAddress;
+  paymentMethod?: string;
 }
 
 export default function PaystackButton({
   total,
   shippingAddress,
+  paymentMethod = "paystack",
 }: PaystackButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { rates, currency, isLoading: currencyLoading } = useCurrency();
+  const { currency, isLoading: currencyLoading } = useCurrency();
   const { data: session } = useSession();
   const { cart, clearCart } = useApp();
   const router = useRouter();
 
   const user = session?.user;
 
-  // total is in CNY (base currency)
-  // Display amount: convert to user's selected currency
-  const displayRate = rates?.[currency.code as keyof ExchangeRates] ?? 1;
-  const displayAmount = total * displayRate;
+  const handlePayment = async () => {
+    if (!user) {
+      toast.error("Please sign in to continue");
+      return;
+    }
 
-  // Paystack amount: always convert to NGN
-  const ngnRate = rates?.NGN ?? 1;
-  const ngnAmount = total * ngnRate;
-  const paystackAmount = Math.round(ngnAmount * 100);
+    if (!cart || cart.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
 
-  const config = {
-    reference: new Date().getTime().toString(),
-    email: user?.email ?? "",
-    amount: paystackAmount, // NGN in kobo
-    currency: "NGN",
-    publicKey: PAYSTACK_PUBLIC_KEY,
-    metadata: {
-      custom_fields: [
-        {
-          display_name: "Customer Name",
-          variable_name: "customer_name",
-          value: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(),
+    setIsLoading(true);
+
+    try {
+      // Create payment intent (server calculates exact amount)
+      const intentRes = await fetch("/api/payment/intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cart,
+          shippingAddress: shippingAddress ?? null,
+          paymentMethod,
+        }),
+      });
+
+      const intentData = await intentRes.json();
+
+      if (!intentRes.ok) {
+        throw new Error(intentData.error || "Failed to initialize payment");
+      }
+
+      const { reference, amount, signature } = intentData;
+
+      // Initialize Paystack with SERVER-PROVIDED amount
+      const config = {
+        reference,
+        email: user.email ?? "",
+        amount, // Exact amount from server, never client-calculated
+        currency: "NGN",
+        publicKey: PAYSTACK_PUBLIC_KEY,
+        metadata: {
+          signature,
+          custom_fields: [
+            {
+              display_name: "Customer Name",
+              variable_name: "customer_name",
+              value: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+            },
+            {
+              display_name: "Phone",
+              variable_name: "phone",
+              value:
+                user.countryCode && user.phone
+                  ? `${user.countryCode}${user.phone}`
+                  : "",
+            },
+            {
+              display_name: "Country",
+              variable_name: "country",
+              value: shippingAddress?.country ?? user.country ?? "",
+            },
+          ],
         },
-        {
-          display_name: "Phone Number",
-          variable_name: "phone",
-          value:
-            user?.countryCode && user?.phone
-              ? `${user.countryCode}${user.phone}`
-              : "",
+      };
+
+      const initializePayment = usePaystackPayment(config);
+
+      initializePayment({
+        onSuccess: async (paystackRef: PaystackReference) => {
+          try {
+            // Verify and save order
+            const saveRes = await fetch("/api/orders/save", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                reference: paystackRef.reference,
+                signature,
+                items: cart,
+                shippingAddress: shippingAddress ?? null,
+                paymentMethod,
+              }),
+            });
+
+            const saveData = await saveRes.json();
+
+            if (!saveRes.ok) {
+              // If order save fails but payment succeeded, log for manual review
+              console.error("Order save failed after payment:", saveData);
+              throw new Error(
+                saveData.error ||
+                  "Payment succeeded but order failed. Please contact support."
+              );
+            }
+
+            // Handle duplicate (user refreshed page)
+            if (saveData.duplicate) {
+              toast.info("Order already processed!");
+            } else {
+              toast.success("Order placed successfully!");
+            }
+
+            await clearCart();
+            router.push("/account/purchased-items");
+          } catch (error) {
+            console.error("Post-payment error:", error);
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : "Something went wrong. Please contact support."
+            );
+          } finally {
+            setIsLoading(false);
+          }
         },
-        {
-          display_name: "Shipping Address",
-          variable_name: "address",
-          value: shippingAddress?.streetAddress
-            ? `${shippingAddress.streetAddress}${shippingAddress.apartment ? `, ${shippingAddress.apartment}` : ""}, ${shippingAddress.city}${shippingAddress.zipCode ? `, ${shippingAddress.zipCode}` : ""}${shippingAddress.country ? `, ${shippingAddress.country}` : ""}`
-            : (user?.address ?? ""),
+        onClose: () => {
+          setIsLoading(false);
+          toast.info("Payment cancelled");
         },
-        {
-          display_name: "Country",
-          variable_name: "country",
-          value: (shippingAddress?.country || user?.country) ?? "",
-        },
-      ],
-    },
+      });
+    } catch (error) {
+      console.error("Payment initialization failed:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to start payment. Please try again."
+      );
+      setIsLoading(false);
+    }
   };
-
-  const initializePayment = usePaystackPayment(config);
 
   if (currencyLoading) {
     return (
-      <Button type="button" disabled className="cursor-pointer h-10">
-        Loading rates...
+      <Button disabled className="cursor-pointer h-10 w-full">
+        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+        Loading...
       </Button>
     );
   }
 
-  const handlePayment = () => {
-    setIsLoading(true);
-
-    const onSuccess = async (reference: PaystackReference) => {
-      try {
-        const verifyRes = await fetch("/api/paystack/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reference: reference.reference }),
-        });
-
-        const verifyData = await verifyRes.json();
-        if (!verifyRes.ok || !verifyData.verified) {
-          throw new Error(verifyData.error || "Payment verification failed");
-        }
-
-        // Save order with NGN amount
-        const response = await fetch("/api/orders/save", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reference: reference.reference,
-            total: ngnAmount, // Save NGN amount, not display currency
-            items: cart,
-            shippingAddress: shippingAddress ?? null,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to save order");
-        }
-
-        await clearCart();
-        toast.success("Order placed successfully!");
-        router.push("/account/purchased-items");
-      } catch (error) {
-        console.error("Failed to save order:", error);
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Failed to save order. Please contact support.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const onClose = () => setIsLoading(false);
-    initializePayment({ onSuccess, onClose });
-  };
+  // Display amount in user's selected currency (for UI only)
+  const displayAmount = total; // CurrencyContext already converts this
 
   return (
-    <Button
-      type="button"
-      onClick={handlePayment}
-      disabled={isLoading || !user}
-      className="cursor-pointer h-10"
-    >
-      {isLoading
-        ? "Processing..."
-        : `Pay ${currency.symbol}${Math.round(displayAmount).toLocaleString()}`}
-    </Button>
+    <div className="w-full">
+      <Button
+        type="button"
+        onClick={handlePayment}
+        disabled={isLoading || !user}
+        className="cursor-pointer h-10 w-full"
+      >
+        {isLoading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            Processing...
+          </>
+        ) : (
+          `Pay ${currency.symbol}${Math.round(displayAmount).toLocaleString()}`
+        )}
+      </Button>
+      <p className="text-xs text-gray-400 mt-1 text-center">
+        Billed in Nigerian Naira (NGN)
+      </p>
+    </div>
   );
 }

@@ -89,7 +89,7 @@ export function Dropdown({
                   setCurrency!(value);
 
                   const selectedRate = exchangerates.find(
-                    (r) => r.from + " - " + r.to === value
+                    (r) => r.from + " - " + r.to === value,
                   );
 
                   if (selectedRate) {

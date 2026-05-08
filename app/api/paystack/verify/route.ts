@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       amount: data.data.amount,
       currency: data.data.currency,
       reference: data.data.reference,
+      data: data.data, // Full transaction data
     });
   } catch {
     return NextResponse.json({ error: "Verification failed" }, { status: 500 });
