@@ -40,7 +40,7 @@ export default function AdminLayout({
   return (
     <QueryProvider>
       <div
-        className={`${outfit.className} antialiased min-h-screen bg-gradient-to-br from-gray-50 to-gray-100`}
+        className={`${outfit.className} antialiased min-h-screen bg-linear-to-br from-gray-50 to-gray-100`}
       >
         <AdminHeader />
 

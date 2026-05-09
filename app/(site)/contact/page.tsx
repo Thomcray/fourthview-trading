@@ -1,4 +1,3 @@
-// app/contact/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -84,7 +83,7 @@ export default function ContactPage() {
     {
       icon: Clock,
       title: "Business Hours",
-      details: "Mon - Fri: 9am – 6pm\nSat: 10am – 2pm",
+      details: "We're available 24/7\nAlways here to help",
       link: undefined,
       color: "from-purple-500 to-purple-600",
     },
