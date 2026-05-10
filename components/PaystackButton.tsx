@@ -157,14 +157,20 @@ export default function PaystackButton({
               );
             }
 
-            if (saveData.duplicate) {
-              toast.info("Order already processed!");
-            } else {
-              toast.success("Order placed successfully!");
-            }
-
             await clearCart();
-            router.push("/account/purchased-items");
+            setIsLoading(false);
+
+            if (saveData.duplicate) {
+              toast.info("Order already processed!", {
+                onClose: () => router.push("/account/purchased-items"),
+                autoClose: 2000,
+              });
+            } else {
+              toast.success("Order placed successfully!", {
+                onClose: () => router.push("/account/purchased-items"),
+                autoClose: 2000,
+              });
+            }
           } catch (error) {
             console.error("Post-payment error:", error);
             toast.error(
@@ -172,7 +178,6 @@ export default function PaystackButton({
                 ? error.message
                 : "Something went wrong. Please contact support.",
             );
-          } finally {
             setIsLoading(false);
           }
         },
