@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { usePaystackPayment } from "react-paystack";
 import { Button } from "./ui/button";
 import { useSession } from "next-auth/react";
 import { useApp } from "./AppContext";
@@ -33,10 +32,24 @@ interface PaystackButtonProps {
   paymentMethod?: string;
 }
 
-interface CustomField {
-  display_name: string;
-  variable_name: string;
-  value: string;
+// Paystack lives on window after the script loads
+declare global {
+  interface Window {
+    PaystackPop: {
+      setup: (config: object) => { openIframe: () => void };
+    };
+  }
+}
+
+function loadPaystackScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.PaystackPop) return resolve(); // already loaded
+    const script = document.createElement("script");
+    script.src = "https://js.paystack.co/v1/inline.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Paystack script"));
+    document.body.appendChild(script);
+  });
 }
 
 export default function PaystackButton({
@@ -45,23 +58,12 @@ export default function PaystackButton({
   paymentMethod = "paystack",
 }: PaystackButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [paystackConfig, setPaystackConfig] = useState({
-    reference: "",
-    email: "",
-    amount: 0,
-    currency: "NGN",
-    publicKey: PAYSTACK_PUBLIC_KEY,
-    metadata: { signature: "", custom_fields: [] as CustomField[] },
-  });
-
-  const { currency, isLoading: currencyLoading } = useCurrency();
+  const { currency, isLoading: currencyLoading, convertPrice } = useCurrency();
   const { data: session } = useSession();
   const { cart, clearCart } = useApp();
   const router = useRouter();
 
   const user = session?.user;
-
-  const initializePayment = usePaystackPayment(paystackConfig);
 
   const handlePayment = async () => {
     if (!user) {
@@ -77,6 +79,10 @@ export default function PaystackButton({
     setIsLoading(true);
 
     try {
+      // Load Paystack script if not already loaded
+      await loadPaystackScript();
+
+      // Get server-calculated amount
       const intentRes = await fetch("/api/payment/intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,12 +101,15 @@ export default function PaystackButton({
 
       const { reference, amount, signature } = intentData;
 
-      setPaystackConfig({
-        reference,
+      console.log(amount);
+
+      // Initialize Paystack directly — no hook, no state race
+      const handler = window.PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
         email: user.email ?? "",
         amount,
         currency: "NGN",
-        publicKey: PAYSTACK_PUBLIC_KEY,
+        ref: reference,
         metadata: {
           signature,
           custom_fields: [
@@ -124,9 +133,6 @@ export default function PaystackButton({
             },
           ],
         },
-      });
-
-      initializePayment({
         onSuccess: async (paystackRef: PaystackReference) => {
           try {
             const saveRes = await fetch("/api/orders/save", {
@@ -175,6 +181,8 @@ export default function PaystackButton({
           toast.info("Payment cancelled");
         },
       });
+
+      handler.openIframe();
     } catch (error) {
       console.error("Payment initialization failed:", error);
       toast.error(
@@ -195,7 +203,7 @@ export default function PaystackButton({
     );
   }
 
-  const displayAmount = total;
+  const displayAmount = convertPrice(total) ?? 0;
 
   return (
     <div className="w-full">
@@ -211,7 +219,7 @@ export default function PaystackButton({
             Processing...
           </>
         ) : (
-          `Pay ${currency.symbol}${Math.round(displayAmount).toLocaleString()}`
+          `Pay ${currency.symbol}${displayAmount.toLocaleString()}`
         )}
       </Button>
       <p className="text-xs text-gray-400 mt-1 text-center">

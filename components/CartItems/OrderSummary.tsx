@@ -38,7 +38,7 @@ export default function OrderSummary({
   const isGhana = country === "GH"; // Ghana gets Paystack but no shipping
   const { convertPrice, currency, isLoading: currencyLoading } = useCurrency();
 
-  console.log(currency.symbol);
+  console.log(total);
 
   // Build shipping address from session
   const shippingAddress = {
@@ -102,8 +102,8 @@ export default function OrderSummary({
                 <div className="flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-3">
                   <Mail className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-700">
-                    Shipping to countries outside Nigeria and Ghana will be
-                    calculated and sent to your email after checkout.
+                    Shipping to countries outside Nigeria will be calculated and
+                    sent to your email after checkout.
                   </p>
                 </div>
               )}

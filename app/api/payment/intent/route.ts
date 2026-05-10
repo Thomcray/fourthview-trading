@@ -74,7 +74,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const ngnRate = rateData.rates.NGN;
+    // Fetch margin and apply — must match CurrencyContext effectiveRates
+    const { data: exchangeSettings } = await supabase
+      .from("ExchangeSettings")
+      .select("rateMargin")
+      .single();
+
+    const margin = exchangeSettings?.rateMargin ?? 0;
+    const multiplier = 1 + margin / 100;
+
+    const ngnRate = rateData.rates.NGN * multiplier;
 
     // Calculate totals server-side (never trust client)
     let totalCNY = 0;
