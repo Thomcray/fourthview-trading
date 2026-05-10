@@ -36,9 +36,6 @@ export default function OrderSummary({
   const { data: session } = useSession();
   const isNigeria = country === "NG";
   const isGhana = country === "GH"; // Ghana gets Paystack but no shipping
-  const { convertPrice, currency, isLoading: currencyLoading } = useCurrency();
-
-  console.log(total);
 
   // Build shipping address from session
   const shippingAddress = {

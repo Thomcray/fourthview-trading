@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { useSession } from "next-auth/react";
 import { useApp } from "./AppContext";
@@ -9,14 +9,6 @@ import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
 
 const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
-
-interface PaystackReference {
-  reference: string;
-  status: string;
-  trans: string;
-  transaction: string;
-  trxref: string;
-}
 
 interface ShippingAddress {
   streetAddress: string;
@@ -32,7 +24,6 @@ interface PaystackButtonProps {
   paymentMethod?: string;
 }
 
-// Paystack lives on window after the script loads
 declare global {
   interface Window {
     PaystackPop: {
@@ -43,7 +34,7 @@ declare global {
 
 function loadPaystackScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (window.PaystackPop) return resolve(); // already loaded
+    if (window.PaystackPop) return resolve();
     const script = document.createElement("script");
     script.src = "https://js.paystack.co/v1/inline.js";
     script.onload = () => resolve();
@@ -65,6 +56,11 @@ export default function PaystackButton({
 
   const user = session?.user;
 
+  // Preload Paystack script on mount
+  useEffect(() => {
+    loadPaystackScript().catch(() => {});
+  }, []);
+
   const handlePayment = async () => {
     if (!user) {
       toast.error("Please sign in to continue");
@@ -79,10 +75,8 @@ export default function PaystackButton({
     setIsLoading(true);
 
     try {
-      // Load Paystack script if not already loaded
       await loadPaystackScript();
 
-      // Get server-calculated amount
       const intentRes = await fetch("/api/payment/intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,9 +95,6 @@ export default function PaystackButton({
 
       const { reference, amount, signature } = intentData;
 
-      console.log(amount);
-
-      // Initialize Paystack directly — no hook, no state race
       const handler = window.PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: user.email ?? "",
@@ -133,53 +124,16 @@ export default function PaystackButton({
             },
           ],
         },
-        onSuccess: async (paystackRef: PaystackReference) => {
-          try {
-            const saveRes = await fetch("/api/orders/save", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                reference: paystackRef.reference,
-                signature,
-                items: cart,
-                shippingAddress: shippingAddress ?? null,
-                paymentMethod,
-              }),
+        // Paystack v1 uses "callback" not "onSuccess"
+        // Order saving is handled by the webhook — client just redirects
+        callback: () => {
+          clearCart().then(() => {
+            setIsLoading(false);
+            toast.success("Order placed successfully!", {
+              onClose: () => router.push("/account/purchased-items"),
+              autoClose: 2000,
             });
-
-            const saveData = await saveRes.json();
-
-            if (!saveRes.ok) {
-              console.error("Order save failed after payment:", saveData);
-              throw new Error(
-                saveData.error ||
-                  "Payment succeeded but order failed. Please contact support.",
-              );
-            }
-
-            await clearCart();
-            setIsLoading(false);
-
-            if (saveData.duplicate) {
-              toast.info("Order already processed!", {
-                onClose: () => router.push("/account/purchased-items"),
-                autoClose: 2000,
-              });
-            } else {
-              toast.success("Order placed successfully!", {
-                onClose: () => router.push("/account/purchased-items"),
-                autoClose: 2000,
-              });
-            }
-          } catch (error) {
-            console.error("Post-payment error:", error);
-            toast.error(
-              error instanceof Error
-                ? error.message
-                : "Something went wrong. Please contact support.",
-            );
-            setIsLoading(false);
-          }
+          });
         },
         onClose: () => {
           setIsLoading(false);
@@ -224,7 +178,7 @@ export default function PaystackButton({
             Processing...
           </>
         ) : (
-          `Pay ${currency.symbol}${displayAmount.toLocaleString()}`
+          `Pay ${currency.symbol}${Math.round(displayAmount).toLocaleString()}`
         )}
       </Button>
       <p className="text-xs text-gray-400 mt-1 text-center">

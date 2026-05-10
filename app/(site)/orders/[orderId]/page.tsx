@@ -107,8 +107,6 @@ export default function OrderDetailPage() {
     staleTime: 0,
   });
 
-  console.log(order?.payment_method)
-
   // Eligibility check:
   const canRequestRefund = () => {
     if (!order || order.order_status !== "delivered") return false;
