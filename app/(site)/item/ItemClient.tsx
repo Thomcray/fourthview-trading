@@ -1,13 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, ArrowLeft, Heart, Filter } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
 import React, { useState, useMemo, ChangeEvent } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { ShoppingCart, ArrowLeft, Filter } from "lucide-react";
+import { getPublicImageUrl } from "@/lib/images";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useApp } from "@/components/AppContext";
+import Image from "next/image";
+import Link from "next/link";
 import AddToCart from "@/components/AddToCart";
 import ProductPrice from "@/components/ProductPrice";
 
@@ -202,7 +203,7 @@ export default function ItemClient() {
                 {/* Product Image */}
                 <div className="relative bg-gray-100 h-64 overflow-hidden">
                   <Image
-                    src={item.imageUrl[0]}
+                    src={getPublicImageUrl(item.imageUrl[0])}
                     alt={item.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

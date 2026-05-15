@@ -1,5 +1,6 @@
 "use client";
 
+import { NormalizedProduct } from "@/types/product";
 import {
   createContext,
   SetStateAction,
@@ -9,30 +10,7 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 
-type Products = {
-  id: number;
-  created_at: string;
-  name: string;
-  description: string;
-  categoryId: number;
-  price: number;
-  compareAtPrice?: number;
-  discount?: number;
-  discountType?: string;
-  target: string | null;
-  imageUrl: string[];
-  productType: string;
-  colours: string[];
-  sizes: string[];
-  weight: string;
-  shippingCost: number;
-  slug: string;
-  // computed at normalisation time — not from API
-  _groupKeys: {
-    byProductType: string;
-    byTarget: string;
-  };
-};
+type Products = NormalizedProduct;
 
 type Categories = {
   id: number;
@@ -101,6 +79,9 @@ function normaliseProducts(
 ): Products[] {
   return raw.map((p) => ({
     ...p,
+    // Ensure discount is null, not undefined
+    discount: p.discount ?? null,
+    discountType: p.discountType ?? null,
     slug: deriveSlug(p),
     _groupKeys: {
       byProductType: (p.productType ?? "Other").toLowerCase().trim(),
