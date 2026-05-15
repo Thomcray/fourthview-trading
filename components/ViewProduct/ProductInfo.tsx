@@ -2,11 +2,11 @@
 
 import { useCallback } from "react";
 import { Weight, Truck } from "lucide-react";
+import { NormalizedProduct } from "@/types/product";
 import ProductPrice from "@/components/ProductPrice";
-import { TopPickProduct } from "@/hooks/useTopPicks";
 
 interface Props {
-  product: TopPickProduct;
+  product: NormalizedProduct;
   selectedSize: string | null;
   selectedColour: string | null;
   onSizeChange: (size: string) => void;

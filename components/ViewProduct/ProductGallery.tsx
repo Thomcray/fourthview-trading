@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { TopPickProduct } from "@/hooks/useTopPicks";
 import { Loader2, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import { getPublicImageUrl } from "@/lib/images";
+import { NormalizedProduct } from "@/types/product";
 
 interface Props {
-  product: TopPickProduct;
+  product: NormalizedProduct;
   imageIdx: number;
   onImageLoad: () => void;
   imageLoading: boolean;
@@ -54,7 +54,7 @@ export default function ProductGallery({
       <div className="flex flex-col gap-4 lg:w-2/5">
         {/* Main image with zoom */}
         <div
-          className="relative w-full aspect-square rounded-xl overflow-hidden bg-linear-to-br from-[#E4E8F6] to-[#B6C1E7] cursor-zoom-in group"
+          className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-zoom-in group"
           onMouseMove={handleMouseMove}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -114,7 +114,7 @@ export default function ProductGallery({
         >
           <button
             onClick={closeModal}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-50"
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors cursor-pointer z-50"
           >
             <X className="w-8 h-8" />
           </button>
