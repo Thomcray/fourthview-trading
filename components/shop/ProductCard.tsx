@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProductPrice from "@/components/ProductPrice";
 import AddToCart from "@/components/AddToCart";
 import { getAllProducts } from "@/app/_lib/data-services";
+import { getPublicImageUrl } from "@/lib/images";
 
 type Product = NonNullable<Awaited<ReturnType<typeof getAllProducts>>>[number];
 
@@ -34,7 +35,7 @@ export default function ProductCard({ product }: Props) {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <Image
-              src={imageUrl}
+              src={getPublicImageUrl(imageUrl)}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
