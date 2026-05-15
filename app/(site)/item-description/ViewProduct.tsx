@@ -5,14 +5,14 @@ import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
 import { MapPin, MinusIcon, PlusIcon, ShoppingCart } from "lucide-react";
-import { TopPickProduct } from "@/hooks/useTopPicks";
+import { NormalizedProduct } from "@/types/product";
 import AddToCart from "@/components/AddToCart";
 import ShippingAddressModal from "@/components/ShippingAddressModal";
 import ProductGallery from "@/components/ViewProduct/ProductGallery";
 import ProductInfo from "@/components/ViewProduct/ProductInfo";
 
 interface Props {
-  selectedItem: TopPickProduct | null;
+  selectedItem: NormalizedProduct | null;
 }
 
 export default function ViewProduct({ selectedItem }: Props) {
