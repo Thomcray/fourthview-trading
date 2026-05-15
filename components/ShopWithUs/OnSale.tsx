@@ -7,6 +7,7 @@ import AddToCart from "../AddToCart";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { getAllProducts } from "@/app/_lib/data-services";
+import { getPublicImageUrl } from "@/lib/images";
 
 type Product = NonNullable<Awaited<ReturnType<typeof getAllProducts>>>[number];
 
@@ -26,7 +27,7 @@ export default function OnSale({ products }: Props) {
     <section className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col gap-5">
         <Link href="/collection/on-sale">
-          <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
+          <div className="bg-linear-to-r from-red-600 to-red-500 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
             <div className="flex items-center gap-2">
               <div className="bg-white/20 rounded-full p-1.5">
                 <Flame className="w-4 h-4 text-white" />
@@ -56,7 +57,7 @@ export default function OnSale({ products }: Props) {
                 className="shrink-0 w-52 sm:w-56 bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 relative"
               >
                 <div className="absolute top-3 left-0 z-10">
-                  <div className="bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-r-lg shadow-md flex items-center gap-1">
+                  <div className="bg-linear-to-r from-red-600 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-r-lg shadow-md flex items-center gap-1">
                     <Percent className="w-3 h-3" />-{item.discount}% OFF
                   </div>
                 </div>
@@ -66,7 +67,7 @@ export default function OnSale({ products }: Props) {
                 >
                   <div className="relative bg-gray-50 pt-2">
                     <Image
-                      src={item.imageUrl[0]}
+                      src={getPublicImageUrl(item.imageUrl[0])}
                       alt={item.name || "item-image"}
                       width={224}
                       height={224}
@@ -106,7 +107,7 @@ export default function OnSale({ products }: Props) {
             ))}
           </div>
 
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-linear-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
         </div>
       </div>
     </section>

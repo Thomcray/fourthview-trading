@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ShoppingBag } from "lucide-react";
+import { getPublicImageUrl } from "@/lib/images";
 
 type CategoryItem = {
   id: number;
@@ -78,7 +79,7 @@ export default function CategoryCard({
                     className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group/image"
                   >
                     <Image
-                      src={item.imageUrl[0]}
+                      src={getPublicImageUrl(item.imageUrl[0])}
                       alt={item.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover/image:scale-110"

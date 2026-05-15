@@ -8,6 +8,7 @@ import ProductPrice from "./ProductPrice";
 import AddToCart from "./AddToCart";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { getPublicImageUrl } from "@/lib/images";
 
 type Item = {
   id: number;
@@ -102,7 +103,7 @@ export default function SimilarItems({ selectedItem }: Props) {
                 >
                   <div className="relative bg-gray-50">
                     <Image
-                      src={item.imageUrl[0]}
+                      src={getPublicImageUrl(item.imageUrl[0])}
                       alt={item.name || "item-image"}
                       width={224}
                       height={224}

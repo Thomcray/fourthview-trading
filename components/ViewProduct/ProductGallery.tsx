@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { TopPickProduct } from "@/hooks/useTopPicks";
 import { Loader2, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
+import { getPublicImageUrl } from "@/lib/images";
 
 interface Props {
   product: TopPickProduct;
@@ -23,7 +24,6 @@ export default function ProductGallery({
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
 
   const currentImage = product.imageUrl[imageIdx] ?? product.imageUrl[0];
-  console.log(currentImage);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -69,7 +69,7 @@ export default function ProductGallery({
 
           {/* Base image - hidden when zoomed */}
           <Image
-            src={currentImage}
+            src={getPublicImageUrl(currentImage)}
             alt={product.name}
             fill
             className={`object-cover transition-opacity duration-200 ${
@@ -85,7 +85,7 @@ export default function ProductGallery({
             <div
               className="absolute inset-0 z-10"
               style={{
-                backgroundImage: `url(${currentImage})`,
+                backgroundImage: `url(${getPublicImageUrl(currentImage)})`,
                 backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
                 backgroundSize: "250%",
                 backgroundRepeat: "no-repeat",
@@ -124,7 +124,7 @@ export default function ProductGallery({
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={currentImage}
+              src={getPublicImageUrl(currentImage)}
               alt={product.name}
               fill
               className="object-contain"

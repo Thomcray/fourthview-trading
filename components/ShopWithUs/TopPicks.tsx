@@ -8,6 +8,7 @@ import Image from "next/image";
 import ProductPrice from "../ProductPrice";
 import AddToCart from "../AddToCart";
 import Link from "next/link";
+import { getPublicImageUrl } from "@/lib/images";
 
 interface Props {
   products: TopPickProduct[];
@@ -61,7 +62,7 @@ export default function TopPicks({ products }: Props) {
                 >
                   <div className="relative bg-gray-50">
                     <Image
-                      src={item.imageUrl[0]}
+                      src={getPublicImageUrl(item.imageUrl[0])}
                       alt={item.name || "item-image"}
                       width={224}
                       height={224}
