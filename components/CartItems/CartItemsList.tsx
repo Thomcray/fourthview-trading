@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button } from "../ui/button";
 import { useApp } from "../AppContext";
 import {
   Trash2,
@@ -14,6 +13,7 @@ import ProductPrice from "../ProductPrice";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
+import { getPublicImageUrl } from "@/lib/images";
 
 type Props = {
   selectedIds: Set<number>;
@@ -185,7 +185,7 @@ export default function CartItemsList({
                   {item.image && (
                     <div className="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-gray-50">
                       <Image
-                        src={item.image}
+                        src={getPublicImageUrl(item.image)}
                         alt={item.itemName}
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-300"

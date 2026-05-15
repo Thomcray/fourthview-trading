@@ -1,35 +1,32 @@
 "use client";
 
-import { useApp } from "../AppContext";
 import { ChevronRight, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useTopPicks, TopPickProduct } from "@/hooks/useTopPicks";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import ProductPrice from "../ProductPrice";
 import AddToCart from "../AddToCart";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useTopPicks } from "@/hooks/useTopPicks";
 
-export default function TopPicks() {
-  const { allProducts } = useApp();
+interface Props {
+  products: TopPickProduct[];
+}
+export default function TopPicks({ products }: Props) {
   const pathName = usePathname();
-
   const slug = pathName.split("/shop/")[1] ?? "";
 
-  // Get curated top picks
-  const topPicks = useTopPicks(allProducts, slug, {
+  const topPicks = useTopPicks(products, slug, {
     limit: 10,
     shuffle: true,
     requireImages: true,
   });
 
-  // Don't render if no products
   if (topPicks.length === 0) return null;
 
   return (
     <section className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col gap-5">
-        {/* Header */}
         <Link href="/collection/top-picks">
           <div className="bg-linear-to-r from-blue-900 to-blue-800 rounded-xl px-5 py-3 flex flex-row justify-between items-center shadow-md">
             <div className="flex items-center gap-2">
@@ -38,11 +35,6 @@ export default function TopPicks() {
                 <h1 className="font-semibold text-lg text-white">
                   Top Picks for You
                 </h1>
-                {/* <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full ml-2">
-                  {allProducts.filter((p) => p.slug === slug).length === 1
-                    ? "1 item"
-                    : `${allProducts.filter((p) => p.slug === slug).length} items`}
-                </span> */}
               </div>
             </div>
             <ChevronRight
@@ -53,7 +45,6 @@ export default function TopPicks() {
           </div>
         </Link>
 
-        {/* Products Grid - Horizontal Scroll */}
         <div className="relative">
           <div className="flex flex-row gap-5 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 snap-x snap-mandatory">
             {topPicks.map((item, index) => (
@@ -77,7 +68,6 @@ export default function TopPicks() {
                       className="w-full h-48 sm:h-52 object-cover hover:scale-105 transition-transform duration-500"
                     />
 
-                    {/* Badges Stack */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1">
                       {item.badge && (
                         <span
@@ -102,7 +92,6 @@ export default function TopPicks() {
                       )}
                     </div>
 
-                    {/* Hover Overlay */}
                     <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors duration-300" />
                   </div>
 
@@ -111,7 +100,6 @@ export default function TopPicks() {
                       {item.name}
                     </p>
 
-                    {/* Reasons chips */}
                     {item.reasons.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {item.reasons.slice(0, 2).map((reason, i) => (
@@ -125,7 +113,6 @@ export default function TopPicks() {
                       </div>
                     )}
 
-                    {/* Price */}
                     {item.discount ? (
                       <div className="mt-2">
                         <div className="text-xs text-gray-400 line-through">
@@ -153,7 +140,6 @@ export default function TopPicks() {
             ))}
           </div>
 
-          {/* Scroll Indicator */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 bg-linear-to-l from-white via-white/80 to-transparent w-12 h-full pointer-events-none lg:hidden" />
         </div>
       </div>

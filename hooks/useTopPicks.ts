@@ -1,9 +1,40 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Products } from "@/components/AppContext";
 
-export interface TopPick extends Products {
+// Base fields that exist in both raw DB products and normalized AppContext products
+interface BaseProduct {
+  id: number;
+  created_at: string;
+  name: string;
+  description: string;
+  categoryId: number;
+  price: number;
+  compareAtPrice?: number;
+  discount?: number;
+  discountType?: string;
+  target: string | null;
+  imageUrl: string[];
+  productType: string;
+  colours: string[];
+  sizes: string[];
+  weight: string;
+  shippingCost: number;
+}
+
+// Optional fields that may be added by normaliser
+interface NormalizedFields {
+  slug?: string;
+  _groupKeys?: {
+    byProductType: string;
+    byTarget: string;
+  };
+}
+
+// Union type: accepts both raw and normalized products
+type TopPickProduct = BaseProduct & NormalizedFields;
+
+interface TopPick extends TopPickProduct {
   badge?: string;
   score: number;
   reasons: string[];
@@ -18,8 +49,8 @@ interface UseTopPicksOptions {
 }
 
 export function useTopPicks(
-  products: Products[],
-  categorySlug: string,
+  products: TopPickProduct[],
+  categorySlug: string = "",
   options: UseTopPicksOptions = {},
 ): TopPick[] {
   const {
@@ -29,8 +60,8 @@ export function useTopPicks(
     minSavingsThreshold = 10,
   } = options;
 
-  // Stable, deterministic list — safe for SSR and initial client render
   const stableTopItems = useMemo(() => {
+    // Filter by slug only if categorySlug is provided AND product has slug
     const categoryProducts = categorySlug
       ? products.filter((p) => p.slug === categorySlug)
       : products;
@@ -153,19 +184,15 @@ export function useTopPicks(
       };
     });
 
-    // Always return deterministic sorted order — no Math.random() here
     return scored.sort((a, b) => b.score - a.score).slice(0, limit);
   }, [products, categorySlug, limit, requireImages, minSavingsThreshold]);
 
-  // Initialize state with the stable list so server and client first render match
   const [topPicks, setTopPicks] = useState<TopPick[]>(stableTopItems);
 
-  // Sync stable list into state when it changes (e.g. slug or products change)
   useEffect(() => {
     setTopPicks(stableTopItems);
   }, [stableTopItems]);
 
-  // Shuffle only on the client, after hydration — Math.random() is safe here
   useEffect(() => {
     if (!shuffle || stableTopItems.length <= 3) return;
 
@@ -178,3 +205,5 @@ export function useTopPicks(
 
   return topPicks;
 }
+
+export type { BaseProduct, NormalizedFields, TopPickProduct, TopPick };

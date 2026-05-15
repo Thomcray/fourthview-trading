@@ -1,13 +1,21 @@
 "use client";
 
-import { deleteExistingImage } from "@/app/_lib/actions/update-product-action";
-import { Input } from "@/components/ui/input";
-import { ImagePlus, X } from "lucide-react";
-import Image from "next/image";
 import React, { useState, useTransition } from "react";
-import { toast } from "react-toastify";
+import { deleteExistingImage } from "@/app/_lib/actions/update-product-action";
 import { useUpdateForm } from "./UpdateForm"; // ← added
+import { ImagePlus, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { toast } from "react-toastify";
+import Image from "next/image";
 
+function getPublicImageUrl(path: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!baseUrl) {
+    console.error("NEXT_PUBLIC_SUPABASE_URL not set");
+    return "/placeholder-product.png";
+  }
+  return `${baseUrl}/storage/v1/object/public/product-images/${path}`;
+}
 export default function UpdateProductMedia() {
   const { images, setImages, existingImages, setExistingImages, product } =
     useUpdateForm();
@@ -100,10 +108,14 @@ export default function UpdateProductMedia() {
                 className="relative aspect-square rounded-lg overflow-hidden border bg-slate-50"
               >
                 <Image
-                  src={url}
+                  src={getPublicImageUrl(url)}
                   alt={`Existing image ${index + 1}`}
                   fill
                   className="object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/placeholder-product.png";
+                  }}
                 />
                 <button
                   type="button"

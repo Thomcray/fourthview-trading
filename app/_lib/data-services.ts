@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "./supabase-server";
 
 type Orders = {
@@ -178,30 +179,7 @@ export async function getAllProducts() {
 
   if (error) return null;
 
-  // Sign all image URLs fresh
-  const supabaseAdmin = await createClient(true);
-  const productsWithSignedUrls = await Promise.all(
-    products.map(async (product) => {
-      if (!product.imageUrl?.length) return product;
-
-      const signedUrls = await Promise.all(
-        product.imageUrl.map(async (path: string) => {
-          // Already a full URL (old data before fix) — return as-is
-          if (path.startsWith("http")) return path;
-
-          const { data } = await supabaseAdmin.storage
-            .from("product-images")
-            .createSignedUrl(path, 60 * 60); // 1 hour
-
-          return data?.signedUrl ?? "";
-        }),
-      );
-
-      return { ...product, imageUrl: signedUrls };
-    }),
-  );
-
-  return productsWithSignedUrls;
+  return products;
 }
 
 export async function getProductById(id: number) {

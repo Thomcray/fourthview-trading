@@ -25,9 +25,14 @@ export default withAuth(
     pages: {
       signIn: "/signin",
     },
-  }
+  },
 );
 
 export const config = {
-  matcher: ["/account/:path*", "/cart", "/admin/:path*"],
+  matcher: [
+    "/account/:path*",
+    "/cart",
+    "/admin/:path*",
+    "/((?!api/webhooks|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
