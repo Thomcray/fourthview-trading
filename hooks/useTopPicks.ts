@@ -1,40 +1,9 @@
 "use client";
 
+import { NormalizedProduct } from "@/types/product";
 import { useMemo, useState, useEffect } from "react";
 
-// Base fields that exist in both raw DB products and normalized AppContext products
-interface BaseProduct {
-  id: number;
-  created_at: string;
-  name: string;
-  description: string;
-  categoryId: number;
-  price: number;
-  compareAtPrice?: number;
-  discount?: number;
-  discountType?: string;
-  target: string | null;
-  imageUrl: string[];
-  productType: string;
-  colours: string[];
-  sizes: string[];
-  weight: string;
-  shippingCost: number;
-}
-
-// Optional fields that may be added by normaliser
-interface NormalizedFields {
-  slug?: string;
-  _groupKeys?: {
-    byProductType: string;
-    byTarget: string;
-  };
-}
-
-// Union type: accepts both raw and normalized products
-type TopPickProduct = BaseProduct & NormalizedFields;
-
-interface TopPick extends TopPickProduct {
+interface TopPick extends NormalizedProduct {
   badge?: string;
   score: number;
   reasons: string[];
@@ -49,7 +18,7 @@ interface UseTopPicksOptions {
 }
 
 export function useTopPicks(
-  products: TopPickProduct[],
+  products: NormalizedProduct[] | undefined | null,
   categorySlug: string = "",
   options: UseTopPicksOptions = {},
 ): TopPick[] {
@@ -61,7 +30,8 @@ export function useTopPicks(
   } = options;
 
   const stableTopItems = useMemo(() => {
-    // Filter by slug only if categorySlug is provided AND product has slug
+    if (!Array.isArray(products)) return [];
+
     const categoryProducts = categorySlug
       ? products.filter((p) => p.slug === categorySlug)
       : products;
@@ -97,7 +67,8 @@ export function useTopPicks(
         score -= 100;
       }
 
-      if (product.discount && product.discount > 0) {
+      // Handle null discount from NormalizedProduct
+      if (product.discount != null && product.discount > 0) {
         score += Math.min(product.discount * 1.2, 30);
         reasons.push(`${product.discount}% off`);
       }
@@ -122,7 +93,7 @@ export function useTopPicks(
 
       const effectiveCompareAt =
         product.compareAtPrice ||
-        (product.discount
+        (product.discount != null && product.discount > 0
           ? product.price / (1 - product.discount / 100)
           : null);
 
@@ -206,4 +177,4 @@ export function useTopPicks(
   return topPicks;
 }
 
-export type { BaseProduct, NormalizedFields, TopPickProduct, TopPick };
+export type { TopPick };

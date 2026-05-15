@@ -76,7 +76,14 @@ export async function getCategories() {
     .select("id, created_at, name, slug, image_url")
     .order("name");
 
-  if (error) return null;
+  if (error) {
+    console.error("Failed to fetch categories:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    });
+    return [];
+  }
 
   const categoriesWithSignedUrls = await Promise.all(
     categories.map(async (category) => {
@@ -177,9 +184,12 @@ export async function getAllProducts() {
       "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours, sizes, weight, shippingCost",
     );
 
-  if (error) return null;
+  if (error) {
+    console.error("Failed to fetch products:", error.message);
+    return [];
+  }
 
-  return products;
+  return products ?? [];
 }
 
 export async function getProductById(id: number) {
@@ -193,6 +203,7 @@ export async function getProductById(id: number) {
     .single();
 
   if (error) {
+    console.error("Failed to fetch product:", error.message);
     return null;
   }
 

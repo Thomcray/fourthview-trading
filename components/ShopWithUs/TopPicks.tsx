@@ -1,17 +1,18 @@
 "use client";
 
 import { ChevronRight, Sparkles } from "lucide-react";
+import { getPublicImageUrl } from "@/lib/images";
+import { NormalizedProduct } from "@/types/product";
 import { usePathname } from "next/navigation";
-import { useTopPicks, TopPickProduct } from "@/hooks/useTopPicks";
+import { useTopPicks } from "@/hooks/useTopPicks";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import ProductPrice from "../ProductPrice";
 import AddToCart from "../AddToCart";
 import Link from "next/link";
-import { getPublicImageUrl } from "@/lib/images";
 
 interface Props {
-  products: TopPickProduct[];
+  products: NormalizedProduct[];
 }
 export default function TopPicks({ products }: Props) {
   const pathName = usePathname();

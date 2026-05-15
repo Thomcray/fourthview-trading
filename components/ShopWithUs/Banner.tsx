@@ -16,14 +16,11 @@ export default function Banner({
 }: Props) {
   return (
     <div className="w-full border-0 max-sm:overflow-y-scroll border-black flex flex-col space-y-6">
-      {/* topRight positioned above the image, not inside it */}
-      {topRight && (
-        <div className="relative w-full flex justify-end px-4 pt-4 pb-2 z-20">
-          {topRight}
-        </div>
-      )}
-
       <div className="w-full h-96 border-0 relative">
+        {topRight && (
+          <div className="absolute top-4 right-4 z-20">{topRight}</div>
+        )}
+
         <Image
           src={banner}
           alt="banner"

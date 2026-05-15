@@ -1,7 +1,8 @@
 import { createClient } from "./supabase-server";
+import { randomUUID } from "crypto"; // Node.js built-in
 
 export type StoreSettings = {
-  id: number;
+  id: string; // uuid, not number
   storeName: string;
   storeEmail: string;
   storePhone: string;
@@ -19,16 +20,47 @@ export type StoreSettings = {
 
 export async function getStoreSettings(): Promise<StoreSettings | null> {
   const supabase = await createClient();
-  
+
   const { data, error } = await supabase
     .from("storeSettings")
     .select("*")
-    .single();
+    .maybeSingle();
 
+  // Real error (network, RLS, table doesn't exist, etc.)
   if (error) {
-    console.error("Failed to fetch store settings:", error);
+    console.error("Database error fetching store settings:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    });
     return null;
   }
 
+  // Empty table — use fallback defaults
+  if (!data) {
+    console.warn("Store settings table is empty — returning defaults");
+    return getDefaultStoreSettings();
+  }
+
   return data as StoreSettings;
+}
+
+// Fallback defaults when table is empty
+function getDefaultStoreSettings(): StoreSettings {
+  return {
+    id: randomUUID(),
+    storeName: "My Store",
+    storeEmail: "",
+    storePhone: "",
+    storeAddress: "",
+    websiteUrl: "",
+    description: "",
+    whatsapp: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    tiktok: "",
+    youtube: "",
+    updated_at: new Date().toISOString(),
+  };
 }

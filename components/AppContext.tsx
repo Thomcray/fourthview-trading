@@ -54,7 +54,7 @@ type Cart = {
   itemName: string;
   image?: string;
   price?: number;
-  discount?: number;
+  discount?: number | null;
   quantity?: number;
   description?: string;
   size?: string | null;
