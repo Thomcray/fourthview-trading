@@ -29,7 +29,7 @@ export default function SearchResults({ query, products, onClear }: Props) {
         </div>
         <button
           onClick={onClear}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label="Close search results"
         >
           <X className="w-6 h-6 text-gray-500" />

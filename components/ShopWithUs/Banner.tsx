@@ -17,8 +17,13 @@ export default function Banner({
   return (
     <div className="w-full border-0 max-sm:overflow-y-scroll border-black flex flex-col space-y-6">
       <div className="w-full h-96 border-0 relative">
+        {/* Search bar: centered on mobile, top-right on desktop */}
         {topRight && (
-          <div className="absolute top-4 right-4 z-20">{topRight}</div>
+          <div className="absolute inset-0 z-20 flex items-center justify-center sm:items-start sm:justify-end sm:top-4 sm:right-4 sm:inset-auto pointer-events-none">
+            <div className="pointer-events-auto w-full max-w-xs px-4 sm:px-0">
+              {topRight}
+            </div>
+          </div>
         )}
 
         <Image

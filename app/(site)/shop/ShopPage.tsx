@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useMemo, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Product, NormalizedProduct } from "@/types/product";
+import { NormalizedProduct } from "@/types/product";
 import SearchBar from "@/components/shop/SearchBar";
 import SearchResults from "@/components/shop/SearchResults";
 import ShopByCategory from "@/components/ShopWithUs/ShopByCategory";
@@ -15,66 +15,36 @@ import BannerOverlay from "@/components/ShopWithUs/BannerOverlay";
 import shopBanner from "@/public/shopBanner.png";
 
 interface Props {
-  initialQuery: string;
-  products: Product[];
+  products: NormalizedProduct[];
 }
 
-function deriveSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60);
-}
-
-export default function ShopPage({ initialQuery, products }: Props) {
+export default function ShopPage({ products }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Normalize products with slug and group keys
-  const normalizedProducts = useMemo<NormalizedProduct[]>(() => {
-    return products.map((p) => ({
-      ...p,
-      slug: deriveSlug(p.name),
-      _groupKeys: {
-        byProductType: (p.productType ?? "Other").toLowerCase().trim(),
-        byTarget: (p.target ?? "General").toLowerCase().trim(),
-      },
-    }));
-  }, [products]);
-
-  const [activeQuery, setActiveQuery] = useState(initialQuery);
-
-  // Sync with URL changes (back/forward)
-  useEffect(() => {
-    const queryFromUrl = searchParams.get("q") ?? "";
-    if (queryFromUrl !== activeQuery) {
-      setActiveQuery(queryFromUrl);
-    }
-  }, [searchParams, activeQuery]);
+  // URL is the single source of truth — no local state needed
+  const activeQuery = searchParams.get("q") ?? "";
+  const isSearching = activeQuery.trim().length > 0;
 
   const filteredProducts = useMemo(() => {
     if (!activeQuery.trim()) return [];
     const q = activeQuery.toLowerCase();
-    return normalizedProducts.filter((p) => p.name.toLowerCase().includes(q));
-  }, [activeQuery, normalizedProducts]);
-
-  const isSearching = activeQuery.trim().length > 0;
+    return products.filter((p) => p.name.toLowerCase().includes(q));
+  }, [activeQuery, products]);
 
   const handleSearch = useCallback(
     (query: string) => {
-      setActiveQuery(query);
       const params = new URLSearchParams();
-      params.set("q", query);
-      router.push(`${pathname}?${params}`, { scroll: false });
+      if (query.trim()) params.set("q", query.trim());
+      router.push(params.toString() ? `${pathname}?${params}` : pathname, {
+        scroll: false,
+      });
     },
     [pathname, router],
   );
 
   const handleClear = useCallback(() => {
-    setActiveQuery("");
     router.push(pathname, { scroll: false });
   }, [pathname, router]);
 
@@ -96,10 +66,11 @@ export default function ShopPage({ initialQuery, products }: Props) {
       <AnimatePresence>
         {isSearching && (
           <motion.div
+            key="search-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-40 bg-white/95 backdrop-blur-sm overflow-y-auto pt-32 pb-12 px-4"
           >
             <SearchResults
@@ -114,8 +85,8 @@ export default function ShopPage({ initialQuery, products }: Props) {
       {!isSearching && (
         <>
           <ShopByCategory />
-          <TopPicks products={normalizedProducts} />
-          <OnSale products={normalizedProducts} />
+          <TopPicks products={products} />
+          <OnSale products={products} />
         </>
       )}
     </section>

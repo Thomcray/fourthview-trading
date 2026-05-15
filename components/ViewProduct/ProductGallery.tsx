@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Loader2, X, ZoomIn } from "lucide-react";
 import Image from "next/image";
 import { getPublicImageUrl } from "@/lib/images";
@@ -22,8 +22,17 @@ export default function ProductGallery({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const [isMobile, setIsMobile] = useState(false);
 
   const currentImage = product.imageUrl[imageIdx] ?? product.imageUrl[0];
+
+  // Detect mobile on mount
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -33,12 +42,12 @@ export default function ProductGallery({
   }, []);
 
   const handleMouseEnter = useCallback(() => {
-    setIsZoomed(true);
-  }, []);
+    if (!isMobile) setIsZoomed(true);
+  }, [isMobile]);
 
   const handleMouseLeave = useCallback(() => {
     setIsZoomed(false);
-    setMousePosition({ x: 50, y: 50 }); // Reset to center
+    setMousePosition({ x: 50, y: 50 });
   }, []);
 
   const openModal = useCallback(() => {
@@ -52,7 +61,6 @@ export default function ProductGallery({
   return (
     <>
       <div className="flex flex-col gap-4 lg:w-2/5">
-        {/* Main image with zoom */}
         <div
           className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-zoom-in group"
           onMouseMove={handleMouseMove}
@@ -60,14 +68,12 @@ export default function ProductGallery({
           onMouseLeave={handleMouseLeave}
           onClick={openModal}
         >
-          {/* Loading spinner overlay */}
           {imageLoading && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm">
               <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
             </div>
           )}
 
-          {/* Base image - hidden when zoomed */}
           <Image
             src={getPublicImageUrl(currentImage)}
             alt={product.name}
@@ -80,7 +86,6 @@ export default function ProductGallery({
             sizes="(max-width: 1024px) 50vw, 40vw"
           />
 
-          {/* Zoomed image overlay */}
           {isZoomed && (
             <div
               className="absolute inset-0 z-10"
@@ -93,12 +98,11 @@ export default function ProductGallery({
             />
           )}
 
-          {/* Zoom icon indicator */}
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30 pointer-events-none">
             <ZoomIn className="w-4 h-4 text-slate-600" />
           </div>
 
-          {product.discount && (
+          {product.discount != null && product.discount > 0 && (
             <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-30">
               -{product.discount}% OFF
             </span>
@@ -106,7 +110,6 @@ export default function ProductGallery({
         </div>
       </div>
 
-      {/* Full-screen modal */}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"

@@ -38,7 +38,7 @@ export default function SearchBar({ initialQuery, onSearch, onClear }: Props) {
   }, [onClear]);
 
   return (
-    <div className="relative w-64 sm:w-80">
+    <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
       <button
         onClick={handleSubmit}
         className="absolute left-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-100 transition-colors z-10"
@@ -54,7 +54,7 @@ export default function SearchBar({ initialQuery, onSearch, onClear }: Props) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="pl-12 pr-10 py-5 text-base rounded-xl border-gray-200 focus:border-blue-400 bg-white/95 backdrop-blur-sm shadow-lg"
+        className="pl-12 pr-10 py-5 text-base rounded-xl border-gray-200 focus:border-blue-400 bg-white/95 backdrop-blur-sm shadow-lg w-full"
       />
 
       {query && (

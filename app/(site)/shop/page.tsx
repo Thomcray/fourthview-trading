@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getAllProducts } from "@/app/_lib/data-services";
+import { normalizeProducts } from "@/lib/product";
 import ShopPage from "./ShopPage";
 
 export default async function Page({
@@ -7,10 +8,10 @@ export default async function Page({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { q } = await searchParams;
-  const products = await getAllProducts();
+  const rawProducts = await getAllProducts();
+  if (!rawProducts?.length) notFound();
 
-  if (!products) notFound();
+  const products = normalizeProducts(rawProducts);
 
-  return <ShopPage initialQuery={q ?? ""} products={products} />;
+  return <ShopPage products={products} />;
 }
