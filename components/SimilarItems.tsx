@@ -16,8 +16,8 @@ type Item = {
   description: string;
   categoryId: number;
   price: number;
-  discount?: number;
-  discountType?: string;
+  discount?: number | null;
+  discountType?: string | null;
   target: string;
   imageUrl: string[];
   productType: string;
