@@ -36,7 +36,7 @@ export default function SearchResults({ query, products }: Props) {
         <div className="px-6 py-4 bg-linear-to-r from-gray-50 to-white border-b border-gray-100 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-800">
-              Search Results for "{query}"
+              Search Results for &quot;{query}&quot;
             </h2>
             <p className="text-sm text-gray-500 mt-0.5">
               Found {products.length} product{products.length !== 1 ? "s" : ""}
@@ -54,7 +54,7 @@ export default function SearchResults({ query, products }: Props) {
               className="p-12 text-center"
             >
               <p className="text-gray-500 text-lg">
-                No products found matching "{query}"
+                No products found matching &quot;{query}&quot;
               </p>
               <p className="text-sm text-gray-400 mt-2">
                 Try searching with different keywords
