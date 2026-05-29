@@ -175,12 +175,12 @@ export default function SignupForm() {
             />
             {showPassword ? (
               <Eye
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 cursor-pointer hover:text-gray-600"
                 onClick={() => setShowPassword(!showPassword)}
               />
             ) : (
               <EyeClosed
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 cursor-pointer hover:text-gray-600"
                 onClick={() => setShowPassword(!showPassword)}
               />
             )}

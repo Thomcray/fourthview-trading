@@ -29,10 +29,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: [
-    "/account/:path*",
-    "/cart",
-    "/admin/:path*",
-    "/((?!api/webhooks|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/account/:path*", "/cart", "/admin/:path*"],
 };
