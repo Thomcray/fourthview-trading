@@ -38,7 +38,7 @@ export default function page() {
               Already have an account?{" "}
               <a
                 href="/signin"
-                className="text-blue-950 hover:underline font-medium"
+                className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
               >
                 Sign In
               </a>

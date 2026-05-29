@@ -192,7 +192,7 @@ export default function SignupForm() {
 
       <Button
         type="submit"
-        className="w-full py-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200"
+        className="w-full py-6 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 cursor-pointer"
         disabled={isPending}
       >
         {isPending ? "Creating Account..." : "Create Account"}
