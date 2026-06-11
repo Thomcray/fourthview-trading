@@ -9,15 +9,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArrowDown } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
-import exchangerates from "./ChangeMoney/exCurr";
-
-type ExCurr = {
-  from: string;
-  to: string;
-  rate: number;
-  available: boolean;
-};
+import { Dispatch, SetStateAction, useMemo } from "react";
+import exchangerates, { type ExCurr } from "./ChangeMoney/exCurr";
+import { useCurrency } from "./CurrencyContext";
 
 type Props = {
   purpose?: string;
@@ -40,9 +34,30 @@ export function Dropdown({
   setCurrency,
   setSelectedCurr,
 }: Props) {
+  const { rates } = useCurrency();
+
+  const availableRates: ExCurr[] = useMemo(() => {
+    return exchangerates
+      .filter((r) => r.available)
+      .map((r) => {
+        let liveRate = r.rate;
+
+        if (r.from === "Naira" && r.to === "Yuan" && rates?.NGN) {
+          liveRate = 1 / rates.NGN;
+        }
+
+        if (r.from === "USDT" && r.to === "Yuan" && rates?.USD) {
+          liveRate = 1 / rates.USD;
+        }
+
+        return { ...r, rate: liveRate };
+      });
+  }, [rates]);
+
   function handleCurr(selectedCurr: ExCurr) {
     setSelectedCurr!(selectedCurr);
   }
+
   return (
     <div className={`${type === "booking" ? "w-80" : "w-full"}`}>
       {type === "booking" && (
@@ -53,8 +68,6 @@ export function Dropdown({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            {/* <DropdownMenuLabel>Please select purpose</DropdownMenuLabel> */}
-            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuRadioGroup value={purpose} onValueChange={setPurpose}>
               <DropdownMenuRadioItem value="Factory Visit">
                 Factory Visit
@@ -70,39 +83,42 @@ export function Dropdown({
       {type === "exchange" && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="w-full rounded-md">
-            <div className="border flex flex-row justify-between items-center rounded-md w-full">
-              <p className="text-sm text-semibold px-2">
-                {currency ? currency : " Choose Currency"}
+            <div className="border flex flex-row justify-between items-center rounded-md w-full cursor-pointer">
+              <p className="text-sm font-semibold px-2">
+                {currency ? currency : "Choose Currency"}
               </p>
               <Button variant="ghost" className="border-0">
                 <ArrowDown />
               </Button>
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 border-0" align="end">
-            {/* <DropdownMenuLabel>Please select purpose</DropdownMenuLabel> */}
-            {/* <DropdownMenuSeparator /> */}
-            {exchangerates.map((rate) => (
-              <DropdownMenuRadioGroup
-                value={currency}
-                onValueChange={(value) => {
-                  setCurrency!(value);
-
-                  const selectedRate = exchangerates.find(
-                    (r) => r.from + " - " + r.to === value,
-                  );
-
-                  if (selectedRate) {
-                    handleCurr(selectedRate);
-                  }
-                }}
-                key={`${rate.from}-${rate.to}`}
-              >
-                <DropdownMenuRadioItem value={rate.from + " - " + rate.to}>
-                  {rate.from} - {rate.to}
+          <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuRadioGroup
+              value={currency}
+              onValueChange={(value) => {
+                setCurrency!(value);
+                const selectedRate = availableRates.find(
+                  (r) => `${r.from} - ${r.to}` === value,
+                );
+                if (selectedRate) {
+                  handleCurr(selectedRate);
+                }
+              }}
+            >
+              {availableRates.map((rate) => (
+                <DropdownMenuRadioItem
+                  key={`${rate.from}-${rate.to}`}
+                  value={`${rate.from} - ${rate.to}`}
+                >
+                  {rate.from} → {rate.to}
+                  {rate.rate > 0 && (
+                    <span className="ml-auto text-xs text-gray-400">
+                      ={rate.rate.toFixed(4)}
+                    </span>
+                  )}
                 </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            ))}
+              ))}
+            </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
@@ -110,8 +126,8 @@ export function Dropdown({
       {type === "method" && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="border flex flex-row justify-between items-center rounded-md w-full">
-              <p className="text-sm text-semibold px-2">
+            <div className="border flex flex-row justify-between items-center rounded-md w-full cursor-pointer">
+              <p className="text-sm font-semibold px-2">
                 {method ? method : "Payment Method"}
               </p>
               <Button variant="ghost" className="border-0">
@@ -120,8 +136,6 @@ export function Dropdown({
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end">
-            {/* <DropdownMenuLabel>Please select purpose</DropdownMenuLabel> */}
-            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuRadioGroup value={method} onValueChange={setMethod}>
               <DropdownMenuRadioItem value="Bank Transfer">
                 Bank Transfer

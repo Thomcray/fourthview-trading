@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import currencyImage from "@/public/currencyImage.png";
-import { Button } from "@/components/ui/button";
 import {
   Mail,
   MessageCircle,
@@ -12,50 +11,64 @@ import {
   Shield,
   Clock,
   ArrowRight,
-  Construction,
+  CreditCard,
+  Upload,
+  QrCode,
+  FileText,
+  Phone,
+  CheckCircle,
 } from "lucide-react";
-// import exchangerates from "@/components/ChangeMoney/exCurr";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
 import { useSettings } from "@/components/SettingsProvider";
+import { ExchangeModal } from "@/components/ExchangeModal";
 
 type Steps = {
   id: number;
   step: string;
   description?: string;
-};
-
-type ExchangeRate = {
-  from: string;
-  to: string;
-  rate: number;
-  available: boolean;
+  icon: React.ElementType;
 };
 
 export default function CurrencyExchangePage() {
   const settings = useSettings();
-  const [copiedRate, setCopiedRate] = useState<string | null>(null);
 
   const steps: Steps[] = [
     {
       id: 1,
-      step: "Choose currencies you wish to change",
-      description: "Select from our supported currency pairs",
+      icon: CreditCard,
+      step: "Make Payment",
+      description: "Complete your payment using your preferred method",
     },
     {
       id: 2,
-      step: "Enter amount you wish to convert",
-      description: "Get automatic feedback on the amount you'll receive",
+      icon: Upload,
+      step: "Upload Receipt",
+      description: "Upload a screenshot or photo of your payment receipt",
     },
     {
       id: 3,
-      step: "Select payment method",
-      description: "Choose from our provider options",
+      icon: QrCode,
+      step: "Upload WeChat / Alipay QR Code",
+      description: "Provide your WeChat or Alipay QR code for the transfer",
     },
     {
       id: 4,
-      step: "Make transfer",
-      description: "Take a screenshot or print receipt",
+      icon: FileText,
+      step: "Add Narration",
+      description: "Include any payment notes or narration if needed",
+    },
+    {
+      id: 5,
+      icon: Phone,
+      step: "WhatsApp & Email",
+      description: "Provide your WhatsApp number and email address",
+    },
+    {
+      id: 6,
+      icon: CheckCircle,
+      step: "Done!",
+      description:
+        "We'll review your submission and contact you in a few minutes",
     },
   ];
 
@@ -68,19 +81,6 @@ export default function CurrencyExchangePage() {
     { icon: Shield, title: "Secure", description: "100% secure transactions" },
     { icon: Clock, title: "Fast", description: "Quick processing time" },
   ];
-
-  const handleCopyRate = (rate: number, pair: string) => {
-    navigator.clipboard.writeText(rate.toString());
-    setCopiedRate(pair);
-    setTimeout(() => setCopiedRate(null), 2000);
-  };
-
-  const handleComingSoon = () => {
-    toast.info("Coming Soon!", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  };
 
   return (
     <div className="min-h-screen bg-linear-to-b from-white to-gray-50">
@@ -108,15 +108,7 @@ export default function CurrencyExchangePage() {
                   reliable currency exchange.
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-                  {/* <ExchangeModal /> */}
-                  <Button
-                    variant="outline"
-                    className="border-blue-200 hover:bg-blue-50 cursor-pointer"
-                    onClick={handleComingSoon}
-                  >
-                    Get Started
-                    <ArrowRight className="w-4 h-4 ml-2 cursor-pointer" />
-                  </Button>
+                  <ExchangeModal />
                 </div>
               </motion.div>
             </div>
@@ -176,58 +168,17 @@ export default function CurrencyExchangePage() {
         </div>
       </section>
 
-      {/* Current Rates Section - Coming Soon */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-blue-950 mb-4">
-              Current Exchange Rates
-            </h2>
-            <p className="text-gray-600">
-              Real-time rates updated every minute
-            </p>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-md mx-auto"
-          >
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Construction className="w-10 h-10 text-blue-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-blue-950 mb-3">
-                Coming Soon
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Our exchange rate dashboard is under development. Check back
-                soon for live rates!
-              </p>
-              <Button
-                onClick={handleComingSoon}
-                variant="outline"
-                className="border-blue-200 hover:bg-blue-50 cursor-pointer"
-              >
-                Notify Me When Live
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
       <section className="py-16 bg-blue-950">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-4">How It Works</h2>
             <p className="text-blue-200 max-w-2xl mx-auto">
-              Exchange currency in 4 simple steps
+              Exchange currency in 6 simple steps
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {steps.map((step, index) => (
               <motion.div
                 key={step.id}
@@ -236,18 +187,14 @@ export default function CurrencyExchangePage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="relative flex flex-col items-center"
               >
-                {/* Connector line - hidden on last item and mobile */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-blue-400/30"></div>
-                )}
-
                 <div className="w-16 h-16 bg-blue-800 rounded-full flex items-center justify-center mb-4 border-2 border-blue-400 shrink-0 relative z-10">
-                  <span className="text-white font-bold text-xl">
-                    {step.id}
-                  </span>
+                  <step.icon className="w-7 h-7 text-blue-200" />
                 </div>
 
                 <div className="bg-blue-800/30 rounded-lg p-4 backdrop-blur-sm text-center w-full">
+                  <div className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">
+                    Step {step.id}
+                  </div>
                   <p className="text-white text-sm font-medium mb-2">
                     {step.step}
                   </p>
@@ -257,14 +204,8 @@ export default function CurrencyExchangePage() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <Button
-              onClick={handleComingSoon}
-              className="bg-white text-blue-950 hover:bg-blue-50 cursor-pointer"
-            >
-              Get Started
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+          <div className="flex justify-center text-center mt-12">
+            <ExchangeModal />
           </div>
         </div>
       </section>
