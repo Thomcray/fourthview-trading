@@ -36,6 +36,8 @@ export function Dropdown({
 }: Props) {
   const { rates } = useCurrency();
 
+  // All rates in CurrencyContext are "units of that currency per 1 CNY (Yuan)".
+  // NGN = Naira per 1 Yuan  |  USD ≈ USDT per 1 Yuan  |  CNY = 1 (base)
   const availableRates: ExCurr[] = useMemo(() => {
     return exchangerates
       .filter((r) => r.available)
@@ -43,11 +45,23 @@ export function Dropdown({
         let liveRate = r.rate;
 
         if (r.from === "Naira" && r.to === "Yuan" && rates?.NGN) {
+          // 1 Naira = 1/NGN Yuan
           liveRate = 1 / rates.NGN;
         }
 
+        if (r.from === "Yuan" && r.to === "Naira" && rates?.NGN) {
+          // 1 Yuan = NGN Naira
+          liveRate = rates.NGN;
+        }
+
         if (r.from === "USDT" && r.to === "Yuan" && rates?.USD) {
+          // 1 USDT ≈ 1 USD = 1/USD Yuan
           liveRate = 1 / rates.USD;
+        }
+
+        if (r.from === "Yuan" && r.to === "USDT" && rates?.USD) {
+          // 1 Yuan = USD USDT
+          liveRate = rates.USD;
         }
 
         return { ...r, rate: liveRate };
@@ -140,8 +154,8 @@ export function Dropdown({
               <DropdownMenuRadioItem value="Bank Transfer">
                 Bank Transfer
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="Mobile Money">
-                Mobile Money
+              <DropdownMenuRadioItem value="QR Code">
+                QR Code
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
