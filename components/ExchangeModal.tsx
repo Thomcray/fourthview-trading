@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dropdown } from "./Dropdown";
 import { useState, useEffect } from "react";
+import { useSettings } from "@/components/SettingsProvider";
 import { Label } from "./ui/label";
 import {
   ArrowRightLeft,
@@ -22,7 +23,6 @@ import {
   X,
   CheckCircle,
   AlertCircle,
-  CreditCard,
   QrCode,
   FileText,
   Phone,
@@ -30,6 +30,9 @@ import {
   Copy,
   Building2,
   Wallet,
+  Banknote,
+  CircleDollarSign,
+  MessageCircle,
 } from "lucide-react";
 
 type ExCurr = {
@@ -39,22 +42,61 @@ type ExCurr = {
   available: boolean;
 };
 
-// ── Hardcoded payment details (swap these out when going live) ──
-const BANK_DETAILS = {
+// ── Admin payment destinations (where the user sends money TO) ──
+const ADMIN_BANK = {
+  // Naira → Yuan: user sends Naira to this account
   accountName: "PLACEHOLDER NAME",
   accountNumber: "0000000000",
   bankName: "PLACEHOLDER BANK",
 };
 
-const WALLET_DETAILS = {
+const ADMIN_QR = {
+  // Yuan → Naira, Yuan → USDT: user sends Yuan to this QR
+  imageUrl: "",
+  accountName: "PLACEHOLDER NAME",
+};
+
+const ADMIN_WALLET = {
+  // USDT → Yuan: user sends USDT to this wallet
   walletId: "PLACEHOLDER_WALLET_ADDRESS",
   network: "TRC20 (TRON)",
 };
-// ────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────
+
+function getPaymentMethod(curr: ExCurr | null) {
+  if (!curr) return null;
+  const key = `${curr.from}-${curr.to}`;
+  const map: Record<
+    string,
+    { label: string; icon: React.ElementType; color: string }
+  > = {
+    "Naira-Yuan": {
+      label: "Bank Transfer",
+      icon: Banknote,
+      color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    },
+    "Yuan-Naira": {
+      label: "WeChat / Alipay",
+      icon: QrCode,
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+    },
+    "USDT-Yuan": {
+      label: "Crypto Transfer",
+      icon: CircleDollarSign,
+      color: "text-violet-600 bg-violet-50 border-violet-200",
+    },
+    "Yuan-USDT": {
+      label: "WeChat / Alipay",
+      icon: QrCode,
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+    },
+  };
+  return map[key] ?? null;
+}
 
 export function ExchangeModal() {
   const [open, setOpen] = useState(false);
-  const [method, setMethod] = useState<string>("");
+  const { whatsapp: adminWhatsapp } = useSettings();
   const [currency, setCurrency] = useState<string>("");
   const [toValue, setToValue] = useState<number | null>(null);
   const [fromValue, setFromValue] = useState<number | null>(null);
@@ -62,13 +104,14 @@ export function ExchangeModal() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  // Step 2: Receipt
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
-  // Step 3: WeChat/Alipay QR code
-  const [qrFile, setQrFile] = useState<File | null>(null);
-  // Step 4: Narration
+  // User provides these to receive their money
+  const [receiptFile, setReceiptFile] = useState<File | null>(null); // proof of payment (all pairs)
+  const [userQrFile, setUserQrFile] = useState<File | null>(null); // Naira→Yuan, USDT→Yuan
+  const [userBankName, setUserBankName] = useState<string>(""); // Yuan→Naira
+  const [userAccountName, setUserAccountName] = useState<string>(""); // Yuan→Naira
+  const [userAccountNumber, setUserAccountNumber] = useState<string>(""); // Yuan→Naira
+  const [userWalletAddress, setUserWalletAddress] = useState<string>(""); // Yuan→USDT
   const [narration, setNarration] = useState<string>("");
-  // Step 5: Contact info
   const [whatsapp, setWhatsapp] = useState<string>("");
   const [email, setEmail] = useState<string>("");
 
@@ -79,10 +122,13 @@ export function ExchangeModal() {
         setToValue(null);
         setFromValue(null);
         setCurrency("");
-        setMethod("");
         setSelectedCurr(null);
         setReceiptFile(null);
-        setQrFile(null);
+        setUserQrFile(null);
+        setUserBankName("");
+        setUserAccountName("");
+        setUserAccountNumber("");
+        setUserWalletAddress("");
         setNarration("");
         setWhatsapp("");
         setEmail("");
@@ -124,17 +170,36 @@ export function ExchangeModal() {
     }
   };
 
+  // Pair flags
+  const isNairaToYuan =
+    selectedCurr?.from === "Naira" && selectedCurr?.to === "Yuan";
+  const isYuanToNaira =
+    selectedCurr?.from === "Yuan" && selectedCurr?.to === "Naira";
+  const isUsdtToYuan =
+    selectedCurr?.from === "USDT" && selectedCurr?.to === "Yuan";
+  const isYuanToUsdt =
+    selectedCurr?.from === "Yuan" && selectedCurr?.to === "USDT";
+
+  const paymentMethod = getPaymentMethod(selectedCurr);
+
+  // What the user needs to provide to receive their money
+  const userProvidesQr = isNairaToYuan || isUsdtToYuan;
+  const userProvidesBank = isYuanToNaira;
+  const userProvidesWallet = isYuanToUsdt;
+
   const isFormValid = () => {
-    return (
-      selectedCurr?.available &&
-      toValue &&
-      toValue > 0 &&
-      method &&
-      receiptFile &&
-      qrFile &&
-      whatsapp.trim() &&
-      email.trim()
-    );
+    if (!selectedCurr?.available || !toValue || toValue <= 0 || !receiptFile)
+      return false;
+    if (userProvidesQr && !userQrFile) return false;
+    if (
+      userProvidesBank &&
+      (!userBankName.trim() ||
+        !userAccountName.trim() ||
+        !userAccountNumber.trim())
+    )
+      return false;
+    if (userProvidesWallet && !userWalletAddress.trim()) return false;
+    return !!(whatsapp.trim() && email.trim());
   };
 
   const handleSubmit = () => {
@@ -143,9 +208,6 @@ export function ExchangeModal() {
       handleOpenChange(false);
     }
   };
-
-  const isNairaToYuan = selectedCurr?.from === "Naira";
-  const isUsdtToYuan = selectedCurr?.from === "USDT";
 
   const FileUploadSlot = ({
     file,
@@ -211,13 +273,11 @@ export function ExchangeModal() {
     </button>
   );
 
-  // Progressive disclosure flags
   const showAmounts = !!selectedCurr?.available;
-  const showMethod = !!(showAmounts && toValue && toValue > 0);
-  const showPaymentDetails = !!method;
+  const showPaymentDetails = !!(showAmounts && toValue && toValue > 0);
   const showReceipt = showPaymentDetails;
-  const showQr = !!receiptFile;
-  const showNarration = !!qrFile;
+  const showUserDetails = !!receiptFile;
+  const showNarration = showUserDetails;
   const showContact = showNarration;
 
   return (
@@ -241,7 +301,7 @@ export function ExchangeModal() {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* ── Step 1a: Currency pair ── */}
+          {/* ── Currency pair ── */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-700">
               Select Currency Pair
@@ -260,7 +320,22 @@ export function ExchangeModal() {
             )}
           </div>
 
-          {/* Exchange rate pill */}
+          {/* ── Payment method badge ── */}
+          {paymentMethod && (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700">
+                Payment Method
+              </Label>
+              <div
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium ${paymentMethod.color}`}
+              >
+                <paymentMethod.icon className="w-4 h-4" />
+                {paymentMethod.label}
+              </div>
+            </div>
+          )}
+
+          {/* ── Exchange rate pill ── */}
           {showAmounts && (
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
               <div className="flex items-center justify-between">
@@ -276,7 +351,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ── Step 1b: Amount ── */}
+          {/* ── Amount ── */}
           {showAmounts && (
             <div className="space-y-4">
               <Label className="text-sm font-semibold text-gray-700">
@@ -327,23 +402,9 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ── Step 1c: Payment method ── */}
-          {showMethod && (
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700">
-                Payment Method
-              </Label>
-              <Dropdown type="method" method={method} setMethod={setMethod} />
-              {method && (
-                <div className="flex items-center gap-2 text-green-600 text-sm mt-1">
-                  <CreditCard className="w-4 h-4" />
-                  <span>Secure payment processing</span>
-                </div>
-              )}
-            </div>
-          )}
+          {/* ══ ADMIN PAYMENT DESTINATION ══ */}
 
-          {/* ── Payment details card ── */}
+          {/* Naira → Yuan: send Naira to admin's bank account */}
           {showPaymentDetails && isNairaToYuan && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -352,23 +413,23 @@ export function ExchangeModal() {
               </Label>
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
                 <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
-                  Bank Transfer Details
+                  Admin Bank Account
                 </p>
                 {[
                   {
                     label: "Account Name",
-                    value: BANK_DETAILS.accountName,
-                    field: "accountName",
+                    value: ADMIN_BANK.accountName,
+                    field: "adminAccName",
                   },
                   {
                     label: "Account Number",
-                    value: BANK_DETAILS.accountNumber,
-                    field: "accountNumber",
+                    value: ADMIN_BANK.accountNumber,
+                    field: "adminAccNumber",
                   },
                   {
                     label: "Bank",
-                    value: BANK_DETAILS.bankName,
-                    field: "bankName",
+                    value: ADMIN_BANK.bankName,
+                    field: "adminBankName",
                   },
                 ].map(({ label, value, field }) => (
                   <div
@@ -395,51 +456,139 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {showPaymentDetails && isUsdtToYuan && (
+          {/* Yuan → Naira: send Yuan to admin's QR code */}
+          {showPaymentDetails && isYuanToNaira && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-blue-600" />
+                <QrCode className="w-4 h-4 text-blue-600" />
                 Send Payment To
               </Label>
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
                 <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
-                  USDT Wallet Details
+                  Admin WeChat / Alipay
                 </p>
-                {[
-                  {
-                    label: "Wallet Address",
-                    value: WALLET_DETAILS.walletId,
-                    field: "walletId",
-                  },
-                  {
-                    label: "Network",
-                    value: WALLET_DETAILS.network,
-                    field: "network",
-                  },
-                ].map(({ label, value, field }) => (
-                  <div
-                    key={field}
-                    className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100"
-                  >
-                    <div className="min-w-0 mr-2">
-                      <p className="text-xs text-gray-500">{label}</p>
-                      <p className="text-sm font-semibold text-gray-900 break-all">
-                        {value}
+                <div className="flex justify-center">
+                  {ADMIN_QR.imageUrl ? (
+                    <img
+                      src={ADMIN_QR.imageUrl}
+                      alt="Admin QR Code"
+                      className="w-48 h-48 rounded-lg border border-blue-100"
+                    />
+                  ) : (
+                    <div className="w-48 h-48 bg-white rounded-lg border-2 border-dashed border-blue-200 flex flex-col items-center justify-center gap-2">
+                      <QrCode className="w-12 h-12 text-blue-300" />
+                      <p className="text-xs text-blue-400 text-center px-2">
+                        QR code will appear here
                       </p>
                     </div>
-                    <CopyButton text={value} field={field} />
+                  )}
+                </div>
+                <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100">
+                  <div>
+                    <p className="text-xs text-gray-500">Account Name</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {ADMIN_QR.accountName}
+                    </p>
                   </div>
-                ))}
+                  <CopyButton text={ADMIN_QR.accountName} field="adminQrName" />
+                </div>
                 <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
-                  Send exactly <span className="font-bold">{toValue} USDT</span>{" "}
-                  on the {WALLET_DETAILS.network} network, then upload your
+                  Transfer exactly{" "}
+                  <span className="font-bold">
+                    ¥{toValue?.toLocaleString()}
+                  </span>{" "}
+                  then upload your receipt below.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* USDT → Yuan: send USDT to admin's wallet */}
+          {showPaymentDetails && isUsdtToYuan && (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-blue-600" />
+                Get Wallet Address
+              </Label>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
+                <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
+                  Admin USDT Wallet
+                </p>
+                <p className="text-sm text-gray-600">
+                  For security, the wallet address is sent privately. Tap the
+                  button below to request it via WhatsApp.
+                </p>
+                <a
+                  href={`https://wa.me/${adminWhatsapp?.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    `Hi, I'd like to exchange ${toValue} USDT to Yuan. Please send me the wallet address to complete the transfer.`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Request Wallet Address on WhatsApp
+                </a>
+                <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
+                  Once you receive the address and complete the transfer of{" "}
+                  <span className="font-bold">{toValue} USDT</span>, upload your
                   receipt below.
                 </p>
               </div>
             </div>
           )}
 
-          {/* ── Step 2: Upload receipt ── */}
+          {/* Yuan → USDT: send Yuan to admin's QR code */}
+          {showPaymentDetails && isYuanToUsdt && (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-blue-600" />
+                Send Payment To
+              </Label>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
+                <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
+                  Admin WeChat / Alipay
+                </p>
+                <div className="flex justify-center">
+                  {ADMIN_QR.imageUrl ? (
+                    <img
+                      src={ADMIN_QR.imageUrl}
+                      alt="Admin QR Code"
+                      className="w-48 h-48 rounded-lg border border-blue-100"
+                    />
+                  ) : (
+                    <div className="w-48 h-48 bg-white rounded-lg border-2 border-dashed border-blue-200 flex flex-col items-center justify-center gap-2">
+                      <QrCode className="w-12 h-12 text-blue-300" />
+                      <p className="text-xs text-blue-400 text-center px-2">
+                        QR code will appear here
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100">
+                  <div>
+                    <p className="text-xs text-gray-500">Account Name</p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {ADMIN_QR.accountName}
+                    </p>
+                  </div>
+                  <CopyButton
+                    text={ADMIN_QR.accountName}
+                    field="adminQrName2"
+                  />
+                </div>
+                <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
+                  Transfer exactly{" "}
+                  <span className="font-bold">
+                    ¥{toValue?.toLocaleString()}
+                  </span>{" "}
+                  then upload your receipt below.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Receipt upload (all pairs) ── */}
           {showReceipt && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -455,24 +604,79 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ── Step 3: WeChat / Alipay QR code ── */}
-          {showQr && (
+          {/* ══ USER RECEIVE DETAILS ══ */}
+
+          {/* Naira → Yuan & USDT → Yuan: user shares their QR code to receive Yuan */}
+          {showUserDetails && userProvidesQr && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-blue-600" />
-                Upload WeChat / Alipay QR Code
+                Your WeChat / Alipay QR Code
+                <span className="text-gray-400 font-normal text-xs">
+                  (to receive Yuan)
+                </span>
               </Label>
               <FileUploadSlot
-                file={qrFile}
-                onUpload={(e) => handleFileUpload(e, setQrFile)}
-                onRemove={() => setQrFile(null)}
+                file={userQrFile}
+                onUpload={(e) => handleFileUpload(e, setUserQrFile)}
+                onRemove={() => setUserQrFile(null)}
                 accept="image/*"
-                label="Click to upload your WeChat or Alipay QR code"
+                label="Upload your WeChat or Alipay QR code"
               />
             </div>
           )}
 
-          {/* ── Step 4: Narration (optional) ── */}
+          {/* Yuan → Naira: user provides their bank account to receive Naira */}
+          {showUserDetails && userProvidesBank && (
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-blue-600" />
+                Your Bank Account
+                <span className="text-gray-400 font-normal text-xs">
+                  (to receive Naira)
+                </span>
+              </Label>
+              <Input
+                placeholder="Bank Name"
+                value={userBankName}
+                onChange={(e) => setUserBankName(e.target.value)}
+                className="py-5"
+              />
+              <Input
+                placeholder="Account Name"
+                value={userAccountName}
+                onChange={(e) => setUserAccountName(e.target.value)}
+                className="py-5"
+              />
+              <Input
+                placeholder="Account Number"
+                value={userAccountNumber}
+                onChange={(e) => setUserAccountNumber(e.target.value)}
+                className="py-5"
+              />
+            </div>
+          )}
+
+          {/* Yuan → USDT: user provides their wallet address to receive USDT */}
+          {showUserDetails && userProvidesWallet && (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-blue-600" />
+                Your USDT Wallet Address
+                <span className="text-gray-400 font-normal text-xs">
+                  (to receive USDT)
+                </span>
+              </Label>
+              <Input
+                placeholder="Enter your USDT wallet address"
+                value={userWalletAddress}
+                onChange={(e) => setUserWalletAddress(e.target.value)}
+                className="py-5 font-mono text-sm"
+              />
+            </div>
+          )}
+
+          {/* ── Narration (optional) ── */}
           {showNarration && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -489,7 +693,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ── Step 5: Contact info ── */}
+          {/* ── Contact info ── */}
           {showContact && (
             <div className="space-y-4">
               <div className="space-y-2">
@@ -521,7 +725,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ── Step 6: Done banner ── */}
+          {/* ── Done banner ── */}
           {isFormValid() && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
