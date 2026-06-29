@@ -1,0 +1,186 @@
+[
+  {
+    "name": {
+      "common": "Afghanistan",
+      "official": "Islamic Republic of Afghanistan"
+    },
+    "idd": { "root": "+9", "suffixes": ["3"] },
+    "flag": "🇦🇫"
+  },
+  {
+    "name": { "common": "Albania", "official": "Republic of Albania" },
+    "idd": { "root": "+3", "suffixes": ["55"] },
+    "flag": "🇦🇱"
+  },
+  {
+    "name": {
+      "common": "Algeria",
+      "official": "People's Democratic Republic of Algeria"
+    },
+    "idd": { "root": "+2", "suffixes": ["13"] },
+    "flag": "🇩🇿"
+  },
+  {
+    "name": { "common": "Argentina", "official": "Argentine Republic" },
+    "idd": { "root": "+5", "suffixes": ["4"] },
+    "flag": "🇦🇷"
+  },
+  {
+    "name": { "common": "Australia", "official": "Commonwealth of Australia" },
+    "idd": { "root": "+6", "suffixes": ["1"] },
+    "flag": "🇦🇺"
+  },
+  {
+    "name": { "common": "Austria", "official": "Republic of Austria" },
+    "idd": { "root": "+4", "suffixes": ["3"] },
+    "flag": "🇦🇹"
+  },
+  {
+    "name": {
+      "common": "Bangladesh",
+      "official": "People's Republic of Bangladesh"
+    },
+    "idd": { "root": "+8", "suffixes": ["80"] },
+    "flag": "🇧🇩"
+  },
+  {
+    "name": { "common": "Belgium", "official": "Kingdom of Belgium" },
+    "idd": { "root": "+3", "suffixes": ["2"] },
+    "flag": "🇧🇪"
+  },
+  {
+    "name": { "common": "Brazil", "official": "Federative Republic of Brazil" },
+    "idd": { "root": "+5", "suffixes": ["5"] },
+    "flag": "🇧🇷"
+  },
+  {
+    "name": { "common": "Canada", "official": "Canada" },
+    "idd": { "root": "+1", "suffixes": [""] },
+    "flag": "🇨🇦"
+  },
+  {
+    "name": { "common": "China", "official": "People's Republic of China" },
+    "idd": { "root": "+8", "suffixes": ["6"] },
+    "flag": "🇨🇳"
+  },
+  {
+    "name": { "common": "Egypt", "official": "Arab Republic of Egypt" },
+    "idd": { "root": "+2", "suffixes": ["0"] },
+    "flag": "🇪🇬"
+  },
+  {
+    "name": { "common": "France", "official": "French Republic" },
+    "idd": { "root": "+3", "suffixes": ["3"] },
+    "flag": "🇫🇷"
+  },
+  {
+    "name": { "common": "Germany", "official": "Federal Republic of Germany" },
+    "idd": { "root": "+4", "suffixes": ["9"] },
+    "flag": "🇩🇪"
+  },
+  {
+    "name": { "common": "Ghana", "official": "Republic of Ghana" },
+    "idd": { "root": "+2", "suffixes": ["33"] },
+    "flag": "🇬🇭"
+  },
+  {
+    "name": { "common": "India", "official": "Republic of India" },
+    "idd": { "root": "+9", "suffixes": ["1"] },
+    "flag": "🇮🇳"
+  },
+  {
+    "name": { "common": "Indonesia", "official": "Republic of Indonesia" },
+    "idd": { "root": "+6", "suffixes": ["2"] },
+    "flag": "🇮🇩"
+  },
+  {
+    "name": { "common": "Italy", "official": "Italian Republic" },
+    "idd": { "root": "+3", "suffixes": ["9"] },
+    "flag": "🇮🇹"
+  },
+  {
+    "name": { "common": "Japan", "official": "Japan" },
+    "idd": { "root": "+8", "suffixes": ["1"] },
+    "flag": "🇯🇵"
+  },
+  {
+    "name": { "common": "Kenya", "official": "Republic of Kenya" },
+    "idd": { "root": "+2", "suffixes": ["54"] },
+    "flag": "🇰🇪"
+  },
+  {
+    "name": { "common": "Mexico", "official": "United Mexican States" },
+    "idd": { "root": "+5", "suffixes": ["2"] },
+    "flag": "🇲🇽"
+  },
+  {
+    "name": {
+      "common": "Netherlands",
+      "official": "Kingdom of the Netherlands"
+    },
+    "idd": { "root": "+3", "suffixes": ["1"] },
+    "flag": "🇳🇱"
+  },
+  {
+    "name": { "common": "Nigeria", "official": "Federal Republic of Nigeria" },
+    "idd": { "root": "+2", "suffixes": ["34"] },
+    "flag": "🇳🇬"
+  },
+  {
+    "name": {
+      "common": "Pakistan",
+      "official": "Islamic Republic of Pakistan"
+    },
+    "idd": { "root": "+9", "suffixes": ["2"] },
+    "flag": "🇵🇰"
+  },
+  {
+    "name": { "common": "Russia", "official": "Russian Federation" },
+    "idd": { "root": "+7", "suffixes": [""] },
+    "flag": "🇷🇺"
+  },
+  {
+    "name": { "common": "Saudi Arabia", "official": "Kingdom of Saudi Arabia" },
+    "idd": { "root": "+9", "suffixes": ["66"] },
+    "flag": "🇸🇦"
+  },
+  {
+    "name": {
+      "common": "South Africa",
+      "official": "Republic of South Africa"
+    },
+    "idd": { "root": "+2", "suffixes": ["7"] },
+    "flag": "🇿🇦"
+  },
+  {
+    "name": { "common": "South Korea", "official": "Republic of Korea" },
+    "idd": { "root": "+8", "suffixes": ["2"] },
+    "flag": "🇰🇷"
+  },
+  {
+    "name": { "common": "Spain", "official": "Kingdom of Spain" },
+    "idd": { "root": "+3", "suffixes": ["4"] },
+    "flag": "🇪🇸"
+  },
+  {
+    "name": { "common": "Turkey", "official": "Republic of Turkey" },
+    "idd": { "root": "+9", "suffixes": ["0"] },
+    "flag": "🇹🇷"
+  },
+  {
+    "name": {
+      "common": "United Kingdom",
+      "official": "United Kingdom of Great Britain and Northern Ireland"
+    },
+    "idd": { "root": "+4", "suffixes": ["4"] },
+    "flag": "🇬🇧"
+  },
+  {
+    "name": {
+      "common": "United States",
+      "official": "United States of America"
+    },
+    "idd": { "root": "+1", "suffixes": [""] },
+    "flag": "🇺🇸"
+  }
+]

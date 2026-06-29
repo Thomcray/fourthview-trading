@@ -31,7 +31,7 @@ export default async function ProfilePage() {
   }
 
   // Fetch countries first
-  const countries = await getCountries();
+  const countries = getCountries();
 
   // Calculate unique dial codes
   const dialCode: string[] = countries

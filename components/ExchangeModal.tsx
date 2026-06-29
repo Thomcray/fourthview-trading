@@ -42,27 +42,6 @@ type ExCurr = {
   available: boolean;
 };
 
-// ── Admin payment destinations (where the user sends money TO) ──
-const ADMIN_BANK = {
-  // Naira → Yuan: user sends Naira to this account
-  accountName: "PLACEHOLDER NAME",
-  accountNumber: "0000000000",
-  bankName: "PLACEHOLDER BANK",
-};
-
-const ADMIN_QR = {
-  // Yuan → Naira, Yuan → USDT: user sends Yuan to this QR
-  imageUrl: "",
-  accountName: "PLACEHOLDER NAME",
-};
-
-const ADMIN_WALLET = {
-  // USDT → Yuan: user sends USDT to this wallet
-  walletId: "PLACEHOLDER_WALLET_ADDRESS",
-  network: "TRC20 (TRON)",
-};
-// ───────────────────────────────────────────────────────────────
-
 function getPaymentMethod(curr: ExCurr | null) {
   if (!curr) return null;
   const key = `${curr.from}-${curr.to}`;
@@ -96,7 +75,12 @@ function getPaymentMethod(curr: ExCurr | null) {
 
 export function ExchangeModal() {
   const [open, setOpen] = useState(false);
-  const { whatsapp: adminWhatsapp } = useSettings();
+  const {
+    whatsapp: adminWhatsapp,
+    // exchangeBankAccountName,
+    // exchangeBankAccountNumber,
+    // exchangeBankName,
+  } = useSettings();
   const [currency, setCurrency] = useState<string>("");
   const [toValue, setToValue] = useState<number | null>(null);
   const [fromValue, setFromValue] = useState<number | null>(null);
@@ -404,7 +388,7 @@ export function ExchangeModal() {
 
           {/* ══ ADMIN PAYMENT DESTINATION ══ */}
 
-          {/* Naira → Yuan: send Naira to admin's bank account */}
+          {/* Naira → Yuan: send Naira to admin's bank account (dynamic from settings) */}
           {showPaymentDetails && isNairaToYuan && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -418,20 +402,20 @@ export function ExchangeModal() {
                 {[
                   {
                     label: "Account Name",
-                    value: ADMIN_BANK.accountName,
+                    // value: exchangeBankAccountName,
                     field: "adminAccName",
                   },
                   {
                     label: "Account Number",
-                    value: ADMIN_BANK.accountNumber,
+                    // value: exchangeBankAccountNumber,
                     field: "adminAccNumber",
                   },
                   {
                     label: "Bank",
-                    value: ADMIN_BANK.bankName,
+                    // value: exchangeBankName,
                     field: "adminBankName",
                   },
-                ].map(({ label, value, field }) => (
+                ].map(({ label, field }) => (
                   <div
                     key={field}
                     className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100"
@@ -439,10 +423,10 @@ export function ExchangeModal() {
                     <div>
                       <p className="text-xs text-gray-500">{label}</p>
                       <p className="text-sm font-semibold text-gray-900">
-                        {value}
+                        {/* {value || "—"} */}
                       </p>
                     </div>
-                    <CopyButton text={value} field={field} />
+                    {/* {value && <CopyButton text={value} field={field} />} */}
                   </div>
                 ))}
                 <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
@@ -456,54 +440,44 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* Yuan → Naira: send Yuan to admin's QR code */}
+          {/* Yuan → Naira: QR code sent privately via WhatsApp */}
           {showPaymentDetails && isYuanToNaira && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-blue-600" />
-                Send Payment To
+                Get Payment QR Code
               </Label>
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
                 <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
                   Admin WeChat / Alipay
                 </p>
-                <div className="flex justify-center">
-                  {ADMIN_QR.imageUrl ? (
-                    <img
-                      src={ADMIN_QR.imageUrl}
-                      alt="Admin QR Code"
-                      className="w-48 h-48 rounded-lg border border-blue-100"
-                    />
-                  ) : (
-                    <div className="w-48 h-48 bg-white rounded-lg border-2 border-dashed border-blue-200 flex flex-col items-center justify-center gap-2">
-                      <QrCode className="w-12 h-12 text-blue-300" />
-                      <p className="text-xs text-blue-400 text-center px-2">
-                        QR code will appear here
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100">
-                  <div>
-                    <p className="text-xs text-gray-500">Account Name</p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {ADMIN_QR.accountName}
-                    </p>
-                  </div>
-                  <CopyButton text={ADMIN_QR.accountName} field="adminQrName" />
-                </div>
+                <p className="text-sm text-gray-600">
+                  For security, the QR code is sent privately. Tap the button
+                  below to request it via WhatsApp.
+                </p>
+                <a
+                  href={`https://wa.me/${adminWhatsapp?.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    `Hi, I'd like to exchange ${toValue} Yuan to Naira. Please send me your WeChat / Alipay QR code to complete the transfer.`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Request QR Code on WhatsApp
+                </a>
                 <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
-                  Transfer exactly{" "}
+                  Once you receive the QR code and complete the transfer of{" "}
                   <span className="font-bold">
                     ¥{toValue?.toLocaleString()}
-                  </span>{" "}
-                  then upload your receipt below.
+                  </span>
+                  , upload your receipt below.
                 </p>
               </div>
             </div>
           )}
 
-          {/* USDT → Yuan: send USDT to admin's wallet */}
+          {/* USDT → Yuan: wallet address sent privately via WhatsApp */}
           {showPaymentDetails && isUsdtToYuan && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -538,51 +512,38 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* Yuan → USDT: send Yuan to admin's QR code */}
+          {/* Yuan → USDT: QR code sent privately via WhatsApp */}
           {showPaymentDetails && isYuanToUsdt && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-blue-600" />
-                Send Payment To
+                Get Payment QR Code
               </Label>
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
                 <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
                   Admin WeChat / Alipay
                 </p>
-                <div className="flex justify-center">
-                  {ADMIN_QR.imageUrl ? (
-                    <img
-                      src={ADMIN_QR.imageUrl}
-                      alt="Admin QR Code"
-                      className="w-48 h-48 rounded-lg border border-blue-100"
-                    />
-                  ) : (
-                    <div className="w-48 h-48 bg-white rounded-lg border-2 border-dashed border-blue-200 flex flex-col items-center justify-center gap-2">
-                      <QrCode className="w-12 h-12 text-blue-300" />
-                      <p className="text-xs text-blue-400 text-center px-2">
-                        QR code will appear here
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100">
-                  <div>
-                    <p className="text-xs text-gray-500">Account Name</p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {ADMIN_QR.accountName}
-                    </p>
-                  </div>
-                  <CopyButton
-                    text={ADMIN_QR.accountName}
-                    field="adminQrName2"
-                  />
-                </div>
+                <p className="text-sm text-gray-600">
+                  For security, the QR code is sent privately. Tap the button
+                  below to request it via WhatsApp.
+                </p>
+                <a
+                  href={`https://wa.me/${adminWhatsapp?.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    `Hi, I'd like to exchange ${toValue} Yuan to USDT. Please send me your WeChat / Alipay QR code to complete the transfer.`,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Request QR Code on WhatsApp
+                </a>
                 <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
-                  Transfer exactly{" "}
+                  Once you receive the QR code and complete the transfer of{" "}
                   <span className="font-bold">
                     ¥{toValue?.toLocaleString()}
-                  </span>{" "}
-                  then upload your receipt below.
+                  </span>
+                  , upload your receipt below.
                 </p>
               </div>
             </div>

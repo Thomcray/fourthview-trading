@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "./supabase-server";
+import countriesData from "./countries.json";
 
 type Orders = {
   email: string;
@@ -10,7 +11,7 @@ type Orders = {
 };
 
 export async function getUserRole(id: number) {
-  const supabase = await createClient(true); // admin
+  const supabase = await createClient(true);
 
   const { data: userRole, error } = await supabase
     .from("userRole")
@@ -24,7 +25,7 @@ export async function getUserRole(id: number) {
 }
 
 export async function getTempUserByToken(token: string) {
-  const supabase = await createClient(); // regular user
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("tempUsers")
     .select("*")
@@ -37,7 +38,7 @@ export async function getTempUserByToken(token: string) {
 }
 
 export async function getUserByEmail(email: string) {
-  const supabase = await createClient(true); // admin
+  const supabase = await createClient(true);
   const { data, error } = await supabase
     .from("users")
     .select("*")
@@ -51,21 +52,8 @@ export async function getUserByEmail(email: string) {
   return data;
 }
 
-export async function getCountries() {
-  try {
-    const res = await fetch(
-      "https://restcountries.com/v3.1/all?fields=name,flag,idd",
-      { next: { revalidate: 86400 } }, // cache for 24 hours
-    );
-
-    if (!res.ok) return []; // return empty array instead of throwing the error
-
-    const countries = await res.json();
-    return countries;
-  } catch (error) {
-    console.error("Error fetching countries:", error);
-    return []; // return empty array instead of throwing the error
-  }
+export function getCountries() {
+  return countriesData;
 }
 
 export async function getCategories() {
@@ -111,7 +99,7 @@ type Category = {
 export async function getCategoryByName(
   name: string,
 ): Promise<Category | null> {
-  const supabase = await createClient(true); // public data
+  const supabase = await createClient(true);
   const { data: category, error } = await supabase
     .from("categories")
     .select("id, name")
@@ -162,7 +150,7 @@ export async function updateCurrentProduct(
   product: Partial<Product>,
   productId: number,
 ) {
-  const supabase = await createClient(true); // admin
+  const supabase = await createClient(true);
   const { data, error } = await supabase
     .from("products")
     .update([product])
@@ -193,7 +181,7 @@ export async function getAllProducts() {
 }
 
 export async function getProductById(id: number) {
-  const supabase = await createClient(); // public data
+  const supabase = await createClient();
   const { data: product, error } = await supabase
     .from("products")
     .select(
@@ -211,7 +199,7 @@ export async function getProductById(id: number) {
 }
 
 export async function newSpecialOrders(orders: Orders) {
-  const supabase = await createClient(true); // user operation
+  const supabase = await createClient(true);
   const { data, error } = await supabase.from("specialOrders").insert([orders]);
 
   if (error) {
