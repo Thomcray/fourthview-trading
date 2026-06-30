@@ -52,6 +52,12 @@ export const fetchCategories = async () => {
   return res.json();
 };
 
+export async function fetchExchangeTransactions() {
+  const res = await fetch("/api/exchange-transactions");
+  if (!res.ok) throw new Error("Failed to fetch exchange transactions");
+  return res.json();
+}
+
 export const fetchRefunds = async () => {
   const res = await fetch("/api/refunds");
   if (!res.ok) throw new Error("Failed to fetch refunds");

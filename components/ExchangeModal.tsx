@@ -11,11 +11,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "./ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dropdown } from "./Dropdown";
 import { useState, useEffect } from "react";
+
 import { useSettings } from "@/components/SettingsProvider";
-import { Label } from "./ui/label";
 import {
   ArrowRightLeft,
   RefreshCw,
@@ -77,9 +78,9 @@ export function ExchangeModal() {
   const [open, setOpen] = useState(false);
   const {
     whatsapp: adminWhatsapp,
-    // exchangeBankAccountName,
-    // exchangeBankAccountNumber,
-    // exchangeBankName,
+    exchangeBankAccountName,
+    exchangeBankAccountNumber,
+    exchangeBankName,
   } = useSettings();
   const [currency, setCurrency] = useState<string>("");
   const [toValue, setToValue] = useState<number | null>(null);
@@ -89,12 +90,12 @@ export function ExchangeModal() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // User provides these to receive their money
-  const [receiptFile, setReceiptFile] = useState<File | null>(null); // proof of payment (all pairs)
-  const [userQrFile, setUserQrFile] = useState<File | null>(null); // Naira→Yuan, USDT→Yuan
-  const [userBankName, setUserBankName] = useState<string>(""); // Yuan→Naira
-  const [userAccountName, setUserAccountName] = useState<string>(""); // Yuan→Naira
-  const [userAccountNumber, setUserAccountNumber] = useState<string>(""); // Yuan→Naira
-  const [userWalletAddress, setUserWalletAddress] = useState<string>(""); // Yuan→USDT
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [userQrFile, setUserQrFile] = useState<File | null>(null);
+  const [userBankName, setUserBankName] = useState<string>("");
+  const [userAccountName, setUserAccountName] = useState<string>("");
+  const [userAccountNumber, setUserAccountNumber] = useState<string>("");
+  const [userWalletAddress, setUserWalletAddress] = useState<string>("");
   const [narration, setNarration] = useState<string>("");
   const [whatsapp, setWhatsapp] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -166,10 +167,15 @@ export function ExchangeModal() {
 
   const paymentMethod = getPaymentMethod(selectedCurr);
 
-  // What the user needs to provide to receive their money
+  // User provide variables
   const userProvidesQr = isNairaToYuan || isUsdtToYuan;
   const userProvidesBank = isYuanToNaira;
   const userProvidesWallet = isYuanToUsdt;
+
+  const isValidEmail = (value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value.trim());
+  };
 
   const isFormValid = () => {
     if (!selectedCurr?.available || !toValue || toValue <= 0 || !receiptFile)
@@ -183,13 +189,48 @@ export function ExchangeModal() {
     )
       return false;
     if (userProvidesWallet && !userWalletAddress.trim()) return false;
-    return !!(whatsapp.trim() && email.trim());
+    return !!(whatsapp.trim() && isValidEmail(email));
   };
 
-  const handleSubmit = () => {
-    if (isFormValid()) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!isFormValid() || !selectedCurr || !receiptFile) return;
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("fromCurrency", selectedCurr.from);
+      formData.append("toCurrency", selectedCurr.to);
+      formData.append("rate", String(selectedCurr.rate));
+      formData.append("sendAmount", String(toValue));
+      formData.append("receiveAmount", String(fromValue));
+      formData.append("receipt", receiptFile);
+      if (userQrFile) formData.append("userQr", userQrFile);
+      if (userBankName) formData.append("userBankName", userBankName);
+      if (userAccountName) formData.append("userAccountName", userAccountName);
+      if (userAccountNumber)
+        formData.append("userAccountNumber", userAccountNumber);
+      if (userWalletAddress)
+        formData.append("userWalletAddress", userWalletAddress);
+      if (narration) formData.append("narration", narration);
+      formData.append("whatsapp", whatsapp);
+      formData.append("email", email);
+
+      const res = await fetch("/api/exchange-transactions", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Submission failed");
+
       alert("Exchange request submitted! We'll contact you in a few minutes.");
       handleOpenChange(false);
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong submitting your request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -386,9 +427,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ══ ADMIN PAYMENT DESTINATION ══ */}
-
-          {/* Naira → Yuan: send Naira to admin's bank account (dynamic from settings) */}
+          {/* Naira to Yuan */}
           {showPaymentDetails && isNairaToYuan && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -402,20 +441,20 @@ export function ExchangeModal() {
                 {[
                   {
                     label: "Account Name",
-                    // value: exchangeBankAccountName,
+                    value: exchangeBankAccountName,
                     field: "adminAccName",
                   },
                   {
                     label: "Account Number",
-                    // value: exchangeBankAccountNumber,
+                    value: exchangeBankAccountNumber,
                     field: "adminAccNumber",
                   },
                   {
                     label: "Bank",
-                    // value: exchangeBankName,
+                    value: exchangeBankName,
                     field: "adminBankName",
                   },
-                ].map(({ label, field }) => (
+                ].map(({ label, value, field }) => (
                   <div
                     key={field}
                     className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-100"
@@ -423,10 +462,10 @@ export function ExchangeModal() {
                     <div>
                       <p className="text-xs text-gray-500">{label}</p>
                       <p className="text-sm font-semibold text-gray-900">
-                        {/* {value || "—"} */}
+                        {value || "—"}
                       </p>
                     </div>
-                    {/* {value && <CopyButton text={value} field={field} />} */}
+                    {value && <CopyButton text={value} field={field} />}
                   </div>
                 ))}
                 <p className="text-xs text-blue-700 bg-blue-100 rounded-lg px-3 py-2">
@@ -440,7 +479,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* Yuan → Naira: QR code sent privately via WhatsApp */}
+          {/* Yuan to Naira */}
           {showPaymentDetails && isYuanToNaira && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -477,7 +516,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* USDT → Yuan: wallet address sent privately via WhatsApp */}
+          {/* USDT to Yuan */}
           {showPaymentDetails && isUsdtToYuan && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -512,7 +551,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* Yuan → USDT: QR code sent privately via WhatsApp */}
+          {/* Yuan to USDT */}
           {showPaymentDetails && isYuanToUsdt && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -565,9 +604,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* ══ USER RECEIVE DETAILS ══ */}
-
-          {/* Naira → Yuan & USDT → Yuan: user shares their QR code to receive Yuan */}
+          {/* Naira to Yuan & USDT to Yuan */}
           {showUserDetails && userProvidesQr && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -587,7 +624,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* Yuan → Naira: user provides their bank account to receive Naira */}
+          {/* Yuan to Naira */}
           {showUserDetails && userProvidesBank && (
             <div className="space-y-3">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -618,7 +655,7 @@ export function ExchangeModal() {
             </div>
           )}
 
-          {/* Yuan → USDT: user provides their wallet address to receive USDT */}
+          {/* Yuan to USDT */}
           {showUserDetails && userProvidesWallet && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -682,6 +719,11 @@ export function ExchangeModal() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="py-5"
                 />
+                {email.trim() && !isValidEmail(email) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Please enter a valid email address
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -705,17 +747,21 @@ export function ExchangeModal() {
 
         <DialogFooter className="border-t pt-4 gap-3">
           <DialogClose asChild>
-            <Button type="button" variant="outline" className="px-6">
+            <Button
+              type="button"
+              variant="outline"
+              className="px-6 cursor-pointer"
+            >
               Cancel
             </Button>
           </DialogClose>
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={!isFormValid()}
-            className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6"
+            disabled={!isFormValid() || isSubmitting}
+            className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 cursor-pointer"
           >
-            Submit Exchange Request
+            {isSubmitting ? "Submitting..." : "Submit Exchange Request"}
           </Button>
         </DialogFooter>
       </DialogContent>

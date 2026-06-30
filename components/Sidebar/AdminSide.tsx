@@ -13,6 +13,7 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
@@ -30,6 +31,7 @@ type BadgeCounts = {
   requests: number;
   tickets: number;
   customers: number;
+  exchangeRequests: number;
 };
 
 export default function AdminSide() {
@@ -65,6 +67,12 @@ export default function AdminSide() {
       link: "/admin/orders-request",
       icon: ShoppingCart,
       badgeKey: "orders",
+    },
+    {
+      title: "Currency Exchange",
+      link: "/admin/exchange-transactions",
+      icon: ArrowRightLeft,
+      badgeKey: "exchangeRequests",
     },
     { title: "Customers", link: "/admin/customers", icon: UsersRound },
     {

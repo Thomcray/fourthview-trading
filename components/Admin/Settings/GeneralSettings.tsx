@@ -21,6 +21,7 @@ import {
   Twitter,
   Youtube,
   Video,
+  PiggyBank,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -39,6 +40,9 @@ type Settings = {
   twitter: string;
   tiktok: string;
   youtube: string;
+  exchangeBankName: string;
+  exchangeBankAccountName: string;
+  exchangeBankAccountNumber: string;
 };
 
 const defaultSettings: Omit<Settings, "id"> = {
@@ -54,6 +58,9 @@ const defaultSettings: Omit<Settings, "id"> = {
   twitter: "",
   tiktok: "",
   youtube: "",
+  exchangeBankName: "",
+  exchangeBankAccountName: "",
+  exchangeBankAccountNumber: "",
 };
 
 export default function GeneralSettings() {
@@ -87,6 +94,11 @@ export default function GeneralSettings() {
             twitter: data.settings.twitter ?? "",
             tiktok: data.settings.tiktok ?? "",
             youtube: data.settings.youtube ?? "",
+            exchangeBankName: data.settings.exchangeBankName ?? "",
+            exchangeBankAccountName:
+              data.settings.exchangeBankAccountName ?? "",
+            exchangeBankAccountNumber:
+              data.settings.exchangeBankAccountNumber ?? "",
           });
         }
       } catch {
@@ -275,6 +287,27 @@ export default function GeneralSettings() {
     },
   ];
 
+  const exchangeFields = [
+    {
+      name: "exchangeBankName",
+      label: "Bank Name",
+      icon: Building2,
+      placeholder: "e.g. GTBank",
+    },
+    {
+      name: "exchangeBankAccountName",
+      label: "Account Name",
+      icon: FileText,
+      placeholder: "e.g. Fourthview Trading Co.",
+    },
+    {
+      name: "exchangeBankAccountNumber",
+      label: "Account Number",
+      icon: PiggyBank,
+      placeholder: "0123456789",
+    },
+  ];
+
   if (isFetching) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -396,6 +429,37 @@ export default function GeneralSettings() {
                   style={{
                     paddingLeft: `${field.prefix.length * 7 + 36}px`,
                   }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Currency Exchange Bank Details */}
+      <div>
+        <h4 className="text-sm font-semibold text-gray-700 mb-1">
+          Currency Exchange - Admin Bank Account
+        </h4>
+        <p className="text-xs text-gray-400 mb-4">
+          Shown to customers exchanging Naira → Yuan so they know where to send
+          payment
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {exchangeFields.map((field) => (
+            <div key={field.name}>
+              <Label className="text-sm font-medium text-gray-700">
+                {field.label}
+              </Label>
+              <div className="relative mt-1.5">
+                <div className="absolute left-3 top-3 text-gray-400">
+                  <field.icon className="w-4 h-4" />
+                </div>
+                <Input
+                  value={settings[field.name as keyof Settings] as string}
+                  onChange={(e) => handleChange(field.name, e.target.value)}
+                  placeholder={field.placeholder}
+                  className="pl-10"
                 />
               </div>
             </div>

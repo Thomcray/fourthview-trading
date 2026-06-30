@@ -76,7 +76,8 @@ export async function PATCH(req: NextRequest) {
     if (error) throw error;
 
     if (oldMargin !== body.rateMargin) {
-      const headerList = await headers(); // ← await here
+      const headerList = await headers();
+
       await supabase.from("ExchangeRateLog").insert({
         adminId: userId,
         oldMargin,

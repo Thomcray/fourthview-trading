@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/app/_lib/supabase-server";
 
 const EXTERNAL_API = "https://open.er-api.com/v6/latest/CNY";
-const CACHE_TTL_MINUTES = 60; // 1 hour, matching your current setup
+const CACHE_TTL_MINUTES = 60; // 1 hour
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

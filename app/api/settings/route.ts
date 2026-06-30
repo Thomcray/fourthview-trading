@@ -6,11 +6,11 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const settings = await getStoreSettings();
-  
+
   if (!settings) {
     return NextResponse.json(
       { error: "Failed to fetch settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -41,6 +41,9 @@ export async function PUT(req: Request) {
       twitter: body.twitter,
       tiktok: body.tiktok,
       youtube: body.youtube,
+      exchangeBankName: body.exchangeBankName,
+      exchangeBankAccountName: body.exchangeBankAccountName,
+      exchangeBankAccountNumber: body.exchangeBankAccountNumber,
       updated_at: new Date().toISOString(),
     })
     .eq("id", body.id)

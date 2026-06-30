@@ -1,8 +1,8 @@
 import { createClient } from "./supabase-server";
-import { randomUUID } from "crypto"; // Node.js built-in
+import { randomUUID } from "crypto";
 
 export type StoreSettings = {
-  id: string; // uuid, not number
+  id: string; // uuid
   storeName: string;
   storeEmail: string;
   storePhone: string;
@@ -15,6 +15,9 @@ export type StoreSettings = {
   twitter: string;
   tiktok: string;
   youtube: string;
+  exchangeBankName: string;
+  exchangeBankAccountName: string;
+  exchangeBankAccountNumber: string;
   updated_at: string;
 };
 
@@ -61,6 +64,9 @@ function getDefaultStoreSettings(): StoreSettings {
     twitter: "",
     tiktok: "",
     youtube: "",
+    exchangeBankName: "",
+    exchangeBankAccountName: "",
+    exchangeBankAccountNumber: "",
     updated_at: new Date().toISOString(),
   };
 }

@@ -7,5 +7,6 @@ export const queryKeys = {
   customers: ["customers"],
   categories: ["categories"],
   exchangeRate: ["exchange-rate"],
+  exchangeTransactions: ["exchangeTransactions"] as const,
   customer: (id: string) => ["customers", id],
 };
