@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableCell } from "@/components/ui/table";
 import AdminTable from "@/components/Admin/AdminTable";
-import ExchangeDetailsModal from "@/components/Admin/ExchangeDetailsModal";
 import { Search, CloudDownload, Eye, ArrowRightLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchExchangeTransactions } from "@/app/_lib/api";
 import { queryKeys } from "@/app/_lib/queryKeys";
 import { toast } from "react-toastify";
+import ExchangeDetailsModal from "@/components/Admin/ExchangeDetailsModal";
 
 type ExchangeTransaction = {
   id: string;
