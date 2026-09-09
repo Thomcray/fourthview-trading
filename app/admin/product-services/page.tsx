@@ -3,9 +3,17 @@
 
 import AddProduct from "@/components/Admin/AddProduct/AddProduct";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, DollarSign, PlusCircle, List, Settings } from "lucide-react";
+import {
+  Package,
+  Car,
+  DollarSign,
+  PlusCircle,
+  List,
+  Settings,
+} from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import AddCar from "@/components/Admin/AddCar/AddCar";
 
 export default function ProductServicesPage() {
   const [activeTab, setActiveTab] = useState("shop");
@@ -16,6 +24,12 @@ export default function ProductServicesPage() {
       label: "Shop With Us",
       icon: Package,
       description: "Add and manage products",
+    },
+    {
+      id: "cars",
+      label: "Cars",
+      icon: Car,
+      description: "Add and manage car listings",
     },
     {
       id: "currency",
@@ -129,6 +143,29 @@ export default function ProductServicesPage() {
                   </div>
                 </div>
                 <AddProduct />
+              </motion.div>
+            </TabsContent>
+
+            {/* Cars Tab */}
+            <TabsContent value="cars" className="p-6">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="mb-6">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-800">
+                        Manage Car Listings
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Add, edit, or remove cars for sale
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <AddCar />
               </motion.div>
             </TabsContent>
 

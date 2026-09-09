@@ -10,6 +10,18 @@ type Orders = {
   whatsapp: string;
 };
 
+type Car = {
+  brandName: string;
+  year: number;
+  condition: string;
+  mileage: number;
+  price: number;
+  shippingCost: number;
+  clearingCost: number;
+  totalPrice: number;
+  imageUrl: string[];
+};
+
 export async function getUserRole(id: number) {
   const supabase = await createClient(true);
 
@@ -208,4 +220,56 @@ export async function newSpecialOrders(orders: Orders) {
   }
 
   return data;
+}
+
+export async function newCar(car: Car) {
+  const supabase = await createClient(true);
+  const { data, error } = await supabase
+    .from("cars")
+    .insert([car])
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Could not create car");
+  }
+
+  return data;
+}
+
+export async function getAllCars() {
+  const supabase = await createClient();
+
+  const { data: cars, error } = await supabase
+    .from("cars")
+    .select(
+      "id, created_at, brandName, year, condition, mileage, price, shippingCost, clearingCost, totalPrice, imageUrl",
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch cars:", error.message);
+    return [];
+  }
+
+  return cars ?? [];
+}
+
+export async function getCarById(id: number) {
+  const supabase = await createClient();
+  const { data: car, error } = await supabase
+    .from("cars")
+    .select(
+      "id, created_at, brandName, year, condition, mileage, price, shippingCost, clearingCost, totalPrice, imageUrl",
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("Failed to fetch car:", error.message);
+    return null;
+  }
+
+  return car;
 }

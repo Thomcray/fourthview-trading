@@ -1,4 +1,3 @@
-// components/FeatureSection.tsx
 "use client";
 
 import Image, { StaticImageData } from "next/image";

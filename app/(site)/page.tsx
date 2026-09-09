@@ -1,3 +1,4 @@
+import CarSection from "@/components/CarSection";
 import FurnitureSection from "@/components/FurnitureSection";
 import Hero from "@/components/Hero";
 import MoneySection from "@/components/MoneySection/MoneySection";
@@ -13,6 +14,7 @@ export default function Home() {
       <MoneySection />
       <ShopWithUs />
       <TravelGuide />
+      <CarSection />
       <FurnitureSection />
       <OpenCompany />
       <StudyInChina />

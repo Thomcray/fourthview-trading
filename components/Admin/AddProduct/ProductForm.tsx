@@ -297,7 +297,7 @@ export default function ProductForm() {
   return (
     <FormDataContext.Provider value={contextValue}>
       <form className="flex flex-col gap-6" onSubmit={handleProduct}>
-        {/* Header - FIXED: Remove any submit button from header */}
+        {/* Header  */}
         <div className="sticky top-0 z-10 bg-white border mt-4 rounded-xl shadow-sm overflow-hidden">
           <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -494,7 +494,7 @@ export default function ProductForm() {
           </motion.div>
         </AnimatePresence>
 
-        {/* FIX: Navigation buttons with proper types */}
+        {/* Navigation buttons */}
         <div className="flex justify-between gap-4 pt-2">
           <Button
             type="button"

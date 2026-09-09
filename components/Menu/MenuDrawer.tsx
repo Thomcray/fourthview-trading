@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import {
   Building2,
+  Car,
   DollarSign,
   ListOrdered,
   PlaneTakeoff,
@@ -44,6 +45,12 @@ const mainMenuItems = [
     path: "/travel",
     icon: PlaneTakeoff,
     color: "text-purple-600",
+  },
+  {
+    title: "Buy a car",
+    path: "/car",
+    icon: Car,
+    color: "text-orange-600",
   },
   {
     title: "Furniture",

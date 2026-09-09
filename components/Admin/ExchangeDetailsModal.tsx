@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   ArrowRightLeft,
   Clock,
@@ -210,7 +209,7 @@ export default function ExchangeDetailsModal({
             </a>
           </div>
 
-          {/* Payout Details — what the customer needs to receive their funds */}
+          {/* Payout Details */}
           {(transaction.userQrUrl ||
             transaction.userBankName ||
             transaction.userWalletAddress) && (
