@@ -3,6 +3,7 @@
 import { deleteExistingImage } from "@/app/_lib/actions/update-product-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getPublicImageUrl } from "@/lib/images";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -119,7 +120,7 @@ export default function ProductMedia({
                 className="relative aspect-square rounded-lg overflow-hidden border bg-slate-50"
               >
                 <Image
-                  src={url}
+                  src={getPublicImageUrl(url)}
                   alt={`Existing image ${index + 1}`}
                   fill
                   className="object-cover"

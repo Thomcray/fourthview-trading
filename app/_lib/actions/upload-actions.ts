@@ -3,7 +3,7 @@
 import { createClient } from "../supabase-server";
 
 export async function uploadProductImage(file: File) {
-  const supabase = await createClient(true); // admin - storage operations need service role
+  const supabase = await createClient(true);
 
   const ext = file.name.split(".").pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;

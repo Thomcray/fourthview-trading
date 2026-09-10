@@ -258,13 +258,14 @@ export async function getAllCars() {
 
 export async function getCarById(id: number) {
   const supabase = await createClient();
+
   const { data: car, error } = await supabase
     .from("cars")
     .select(
       "id, created_at, brandName, year, condition, mileage, price, shippingCost, clearingCost, totalPrice, imageUrl",
     )
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("Failed to fetch car:", error.message);
@@ -272,4 +273,18 @@ export async function getCarById(id: number) {
   }
 
   return car;
+}
+
+export async function updateCurrentCar(car: Partial<Car>, carId: number) {
+  const supabase = await createClient(true);
+  const { data, error } = await supabase
+    .from("cars")
+    .update(car)
+    .eq("id", carId);
+
+  if (error) {
+    throw new Error("Could not update car");
+  }
+
+  return data;
 }
