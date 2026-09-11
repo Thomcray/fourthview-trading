@@ -6,7 +6,7 @@ export default function CarSection() {
     <FeatureSection
       heading="Find your perfect car"
       body="Browse a wide selection of vehicles from trusted dealers and private sellers. Whether you need a reliable daily driver or a premium ride, compare prices, check specs, and drive away with confidence."
-      href="/cars"
+      href="/car"
       image={carImage}
       imageAlt="car-section"
       badge="Vehicles"
