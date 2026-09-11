@@ -120,7 +120,11 @@ export default function ExchangeDetailsModal({
                 <p className="text-xs text-gray-400">Email</p>
                 <div className="flex items-center gap-1">
                   <Mail className="w-3 h-3 text-gray-400" />
-                  <p className="text-sm text-gray-600">{transaction.email}</p>
+                  <p
+                    className={`text-sm text-gray-600 ${transaction.email.length > 20 ? "break-all" : ""}`}
+                  >
+                    {transaction.email}
+                  </p>
                 </div>
               </div>
               <div>

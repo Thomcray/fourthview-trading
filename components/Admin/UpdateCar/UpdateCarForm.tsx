@@ -90,7 +90,7 @@ export default function UpdateCarForm({ car }: { car: CarType }) {
 
     setIsSubmitting(true);
 
-    // Build FormData from state (same approach as your UpdateForm)
+    // Build FormData from state
     const formDataObj = new FormData();
     formDataObj.append("brandName", brandName);
     formDataObj.append("year", year);
@@ -332,7 +332,7 @@ export default function UpdateCarForm({ car }: { car: CarType }) {
               </p>
             </div>
             <p className="text-2xl font-bold text-blue-700">
-              ${totalPrice.toLocaleString()}
+              ¥{totalPrice.toLocaleString()}
             </p>
           </div>
         </div>

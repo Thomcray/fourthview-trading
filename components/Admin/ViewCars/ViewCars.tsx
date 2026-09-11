@@ -274,7 +274,7 @@ export default function ViewCars() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-blue-600">
-                          ${car.totalPrice.toLocaleString()}
+                          ¥{car.totalPrice.toLocaleString()}
                         </span>
                       </div>
 
@@ -340,7 +340,7 @@ export default function ViewCars() {
                             : `${car.mileage.toLocaleString()} km`}
                         </TableCell>
                         <TableCell className="font-semibold text-blue-600">
-                          ${car.totalPrice.toLocaleString()}
+                          ¥{car.totalPrice.toLocaleString()}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

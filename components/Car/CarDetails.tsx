@@ -18,6 +18,8 @@ import {
 
 import CarReviews from "./CarReviews";
 import { getPublicImageUrl } from "@/lib/images";
+import ProductPrice from "../ProductPrice";
+import { useCurrency } from "../CurrencyContext";
 
 // Replace with official business WhatsApp number (country code + number, no "+")
 const WHATSAPP_NUMBER = "2348000000000";
@@ -44,8 +46,10 @@ export default function CarDetails({ car }: { car: CarDetailsProps }) {
 
   const isNew = car.condition === "New";
 
+  const { formatPrice, formatFromNGN } = useCurrency();
+
   const waMessage = encodeURIComponent(
-    `Hello! I'm interested in the ${car.year} ${car.brandName} (ID: ${car.id}) listed at $${Number(car.totalPrice).toLocaleString()}. Is it still available?`,
+    `Hello! I'm interested in the ${car.year} ${car.brandName} (ID: ${car.id}) listed at ${formatPrice(car.totalPrice)}. Is it still available?`,
   );
 
   const specClass =
@@ -152,7 +156,7 @@ export default function CarDetails({ car }: { car: CarDetailsProps }) {
                 <div>
                   <p className="text-sm text-blue-600 mb-1">Total Price</p>
                   <p className="text-3xl font-bold text-blue-900">
-                    ${Number(car.totalPrice).toLocaleString()}
+                    <ProductPrice yuanPrice={car.totalPrice} />
                   </p>
                 </div>
                 <p className="text-xs text-blue-500 text-right">
@@ -164,15 +168,21 @@ export default function CarDetails({ car }: { car: CarDetailsProps }) {
               <div className="border-t border-blue-100 mt-4 pt-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Car price</span>
-                  <span>${Number(car.price).toLocaleString()}</span>
+                  <span>
+                    <ProductPrice yuanPrice={car.price} />
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
-                  <span>${Number(car.shippingCost).toLocaleString()}</span>
+                  <span>
+                    <ProductPrice yuanPrice={car.shippingCost} />
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Clearing</span>
-                  <span>${Number(car.clearingCost).toLocaleString()}</span>
+                  <span>
+                    <ProductPrice yuanPrice={car.clearingCost} />
+                  </span>
                 </div>
               </div>
             </div>

@@ -316,7 +316,7 @@ export default function CarForm() {
               </p>
             </div>
             <p className="text-2xl font-bold text-blue-700">
-              ${totalPrice.toLocaleString()}
+              ¥{totalPrice.toLocaleString()}
             </p>
           </div>
         </div>
