@@ -22,7 +22,21 @@ import { getPublicImageUrl } from "@/lib/images";
 // Replace with official business WhatsApp number (country code + number, no "+")
 const WHATSAPP_NUMBER = "2348000000000";
 
-export default function CarDetails({ car }: { car: any }) {
+type CarDetailsProps = {
+  id: number;
+  created_at: string;
+  brandName: string;
+  year: number;
+  condition: "New" | "Used";
+  mileage: number;
+  price: number;
+  shippingCost: number;
+  clearingCost: number;
+  totalPrice: number;
+  imageUrl: string[];
+};
+
+export default function CarDetails({ car }: { car: CarDetailsProps }) {
   const [activeImage, setActiveImage] = useState(0);
   const images = (car.imageUrl || []).map((url: string) =>
     getPublicImageUrl(url),
