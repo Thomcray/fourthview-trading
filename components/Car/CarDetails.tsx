@@ -21,9 +21,6 @@ import { getPublicImageUrl } from "@/lib/images";
 import ProductPrice from "../ProductPrice";
 import { useCurrency } from "../CurrencyContext";
 
-// Replace with official business WhatsApp number (country code + number, no "+")
-const WHATSAPP_NUMBER = "2348000000000";
-
 type CarDetailsProps = {
   id: number;
   created_at: string;
@@ -38,7 +35,15 @@ type CarDetailsProps = {
   imageUrl: string[];
 };
 
-export default function CarDetails({ car }: { car: CarDetailsProps }) {
+type CarDetailsComponentProps = {
+  car: CarDetailsProps;
+  whatsappNumber?: string;
+};
+
+export default function CarDetails({
+  car,
+  whatsappNumber,
+}: CarDetailsComponentProps) {
   const [activeImage, setActiveImage] = useState(0);
   const images = (car.imageUrl || []).map((url: string) =>
     getPublicImageUrl(url),
@@ -46,7 +51,7 @@ export default function CarDetails({ car }: { car: CarDetailsProps }) {
 
   const isNew = car.condition === "New";
 
-  const { formatPrice, formatFromNGN } = useCurrency();
+  const { formatPrice } = useCurrency();
 
   const waMessage = encodeURIComponent(
     `Hello! I'm interested in the ${car.year} ${car.brandName} (ID: ${car.id}) listed at ${formatPrice(car.totalPrice)}. Is it still available?`,
@@ -255,7 +260,7 @@ export default function CarDetails({ car }: { car: CarDetailsProps }) {
 
             {/* WhatsApp CTA */}
             <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`}
+              href={`https://wa.me/${whatsappNumber}?text=${waMessage}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl shadow-md hover:shadow-lg transition-all"

@@ -2,10 +2,13 @@ import CarDetails from "@/components/Car/CarDetails";
 import { getCarById } from "@/app/_lib/data-services";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getStoreSettings } from "@/app/_lib/settings";
 
 export default async function CarPage({ params }: { params: { id: string } }) {
   const { id } = await params;
   const car = await getCarById(Number(id));
+
+  const settings = await getStoreSettings();
 
   if (!car) {
     return (
@@ -18,5 +21,5 @@ export default async function CarPage({ params }: { params: { id: string } }) {
     );
   }
 
-  return <CarDetails car={car} />;
+  return <CarDetails car={car} whatsappNumber={settings?.whatsapp} />;
 }
