@@ -10,16 +10,24 @@ export async function GET() {
   const { data: settings, error } = await supabase
     .from("ExchangeSettings")
     .select("*")
+    .order("updatedAt", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (error || !settings) {
-    const { data: created } = await supabase
-      .from("ExchangeSettings")
-      .insert({ rateMargin: 0, autoUpdate: true, updateInterval: 60 })
-      .select()
-      .single();
-    return NextResponse.json(created);
+  if (error) {
+    console.error("Failed to fetch exchange settings:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch exchange settings" },
+      { status: 500 },
+    );
+  }
+
+  if (!settings) {
+    return NextResponse.json(
+      { error: "Exchange settings not configured" },
+      { status: 404 },
+    );
   }
 
   return NextResponse.json(settings);
@@ -52,8 +60,9 @@ export async function PATCH(req: NextRequest) {
     const { data: current } = await supabase
       .from("ExchangeSettings")
       .select("*")
+      .order("updatedAt", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (!current)
       return NextResponse.json({ error: "Not found" }, { status: 404 });

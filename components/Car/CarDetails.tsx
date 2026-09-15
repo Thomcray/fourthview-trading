@@ -157,38 +157,22 @@ export default function CarDetails({
 
             {/* Price */}
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-sm text-blue-600 mb-1">Total Price</p>
-                  <p className="text-3xl font-bold text-blue-900">
-                    <ProductPrice yuanPrice={car.totalPrice} />
-                  </p>
-                </div>
-                <p className="text-xs text-blue-500 text-right">
-                  incl. shipping
-                  <br />
-                  &amp; clearing
+              <div className="text-center">
+                <p className="text-sm text-blue-600 mb-1">Total Price</p>
+
+                <p className="text-3xl font-bold text-blue-900">
+                  <ProductPrice yuanPrice={car.totalPrice} />
                 </p>
-              </div>
-              <div className="border-t border-blue-100 mt-4 pt-3 space-y-1.5 text-sm">
-                <div className="flex justify-between text-gray-600">
-                  <span>Car price</span>
-                  <span>
-                    <ProductPrice yuanPrice={car.price} />
-                  </span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span>
-                    <ProductPrice yuanPrice={car.shippingCost} />
-                  </span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Clearing</span>
-                  <span>
-                    <ProductPrice yuanPrice={car.clearingCost} />
-                  </span>
-                </div>
+
+                <p className="text-xs text-blue-500 mt-2">
+                  {car.shippingCost > 0 && car.clearingCost > 0
+                    ? "Includes shipping & clearing"
+                    : car.shippingCost > 0
+                      ? "Includes shipping"
+                      : car.clearingCost > 0
+                        ? "Includes clearing"
+                        : ""}
+                </p>
               </div>
             </div>
 
@@ -238,26 +222,30 @@ export default function CarDetails({
                   <p className={valueClass}>{car.condition}</p>
                 </div>
               </div>
-              <div className={specClass}>
-                <div className={iconClass}>
-                  <Ship className="w-4 h-4 text-blue-600" />
+              {car.shippingCost > 0 && (
+                <div className={specClass}>
+                  <div className={iconClass}>
+                    <Ship className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className={labelClass}>Shipping</p>
+                    <p className={valueClass}>Included</p>
+                  </div>
                 </div>
-                <div>
-                  <p className={labelClass}>Shipping</p>
-                  <p className={valueClass}>Included</p>
-                </div>
-              </div>
-              <div className={specClass}>
-                <div className={iconClass}>
-                  <FileCheck className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className={labelClass}>Clearing</p>
-                  <p className={valueClass}>Included</p>
-                </div>
-              </div>
-            </div>
+              )}
 
+              {car.clearingCost > 0 && (
+                <div className={specClass}>
+                  <div className={iconClass}>
+                    <FileCheck className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className={labelClass}>Clearing</p>
+                    <p className={valueClass}>Included</p>
+                  </div>
+                </div>
+              )}
+            </div>
             {/* WhatsApp CTA */}
             <a
               href={`https://wa.me/${whatsappNumber}?text=${waMessage}`}

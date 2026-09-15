@@ -79,10 +79,7 @@ export default function UpdateCarForm({ car }: { car: CarType }) {
       toast.error("Please enter the shipping cost");
       return;
     }
-    if (!clearingCost) {
-      toast.error("Please enter the clearing cost");
-      return;
-    }
+
     if (images.length === 0 && existingImages.length === 0) {
       toast.error("Please keep at least one car image");
       return;
@@ -306,7 +303,7 @@ export default function UpdateCarForm({ car }: { car: CarType }) {
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-slate-700">
-                  Clearing Cost <span className="text-red-500">*</span>
+                  Clearing Cost
                 </label>
                 <input
                   type="number"

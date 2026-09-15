@@ -10,6 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: Request) {
   // Must use raw text — not req.json() — to verify signature
   const body = await req.text();
+
   const signature = req.headers.get("x-paystack-signature");
 
   if (!signature) {

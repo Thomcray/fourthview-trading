@@ -11,8 +11,7 @@ export async function createCar(formData: FormData, images: File[]) {
   const mileage = parseInt(formData.get("mileage") as string) || 0;
   const price = parseFloat(formData.get("price") as string);
   const shippingCost = parseFloat(formData.get("shippingCost") as string);
-  const clearingCost = parseFloat(formData.get("clearingCost") as string);
-  const totalPrice = parseFloat(formData.get("totalPrice") as string);
+  const clearingCost = parseFloat(formData.get("clearingCost") as string) || 0;
 
   // Validation
   if (!brandName?.trim()) {
@@ -39,10 +38,6 @@ export async function createCar(formData: FormData, images: File[]) {
     throw new Error("A valid shipping cost is required");
   }
 
-  if (isNaN(clearingCost)) {
-    throw new Error("A valid clearing cost is required");
-  }
-
   // Upload images
   if (images.length === 0) {
     throw new Error("At least one car image is required");
@@ -62,10 +57,7 @@ export async function createCar(formData: FormData, images: File[]) {
     if (fileUrl) uploadedImageUrls.push(fileUrl);
   }
 
-  // Fall back to computing the total server-side if missing
-  const finalTotalPrice = isNaN(totalPrice)
-    ? price + shippingCost + clearingCost
-    : totalPrice;
+  const finalTotalPrice = price + shippingCost + clearingCost;
 
   // Create car and return result
   try {
@@ -101,8 +93,8 @@ export async function updateCar(
   const mileage = parseInt(formData.get("mileage") as string) || 0;
   const price = parseFloat(formData.get("price") as string);
   const shippingCost = parseFloat(formData.get("shippingCost") as string);
-  const clearingCost = parseFloat(formData.get("clearingCost") as string);
-  const totalPrice = parseFloat(formData.get("totalPrice") as string);
+  const clearingCost = parseFloat(formData.get("clearingCost") as string) || 0;
+
   const existingImages = JSON.parse(
     (formData.get("existingImages") as string) || "[]",
   );
@@ -118,7 +110,6 @@ export async function updateCar(
   }
   if (isNaN(price)) throw new Error("A valid car price is required");
   if (isNaN(shippingCost)) throw new Error("A valid shipping cost is required");
-  if (isNaN(clearingCost)) throw new Error("A valid clearing cost is required");
 
   // Upload any newly added images
   const uploadedImageUrls: string[] = [];
@@ -141,9 +132,7 @@ export async function updateCar(
     throw new Error("At least one car image is required");
   }
 
-  const finalTotalPrice = isNaN(totalPrice)
-    ? price + shippingCost + clearingCost
-    : totalPrice;
+  const finalTotalPrice = price + shippingCost + clearingCost;
 
   try {
     const result = await updateCurrentCar(

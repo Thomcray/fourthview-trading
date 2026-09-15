@@ -22,6 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import RefundRequestModal from "@/components/RefundRequestModal";
+import { getPublicImageUrl } from "@/lib/images";
 
 type OrderItem = {
   id: number;
@@ -360,7 +361,7 @@ export default function OrderDetailPage() {
                       {item.image && (
                         <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0 no-print">
                           <Image
-                            src={item.image}
+                            src={getPublicImageUrl(item.image)}
                             alt={item.itemName}
                             width={80}
                             height={80}

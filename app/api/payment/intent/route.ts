@@ -75,10 +75,25 @@ export async function POST(req: Request) {
     }
 
     // Fetch margin and apply — must match CurrencyContext effectiveRates
-    const { data: exchangeSettings } = await supabase
-      .from("ExchangeSettings")
-      .select("rateMargin")
-      .single();
+    const { data: exchangeSettings, error: exchangeSettingsError } =
+      await supabase
+        .from("ExchangeSettings")
+        .select("rateMargin")
+        .order("updatedAt", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (exchangeSettingsError) {
+      console.error(
+        "Failed to fetch exchange settings:",
+        exchangeSettingsError,
+      );
+
+      return NextResponse.json(
+        { error: "Exchange settings temporarily unavailable" },
+        { status: 503 },
+      );
+    }
 
     const margin = exchangeSettings?.rateMargin ?? 0;
     const multiplier = 1 + margin / 100;
@@ -109,6 +124,7 @@ export async function POST(req: Request) {
     });
 
     const totalNGN = totalCNY * ngnRate;
+
     const amountKobo = Math.round(totalNGN * 100);
 
     if (amountKobo <= 0) {

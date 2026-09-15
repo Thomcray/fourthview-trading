@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
 import { useCurrency } from "@/components/CurrencyContext";
+import { getPublicImageUrl } from "@/lib/images";
 
 type OrderItem = {
   itemName: string;
@@ -288,7 +289,7 @@ export default function PurchasedPage() {
                         {item.image && (
                           <div className="w-16 h-16 sm:w-20 sm:h-20 border rounded-lg overflow-hidden shrink-0 bg-gray-50">
                             <Image
-                              src={item.image}
+                              src={getPublicImageUrl(item.image)}
                               alt={item.itemName}
                               width={80}
                               height={80}

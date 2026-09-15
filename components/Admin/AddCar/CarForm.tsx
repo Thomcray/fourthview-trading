@@ -69,10 +69,6 @@ export default function CarForm() {
       toast.error("Please enter the shipping cost");
       return;
     }
-    if (!formDataObj.get("clearingCost")) {
-      toast.error("Please enter the clearing cost");
-      return;
-    }
 
     formDataObj.append("condition", condition);
     formDataObj.append("totalPrice", String(totalPrice));
@@ -289,7 +285,7 @@ export default function CarForm() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-slate-700">
-                  Clearing Cost <span className="text-red-500">*</span>
+                  Clearing Cost
                 </label>
                 <input
                   type="number"

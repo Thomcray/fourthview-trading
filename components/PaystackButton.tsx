@@ -95,6 +95,55 @@ export default function PaystackButton({
 
       const { reference, amount, signature } = intentData;
 
+      const handlePaymentSuccess = async () => {
+        try {
+          const maxAttempts = 15;
+
+          for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const response = await fetch("/api/payment/status", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                reference,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.status === "completed") {
+              await clearCart();
+
+              setIsLoading(false);
+
+              toast.success("Order placed successfully!", {
+                onClose: () => router.push("/account/purchased-items"),
+                autoClose: 1500,
+              });
+
+              return;
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+
+          setIsLoading(false);
+
+          toast.info(
+            "Payment successful. Your order is still being processed. Please check your orders shortly.",
+          );
+        } catch (error) {
+          console.error("Payment status check failed:", error);
+
+          setIsLoading(false);
+
+          toast.error(
+            "Payment was successful, but we couldn't confirm your order yet.",
+          );
+        }
+      };
+
       const handler = window.PaystackPop.setup({
         key: PAYSTACK_PUBLIC_KEY,
         email: user.email ?? "",
@@ -127,13 +176,7 @@ export default function PaystackButton({
         // Paystack v1 uses "callback" not "onSuccess"
         // Order saving is handled by the webhook — client just redirects
         callback: () => {
-          clearCart().then(() => {
-            setIsLoading(false);
-            toast.success("Order placed successfully!", {
-              onClose: () => router.push("/account/purchased-items"),
-              autoClose: 2000,
-            });
-          });
+          handlePaymentSuccess();
         },
         onClose: () => {
           setIsLoading(false);
