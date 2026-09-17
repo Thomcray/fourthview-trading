@@ -17,6 +17,7 @@ import {
   Trash2,
   AlertTriangle,
   X,
+  BadgeCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -28,6 +29,7 @@ type CarType = {
   condition: string;
   mileage: number;
   totalPrice: number;
+  sold: boolean;
 };
 
 export default function ViewCars() {
@@ -49,12 +51,18 @@ export default function ViewCars() {
     queryKey: ["cars", search],
     queryFn: async ({ pageParam = null }) => {
       const params = new URLSearchParams();
+
       if (search) params.append("search", search);
       if (pageParam) params.append("cursor", pageParam as string);
+
       params.append("limit", "20");
 
       const res = await fetch(`/api/admin/cars?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch cars");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch cars");
+      }
+
       return res.json();
     },
     getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
@@ -65,25 +73,98 @@ export default function ViewCars() {
   const totalCars = data?.pages[0]?.total || 0;
 
   const handleSearch = () => setSearch(searchInput);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleToggleSold = async (car: CarType) => {
+    try {
+      const res = await fetch("/api/admin/cars", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: car.id,
+          sold: !car.sold,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update sold status");
+      }
+
+      const { car: updatedCar } = await res.json();
+
+      queryClient.setQueryData(
+        ["cars", search],
+        (
+          old:
+            | {
+                pages: {
+                  cars: CarType[];
+                  total: number;
+                }[];
+              }
+            | undefined,
+        ) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              cars: page.cars.map((c) =>
+                c.id === updatedCar.id ? { ...c, sold: updatedCar.sold } : c,
+              ),
+            })),
+          };
+        },
+      );
+
+      toast.success(
+        updatedCar.sold
+          ? `${car.brandName} marked as sold`
+          : `${car.brandName} marked as available`,
+      );
+    } catch {
+      toast.error("Failed to update car status. Please try again.");
+    }
   };
 
   const handleDelete = async (car: CarType) => {
     setDeletingId(car.id);
+
     try {
       const res = await fetch("/api/admin/cars", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ id: car.id }),
       });
 
-      if (!res.ok) throw new Error("Failed to delete car");
+      if (!res.ok) {
+        throw new Error("Failed to delete car");
+      }
 
       queryClient.setQueryData(
         ["cars", search],
-        (old: { pages: { cars: CarType[]; total: number }[] } | undefined) => {
+        (
+          old:
+            | {
+                pages: {
+                  cars: CarType[];
+                  total: number;
+                }[];
+              }
+            | undefined,
+        ) => {
           if (!old) return old;
+
           return {
             ...old,
             pages: old.pages.map((page) => ({
@@ -111,6 +192,7 @@ export default function ViewCars() {
     "Condition",
     "Mileage",
     "Total Price",
+    "Status",
     "Actions",
   ];
 
@@ -123,6 +205,13 @@ export default function ViewCars() {
       }`}
     >
       {condition}
+    </span>
+  );
+
+  const SoldBadge = () => (
+    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+      <BadgeCheck className="w-3.5 h-3.5" />
+      Sold
     </span>
   );
 
@@ -147,12 +236,15 @@ export default function ViewCars() {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Car className="w-8 h-8 text-red-500" />
           </div>
+
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             Failed to Load Cars
           </h2>
+
           <p className="text-gray-500 mb-6">
             There was an error loading the car listings.
           </p>
+
           <Button
             onClick={() => refetch()}
             className="bg-blue-600 hover:bg-blue-700"
@@ -176,6 +268,7 @@ export default function ViewCars() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                   All Cars
                 </h1>
+
                 <p className="text-gray-500 mt-1">
                   Manage and view all car listings
                   {totalCars > 0 && (
@@ -185,6 +278,7 @@ export default function ViewCars() {
                   )}
                 </p>
               </div>
+
               <Link href="/admin/product-services">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 cursor-pointer">
                   <Plus className="w-4 h-4" />
@@ -199,6 +293,7 @@ export default function ViewCars() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                 <Input
                   type="search"
                   value={searchInput}
@@ -208,6 +303,7 @@ export default function ViewCars() {
                   className="pl-9 py-2 text-sm"
                 />
               </div>
+
               <div className="flex gap-2">
                 <Button
                   onClick={handleSearch}
@@ -217,6 +313,7 @@ export default function ViewCars() {
                   <Search className="w-4 h-4" />
                   Search
                 </Button>
+
                 <Button
                   variant="outline"
                   onClick={() => refetch()}
@@ -234,7 +331,9 @@ export default function ViewCars() {
             {allCars.length === 0 ? (
               <div className="text-center py-12">
                 <Car className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+
                 <p className="text-gray-500">No cars found</p>
+
                 <p className="text-sm text-gray-400 mt-1">
                   Try adjusting your search or add a new car
                 </p>
@@ -243,133 +342,239 @@ export default function ViewCars() {
               <>
                 {/* Mobile: Card layout */}
                 <div className="md:hidden divide-y divide-gray-100">
-                  {allCars.map((car: CarType, index: number) => (
-                    <motion.div
-                      key={car.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(index * 0.02, 0.5) }}
-                      className="p-4 hover:bg-gray-50 transition-colors space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <p className="font-mono text-xs text-gray-400">
-                          #{car.id}
-                        </p>
-                        <ConditionBadge condition={car.condition} />
-                      </div>
+                  {allCars.map((car: CarType, index: number) => {
+                    const isSold = car.sold;
 
-                      <p className="font-medium text-gray-800 text-lg">
-                        {car.brandName}
-                      </p>
+                    return (
+                      <motion.div
+                        key={car.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          delay: Math.min(index * 0.02, 0.5),
+                        }}
+                        className={`p-4 transition-colors space-y-3 ${
+                          isSold ? "bg-gray-50 opacity-75" : "hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="font-mono text-xs text-gray-400">
+                            #{car.id}
+                          </p>
 
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        <span>{car.year}</span>
-                        <span>•</span>
-                        <span>
-                          {car.condition === "New"
-                            ? "New"
-                            : `${car.mileage.toLocaleString()} km`}
-                        </span>
-                      </div>
+                          <div className="flex items-center gap-2">
+                            {isSold && <SoldBadge />}
+                            <ConditionBadge condition={car.condition} />
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-blue-600">
-                          ¥{car.totalPrice.toLocaleString()}
-                        </span>
-                      </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <p
+                            className={`font-medium text-lg ${
+                              isSold
+                                ? "text-gray-400 line-through"
+                                : "text-gray-800"
+                            }`}
+                          >
+                            {car.brandName}
+                          </p>
+                        </div>
 
-                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                        <Link
-                          href={`/admin/view-cars/${car.id}`}
-                          className="flex-1"
-                        >
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <span>{car.year}</span>
+                          <span>•</span>
+                          <span>
+                            {car.condition === "New"
+                              ? "New"
+                              : `${car.mileage.toLocaleString()} km`}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-lg font-bold ${
+                              isSold
+                                ? "text-gray-400 line-through"
+                                : "text-blue-600"
+                            }`}
+                          >
+                            ¥{car.totalPrice.toLocaleString()}
+                          </span>
+
+                          {isSold && (
+                            <span className="text-sm font-semibold text-red-600">
+                              SOLD
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/admin/view-cars/${car.id}`}
+                              className="flex-1"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                            </Link>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleSold(car)}
+                              className={`flex-1 justify-center cursor-pointer text-xs ${
+                                isSold
+                                  ? "text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  : "text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                              }`}
+                            >
+                              <BadgeCheck className="w-4 h-4 mr-1" />
+                              {isSold ? "Mark Available" : "Mark Sold"}
+                            </Button>
+                          </div>
+
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
+                            onClick={() => setConfirmCar(car)}
+                            disabled={deletingId === car.id}
+                            className="w-full justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 cursor-pointer text-xs"
                           >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
+                            {deletingId === car.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-1" />
+                            )}
+                            Delete
                           </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setConfirmCar(car)}
-                          disabled={deletingId === car.id}
-                          className="flex-1 justify-center text-gray-600 hover:text-red-600 hover:bg-red-50 cursor-pointer text-xs"
-                        >
-                          {deletingId === car.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                          ) : (
-                            <Trash2 className="w-4 h-4 mr-1" />
-                          )}
-                          Delete
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
 
                 {/* Desktop: Table layout */}
                 <div className="hidden md:block overflow-x-auto">
                   <AdminTable headers={headers} caption="A list of all cars.">
-                    {allCars.map((car: CarType, index: number) => (
-                      <motion.tr
-                        key={car.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: Math.min(index * 0.02, 0.5) }}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                      >
-                        <TableCell className="font-mono text-sm text-gray-500">
-                          #{car.id}
-                        </TableCell>
-                        <TableCell className="font-medium text-gray-800">
-                          {car.brandName}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {car.year}
-                        </TableCell>
-                        <TableCell>
-                          <ConditionBadge condition={car.condition} />
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {car.condition === "New"
-                            ? "—"
-                            : `${car.mileage.toLocaleString()} km`}
-                        </TableCell>
-                        <TableCell className="font-semibold text-blue-600">
-                          ¥{car.totalPrice.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Link href={`/admin/view-cars/${car.id}`}>
+                    {allCars.map((car: CarType, index: number) => {
+                      const isSold = car.sold;
+
+                      return (
+                        <motion.tr
+                          key={car.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            delay: Math.min(index * 0.02, 0.5),
+                          }}
+                          className={`border-b border-gray-100 transition-colors ${
+                            isSold
+                              ? "bg-gray-50 opacity-75"
+                              : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <TableCell className="font-mono text-sm text-gray-500">
+                            #{car.id}
+                          </TableCell>
+
+                          <TableCell
+                            className={`font-medium ${
+                              isSold
+                                ? "text-gray-400 line-through"
+                                : "text-gray-800"
+                            }`}
+                          >
+                            {car.brandName}
+                          </TableCell>
+
+                          <TableCell className="text-sm text-gray-600">
+                            {car.year}
+                          </TableCell>
+
+                          <TableCell>
+                            <ConditionBadge condition={car.condition} />
+                          </TableCell>
+
+                          <TableCell className="text-sm text-gray-600">
+                            {car.condition === "New"
+                              ? "—"
+                              : `${car.mileage.toLocaleString()} km`}
+                          </TableCell>
+
+                          <TableCell
+                            className={`font-semibold ${
+                              isSold
+                                ? "text-gray-400 line-through"
+                                : "text-blue-600"
+                            }`}
+                          >
+                            ¥{car.totalPrice.toLocaleString()}
+                          </TableCell>
+
+                          <TableCell>
+                            {car.sold ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                <BadgeCheck className="w-3.5 h-3.5" />
+                                Sold
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                Available
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Link href={`/admin/view-cars/${car.id}`}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                              </Link>
+
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-gray-400 hover:text-blue-600 cursor-pointer"
+                                onClick={() => handleToggleSold(car)}
+                                className={`cursor-pointer ${
+                                  isSold
+                                    ? "text-green-500 hover:text-green-600 hover:bg-green-50"
+                                    : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+                                }`}
+                                title={
+                                  isSold ? "Mark as available" : "Mark as sold"
+                                }
                               >
-                                <Edit className="w-4 h-4" />
+                                <BadgeCheck className="w-4 h-4" />
                               </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setConfirmCar(car)}
-                              disabled={deletingId === car.id}
-                              className="text-gray-400 hover:text-red-600 cursor-pointer"
-                            >
-                              {deletingId === car.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
+
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setConfirmCar(car)}
+                                disabled={deletingId === car.id}
+                                className="text-gray-400 hover:text-red-600 cursor-pointer"
+                              >
+                                {deletingId === car.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </motion.tr>
+                      );
+                    })}
                   </AdminTable>
                 </div>
 
@@ -429,15 +634,18 @@ export default function ViewCars() {
                   <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center shrink-0">
                     <AlertTriangle className="w-5 h-5 text-red-600" />
                   </div>
+
                   <div>
                     <h2 className="text-lg font-semibold text-gray-800">
                       Delete Car
                     </h2>
+
                     <p className="text-sm text-gray-500 mt-0.5">
                       This action cannot be undone
                     </p>
                   </div>
                 </div>
+
                 <button
                   onClick={() => setConfirmCar(null)}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -464,6 +672,7 @@ export default function ViewCars() {
                 >
                   Cancel
                 </Button>
+
                 <Button
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white cursor-pointer"
                   onClick={() => handleDelete(confirmCar)}

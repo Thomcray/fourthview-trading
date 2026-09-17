@@ -15,6 +15,7 @@ export type CarType = {
   mileage: number;
   totalPrice: number;
   imageUrl: string[];
+  sold: boolean;
 };
 
 type Props = {
@@ -89,10 +90,12 @@ export default function CarConditionSection({
           <motion.div
             key={car.id}
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 1 }}
             transition={{ delay: index * 0.05 }}
-            whileHover={{ y: -5 }}
-            className="group/car bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+            whileHover={{ y: car.sold ? 0 : -5 }}
+            className={`group/car bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ${
+              car.sold ? "opacity-80" : ""
+            }`}
           >
             <Link href={`/car/${car.id}`}>
               {/* Car Image */}
@@ -103,7 +106,9 @@ export default function CarConditionSection({
                     alt={`${car.year} ${car.brandName}`}
                     width={400}
                     height={300}
-                    className="w-full h-48 sm:h-56 object-cover group-hover/car:scale-105 transition-transform duration-500"
+                    className={`w-full h-48 sm:h-56 object-cover transition-transform duration-500 ${
+                      car.sold ? "grayscale" : "group-hover/car:scale-105"
+                    }`}
                   />
                 ) : (
                   <div className="w-full h-48 sm:h-56 bg-gray-200 flex items-center justify-center">
@@ -111,29 +116,42 @@ export default function CarConditionSection({
                   </div>
                 )}
 
-                {/* Condition Badge */}
-                <span
-                  className={`absolute top-3 left-3 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10 ${
-                    condition === "New"
-                      ? "bg-linear-to-r from-green-500 to-green-600"
-                      : "bg-linear-to-r from-amber-500 to-amber-600"
-                  }`}
-                >
-                  {condition}
-                </span>
+                {/* Sold Badge */}
+                {car.sold && (
+                  <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md z-10">
+                    SOLD
+                  </span>
+                )}
+
+                {/* Sold Overlay */}
+                {car.sold && (
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-[5]">
+                    <div className="bg-red-600 text-white font-bold text-sm sm:text-base px-5 py-2 rounded-lg shadow-lg rotate-[-8deg]">
+                      SOLD
+                    </div>
+                  </div>
+                )}
 
                 {/* Quick View Overlay */}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/car:opacity-100 transition-opacity duration-300">
-                  <div className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-full transform translate-y-4 group-hover/car:translate-y-0 transition-all duration-300 flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    View Details
+                {!car.sold && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/car:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-full transform translate-y-4 group-hover/car:translate-y-0 transition-all duration-300 flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                      View Details
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Car Info */}
               <div className="p-3">
-                <h3 className="font-semibold text-gray-800 text-sm truncate group-hover/car:text-blue-600 transition-colors">
+                <h3
+                  className={`font-semibold text-sm truncate transition-colors ${
+                    car.sold
+                      ? "text-gray-500"
+                      : "text-gray-800 group-hover/car:text-blue-600"
+                  }`}
+                >
                   {car.brandName}
                 </h3>
 
@@ -144,14 +162,30 @@ export default function CarConditionSection({
                 </p>
 
                 <div className="mt-2">
-                  <span className="text-lg font-bold text-blue-900">
+                  <span
+                    className={`text-lg font-bold ${
+                      car.sold ? "text-gray-400 line-through" : "text-blue-900"
+                    }`}
+                  >
                     <ProductPrice yuanPrice={car.totalPrice} />
                   </span>
 
-                  <span className="text-xs text-gray-400 ml-1">
-                    (incl. shipping &amp; clearing)
-                  </span>
+                  {!car.sold && (
+                    <span className="text-xs text-gray-400 ml-1">
+                      (incl. shipping &amp; clearing)
+                    </span>
+                  )}
                 </div>
+
+                {/* Sold Status */}
+                {car.sold && (
+                  <div className="mt-2 flex items-center gap-1.5 text-red-600">
+                    <BadgeCheck className="w-4 h-4" />
+                    <span className="text-xs font-semibold">
+                      This car has been sold
+                    </span>
+                  </div>
+                )}
               </div>
             </Link>
           </motion.div>

@@ -19,7 +19,6 @@ import {
 import CarReviews from "./CarReviews";
 import { getPublicImageUrl } from "@/lib/images";
 import ProductPrice from "../ProductPrice";
-import { useCurrency } from "../CurrencyContext";
 
 type CarDetailsProps = {
   id: number;
@@ -33,6 +32,7 @@ type CarDetailsProps = {
   clearingCost: number;
   totalPrice: number;
   imageUrl: string[];
+  sold: boolean;
 };
 
 type CarDetailsComponentProps = {
@@ -45,23 +45,25 @@ export default function CarDetails({
   whatsappNumber,
 }: CarDetailsComponentProps) {
   const [activeImage, setActiveImage] = useState(0);
+
   const images = (car.imageUrl || []).map((url: string) =>
     getPublicImageUrl(url),
   );
 
   const isNew = car.condition === "New";
 
-  const { formatPrice } = useCurrency();
-
   const waMessage = encodeURIComponent(
-    `Hello! I'm interested in the ${car.year} ${car.brandName} (ID: ${car.id}) listed at ${formatPrice(car.totalPrice)}. Is it still available?`,
+    `Hello! I'm interested in the ${car.year} ${car.brandName} (ID: ${car.id}) listed at ${car.totalPrice}. Is it still available?`,
   );
 
   const specClass =
     "flex items-center gap-3 bg-gray-50 rounded-xl p-4 border border-gray-100";
+
   const iconClass =
     "w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0";
+
   const labelClass = "text-xs text-gray-500";
+
   const valueClass = "font-semibold text-gray-800";
 
   return (
@@ -82,14 +84,20 @@ export default function CarDetails({
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="relative bg-gray-100 rounded-2xl overflow-hidden shadow-md">
+            <div
+              className={`relative bg-gray-100 rounded-2xl overflow-hidden shadow-md ${
+                car.sold ? "opacity-90" : ""
+              }`}
+            >
               {images.length > 0 ? (
                 <Image
                   src={images[activeImage]}
                   alt={`${car.year} ${car.brandName}`}
                   width={800}
                   height={600}
-                  className="w-full h-72 sm:h-96 object-cover"
+                  className={`w-full h-72 sm:h-96 object-cover ${
+                    car.sold ? "grayscale" : ""
+                  }`}
                   priority
                 />
               ) : (
@@ -97,15 +105,22 @@ export default function CarDetails({
                   <CarIcon className="w-16 h-16 text-gray-300" />
                 </div>
               )}
-              <span
-                className={`absolute top-4 left-4 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md ${
-                  isNew
-                    ? "bg-linear-to-r from-green-500 to-green-600"
-                    : "bg-linear-to-r from-amber-500 to-amber-600"
-                }`}
-              >
-                {car.condition}
-              </span>
+
+              {/* Sold Badge */}
+              {car.sold && (
+                <span className="absolute top-4 right-4 z-20 bg-red-600 text-white text-sm font-extrabold px-4 py-2 rounded-lg shadow-lg">
+                  SOLD
+                </span>
+              )}
+
+              {/* Sold Overlay */}
+              {car.sold && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <span className="bg-red-600 text-white text-3xl sm:text-4xl font-extrabold px-8 py-4 rounded-xl shadow-xl rotate-[-8deg]">
+                    SOLD
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Thumbnails */}
@@ -125,7 +140,7 @@ export default function CarDetails({
                       src={url}
                       alt={`View ${i + 1}`}
                       fill
-                      className="object-cover"
+                      className={`object-cover ${car.sold ? "grayscale" : ""}`}
                     />
                   </button>
                 ))}
@@ -148,31 +163,63 @@ export default function CarDetails({
                   <CarIcon className="w-4 h-4 text-amber-600" />
                 )}
                 <span>{isNew ? "Brand New" : "Pre-Owned"}</span>
+
+                {car.sold && (
+                  <span className="ml-2 bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded-md">
+                    SOLD
+                  </span>
+                )}
               </div>
+
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
                 {car.brandName}
               </h1>
+
               <p className="text-gray-500 mt-1">Model Year: {car.year}</p>
             </div>
 
             {/* Price */}
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+            <div
+              className={`rounded-2xl p-5 border ${
+                car.sold
+                  ? "bg-gray-100 border-gray-200"
+                  : "bg-blue-50 border-blue-100"
+              }`}
+            >
               <div className="text-center">
-                <p className="text-sm text-blue-600 mb-1">Total Price</p>
+                <p
+                  className={`text-sm mb-1 ${
+                    car.sold ? "text-gray-500" : "text-blue-600"
+                  }`}
+                >
+                  {car.sold ? "Final Listed Price" : "Total Price"}
+                </p>
 
-                <p className="text-3xl font-bold text-blue-900">
+                <p
+                  className={`text-3xl font-bold ${
+                    car.sold ? "text-gray-500 line-through" : "text-blue-900"
+                  }`}
+                >
                   <ProductPrice yuanPrice={car.totalPrice} />
                 </p>
 
-                <p className="text-xs text-blue-500 mt-2">
-                  {car.shippingCost > 0 && car.clearingCost > 0
-                    ? "Includes shipping & clearing"
-                    : car.shippingCost > 0
-                      ? "Includes shipping"
-                      : car.clearingCost > 0
-                        ? "Includes clearing"
-                        : ""}
-                </p>
+                {!car.sold && (
+                  <p className="text-xs text-blue-500 mt-2">
+                    {car.shippingCost > 0 && car.clearingCost > 0
+                      ? "Includes shipping & clearing"
+                      : car.shippingCost > 0
+                        ? "Includes shipping"
+                        : car.clearingCost > 0
+                          ? "Includes clearing"
+                          : ""}
+                  </p>
+                )}
+
+                {car.sold && (
+                  <p className="text-sm text-red-600 font-semibold mt-2">
+                    This car has been sold
+                  </p>
+                )}
               </div>
             </div>
 
@@ -182,25 +229,30 @@ export default function CarDetails({
                 <div className={iconClass}>
                   <Tag className="w-4 h-4 text-blue-600" />
                 </div>
+
                 <div>
                   <p className={labelClass}>Brand</p>
                   <p className={valueClass}>{car.brandName}</p>
                 </div>
               </div>
+
               <div className={specClass}>
                 <div className={iconClass}>
                   <Calendar className="w-4 h-4 text-blue-600" />
                 </div>
+
                 <div>
                   <p className={labelClass}>Year</p>
                   <p className={valueClass}>{car.year}</p>
                 </div>
               </div>
+
               {car.condition === "Used" && (
                 <div className={specClass}>
                   <div className={iconClass}>
                     <Gauge className="w-4 h-4 text-blue-600" />
                   </div>
+
                   <div>
                     <p className={labelClass}>Mileage</p>
                     <p className={valueClass}>
@@ -209,6 +261,7 @@ export default function CarDetails({
                   </div>
                 </div>
               )}
+
               <div className={specClass}>
                 <div className={iconClass}>
                   {isNew ? (
@@ -217,16 +270,19 @@ export default function CarDetails({
                     <CarIcon className="w-4 h-4 text-blue-600" />
                   )}
                 </div>
+
                 <div>
                   <p className={labelClass}>Condition</p>
                   <p className={valueClass}>{car.condition}</p>
                 </div>
               </div>
+
               {car.shippingCost > 0 && (
                 <div className={specClass}>
                   <div className={iconClass}>
                     <Ship className="w-4 h-4 text-blue-600" />
                   </div>
+
                   <div>
                     <p className={labelClass}>Shipping</p>
                     <p className={valueClass}>Included</p>
@@ -239,6 +295,7 @@ export default function CarDetails({
                   <div className={iconClass}>
                     <FileCheck className="w-4 h-4 text-blue-600" />
                   </div>
+
                   <div>
                     <p className={labelClass}>Clearing</p>
                     <p className={valueClass}>Included</p>
@@ -246,19 +303,30 @@ export default function CarDetails({
                 </div>
               )}
             </div>
+
             {/* WhatsApp CTA */}
-            <a
-              href={`https://wa.me/${whatsappNumber}?text=${waMessage}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl shadow-md hover:shadow-lg transition-all"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Inquire on WhatsApp
-            </a>
-            <p className="text-xs text-gray-400 text-center -mt-3">
-              Ask about availability, inspection, or delivery
-            </p>
+            {car.sold ? (
+              <div className="flex items-center justify-center gap-2 bg-gray-200 text-gray-500 font-semibold py-4 rounded-xl cursor-not-allowed">
+                <MessageCircle className="w-5 h-5" />
+                Car Sold
+              </div>
+            ) : (
+              <>
+                <a
+                  href={`https://wa.me/${whatsappNumber}?text=${waMessage}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl shadow-md hover:shadow-lg transition-all"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Inquire on WhatsApp
+                </a>
+
+                <p className="text-xs text-gray-400 text-center -mt-3">
+                  Ask about availability, inspection, or delivery
+                </p>
+              </>
+            )}
           </motion.div>
         </div>
 

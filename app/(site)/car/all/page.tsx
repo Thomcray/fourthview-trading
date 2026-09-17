@@ -319,17 +319,6 @@ export default function AllCarsPage() {
                         </div>
                       )}
 
-                      {/* Condition Badge */}
-                      <span
-                        className={`absolute top-3 left-3 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-10 ${
-                          car.condition.toLowerCase() === "new"
-                            ? "bg-linear-to-r from-green-500 to-green-600"
-                            : "bg-linear-to-r from-amber-500 to-amber-600"
-                        }`}
-                      >
-                        {car.condition}
-                      </span>
-
                       {/* Quick View Overlay */}
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">

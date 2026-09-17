@@ -30,6 +30,7 @@ export async function GET(request: Request) {
 
     const hasMore = cars && cars.length > limit;
     const items = hasMore ? cars.slice(0, -1) : cars;
+
     const nextCursor =
       hasMore && items.length > 0 ? items[items.length - 1]?.id : null;
 
@@ -41,8 +42,64 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Error fetching cars:", error);
+
     return NextResponse.json(
       { error: "Failed to fetch cars" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id, sold } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Car ID is required" },
+        { status: 400 },
+      );
+    }
+
+    if (typeof sold !== "boolean") {
+      return NextResponse.json(
+        { error: "Sold status must be a boolean" },
+        { status: 400 },
+      );
+    }
+
+    const supabase = await createClient(true);
+
+    const { data: car, error } = await supabase
+      .from("cars")
+      .update({ sold })
+      .eq("id", id)
+      .select("id, brandName, sold")
+      .single();
+
+    if (error) {
+      console.error("Supabase update error:", error);
+
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      car,
+    });
+  } catch (error) {
+    console.error("Error updating car:", error);
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Failed to update car",
+      },
       { status: 500 },
     );
   }
@@ -51,6 +108,7 @@ export async function GET(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -78,6 +136,7 @@ export async function DELETE(request: Request) {
 
     if (error) {
       console.error("Supabase delete error:", error);
+
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -88,8 +147,10 @@ export async function DELETE(request: Request) {
           // Handle both plain filenames and old full signed URLs
           if (url.startsWith("http")) {
             const urlObj = new URL(url);
+
             return urlObj.pathname.split("product-images/")[1]?.split("?")[0];
           }
+
           return url;
         })
         .filter(Boolean);
@@ -109,6 +170,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting car:", error);
+
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Failed to delete car",

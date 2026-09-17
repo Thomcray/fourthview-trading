@@ -45,12 +45,21 @@ export default function CarsPage() {
   useEffect(() => {
     fetch("/api/cars")
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to load cars");
+        if (!res.ok) {
+          throw new Error("Failed to load cars");
+        }
+
         return res.json();
       })
-      .then((data) => setCars(data.cars || []))
-      .catch((err) => setError(err.message))
-      .finally(() => setIsLoading(false));
+      .then((data) => {
+        setCars(data.cars || []);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const conditionsToShow = selected === "All Cars" ? CONDITIONS : [selected];
