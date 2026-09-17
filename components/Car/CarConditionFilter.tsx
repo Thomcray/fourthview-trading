@@ -2,11 +2,13 @@
 
 import { motion } from "framer-motion";
 
-const OPTIONS = ["All Cars", "New", "Used"];
+export type CarCondition = "All Cars" | "New" | "Used";
+
+const OPTIONS: CarCondition[] = ["All Cars", "New", "Used"];
 
 type Props = {
-  selected: string;
-  onSelect: (value: string) => void;
+  selected: CarCondition;
+  onSelect: (value: CarCondition) => void;
 };
 
 export default function CarConditionFilter({ selected, onSelect }: Props) {
@@ -14,6 +16,7 @@ export default function CarConditionFilter({ selected, onSelect }: Props) {
     <div className="flex flex-wrap gap-2">
       {OPTIONS.map((option) => {
         const isActive = selected === option;
+
         return (
           <button
             key={option}
@@ -31,9 +34,14 @@ export default function CarConditionFilter({ selected, onSelect }: Props) {
               <motion.span
                 layoutId="car-filter-pill"
                 className="absolute inset-0 bg-blue-600 rounded-full"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 30,
+                }}
               />
             )}
+
             <span className="relative z-10">{option}</span>
           </button>
         );

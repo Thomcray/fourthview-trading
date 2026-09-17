@@ -20,14 +20,35 @@ export type CarType = {
 type Props = {
   condition: "New" | "Used";
   cars: CarType[];
+  hideWhenEmpty?: boolean;
 };
 
-export default function CarConditionSection({ condition, cars }: Props) {
-  const items = cars.filter(
-    (c) => c.condition.toLowerCase() === condition.toLowerCase(),
-  );
+export default function CarConditionSection({
+  condition,
+  cars,
+  hideWhenEmpty = false,
+}: Props) {
+  const items = cars;
 
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    if (hideWhenEmpty) {
+      return null;
+    }
+
+    return (
+      <div className="rounded-xl border border-gray-200 bg-gray-50 py-12 text-center">
+        <CarIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+
+        <h3 className="text-gray-700 font-semibold">
+          No {condition.toLowerCase()} cars available
+        </h3>
+
+        <p className="text-sm text-gray-500 mt-1">
+          Check back soon for {condition.toLowerCase()} car listings.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col gap-4">
@@ -42,14 +63,17 @@ export default function CarConditionSection({ condition, cars }: Props) {
                 <CarIcon className="w-5 h-5 text-white" />
               )}
             </div>
+
             <h2 className="text-white font-semibold text-lg">
               {condition === "New" ? "New Cars" : "Used Cars"}
             </h2>
+
             <span className="bg-white/20 text-white text-xs font-medium px-2 py-0.5 rounded-full">
               {items.length} {items.length === 1 ? "car" : "cars"}
             </span>
           </div>
-          <Link href={`/car?condition=${condition.toLowerCase()}`}>
+
+          <Link href={`/car/all?condition=${condition.toLowerCase()}`}>
             <ChevronRight
               color="white"
               strokeWidth={2}
@@ -123,6 +147,7 @@ export default function CarConditionSection({ condition, cars }: Props) {
                   <span className="text-lg font-bold text-blue-900">
                     <ProductPrice yuanPrice={car.totalPrice} />
                   </span>
+
                   <span className="text-xs text-gray-400 ml-1">
                     (incl. shipping &amp; clearing)
                   </span>
@@ -137,7 +162,7 @@ export default function CarConditionSection({ condition, cars }: Props) {
       {items.length > 4 && (
         <div className="text-center mt-2">
           <Link
-            href={`/car?condition=${condition.toLowerCase()}`}
+            href={`/car/all?condition=${condition.toLowerCase()}`}
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
           >
             View All {condition} Cars

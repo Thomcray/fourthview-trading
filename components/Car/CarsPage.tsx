@@ -1,10 +1,13 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, Car as CarIcon } from "lucide-react";
 import Banner from "@/components/ShopWithUs/Banner";
-import CarConditionFilter from "@/components/Car/CarConditionFilter";
+import CarConditionFilter, {
+  CarCondition,
+} from "@/components/Car/CarConditionFilter";
 import CarConditionSection, {
   CarType,
 } from "@/components/Car/CarConditionSection";
@@ -13,10 +16,31 @@ import carBanner from "@/public/carBanner.jpg";
 const CONDITIONS: ("New" | "Used")[] = ["New", "Used"];
 
 export default function CarsPage() {
-  const [selected, setSelected] = useState("All Cars");
+  const searchParams = useSearchParams();
+  const conditionParam = searchParams.get("condition");
+
+  const initialCondition: "All Cars" | "New" | "Used" =
+    conditionParam?.toLowerCase() === "new"
+      ? "New"
+      : conditionParam?.toLowerCase() === "used"
+        ? "Used"
+        : "All Cars";
+
+  const [selected, setSelected] = useState<CarCondition>(initialCondition);
   const [cars, setCars] = useState<CarType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Keep selected filter in sync with the URL
+  useEffect(() => {
+    if (conditionParam?.toLowerCase() === "new") {
+      setSelected("New");
+    } else if (conditionParam?.toLowerCase() === "used") {
+      setSelected("Used");
+    } else {
+      setSelected("All Cars");
+    }
+  }, [conditionParam]);
 
   useEffect(() => {
     fetch("/api/cars")
@@ -29,8 +53,7 @@ export default function CarsPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const conditionsToShow =
-    selected === "All Cars" ? CONDITIONS : [selected as "New" | "Used"];
+  const conditionsToShow = selected === "All Cars" ? CONDITIONS : [selected];
 
   const categoryIcons = {
     New: <BadgeCheck className="w-5 h-5" />,
@@ -81,29 +104,32 @@ export default function CarsPage() {
                 className="space-y-12 sm:space-y-16"
               >
                 {conditionsToShow.map((condition, index) => {
-                  const count = cars.filter(
+                  const filteredCars = cars.filter(
                     (c) =>
                       c.condition.toLowerCase() === condition.toLowerCase(),
-                  ).length;
-
-                  if (count === 0) return null;
+                  );
 
                   return (
                     <motion.div
                       key={condition}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1, duration: 0.5 }}
+                      transition={{
+                        delay: index * 0.1,
+                        duration: 0.5,
+                      }}
                     >
                       {/* Section Header with Icon */}
                       <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-blue-100">
                         <div className="p-2 bg-blue-100 rounded-lg">
                           {categoryIcons[condition]}
                         </div>
+
                         <div>
                           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
                             {condition === "New" ? "New Cars" : "Used Cars"}
                           </h2>
+
                           <p className="text-sm text-gray-500 mt-1">
                             {condition === "New"
                               ? "Brand new, zero mileage vehicles"
@@ -112,7 +138,11 @@ export default function CarsPage() {
                         </div>
                       </div>
 
-                      <CarConditionSection condition={condition} cars={cars} />
+                      <CarConditionSection
+                        condition={condition}
+                        cars={filteredCars}
+                        hideWhenEmpty={selected === "All Cars"}
+                      />
                     </motion.div>
                   );
                 })}
@@ -120,7 +150,9 @@ export default function CarsPage() {
                 {!isLoading && cars.length === 0 && (
                   <div className="text-center py-20">
                     <CarIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+
                     <p className="text-gray-500">No cars available yet</p>
+
                     <p className="text-sm text-gray-400 mt-1">
                       Check back soon for new listings
                     </p>
