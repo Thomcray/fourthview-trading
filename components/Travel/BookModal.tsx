@@ -42,6 +42,35 @@ export default function BookModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
 
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    factoryName: "",
+    factoryAddress: "",
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const resetForm = () => {
+    setPurpose("");
+    setFDetails(false);
+    setStep(1);
+    setDate(new Date());
+
+    setForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      factoryName: "",
+      factoryAddress: "",
+    });
+
+    setErrors({});
+  };
+
   const { mutate: submitBooking, isPending } = useMutation({
     mutationFn: async (bookingData: {
       firstName: string;
@@ -58,26 +87,23 @@ export default function BookModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingData),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to submit booking");
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit booking");
+      }
+
       return data;
     },
+
     onSuccess: () => {
       toast.success("Booking submitted successfully! We'll contact you soon.");
+
       setOpen(false);
-      setForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        factoryName: "",
-        factoryAddress: "",
-      });
-      setPurpose("");
-      setFDetails(false);
-      setStep(1);
-      setErrors({});
+      resetForm();
     },
+
     onError: (error: Error) => {
       toast.error(
         error.message || "Failed to submit booking. Please try again.",
@@ -85,26 +111,22 @@ export default function BookModal() {
     },
   });
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    factoryName: "",
-    factoryAddress: "",
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    // Clear error for this field when user types
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+
     if (errors[e.target.name]) {
-      setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+      setErrors((prev) => ({
+        ...prev,
+        [e.target.name]: "",
+      }));
     }
   };
 
   const isFactoryVisit = purpose === "Factory Visit";
+
   const needsPersonalInfo =
     purpose === "Factory Visit" || purpose === "Tour Guide";
 
@@ -113,18 +135,25 @@ export default function BookModal() {
       setFDetails(false);
       setStep(1);
     }
-  }, [purpose]);
+  }, [purpose, needsPersonalInfo]);
 
   const validatePersonalInfo = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!form.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!form.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!form.firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    }
+
+    if (!form.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    }
+
     if (!form.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Please enter a valid email address";
     }
+
     if (!form.phone.trim()) {
       newErrors.phone = "Phone number is required";
     } else if (!/^[\d\+\-\s]{10,}$/.test(form.phone)) {
@@ -132,19 +161,27 @@ export default function BookModal() {
     }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const validateFactoryDetails = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!form.factoryName.trim())
+    if (!form.factoryName.trim()) {
       newErrors.factoryName = "Factory name is required";
-    if (!form.factoryAddress.trim())
+    }
+
+    if (!form.factoryAddress.trim()) {
       newErrors.factoryAddress = "Factory address is required";
-    if (!date) newErrors.date = "Please select a visit date";
+    }
+
+    if (!date) {
+      newErrors.date = "Please select a visit date";
+    }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -162,6 +199,7 @@ export default function BookModal() {
 
   const handleSubmit = () => {
     if (!validateFactoryDetails()) return;
+
     submitBooking({
       ...form,
       purpose,
@@ -171,8 +209,17 @@ export default function BookModal() {
     });
   };
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+
+    // Reset everything whenever the modal is closed.
+    if (!nextOpen) {
+      resetForm();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
           Book Your Experience
@@ -187,15 +234,27 @@ export default function BookModal() {
         {needsPersonalInfo && purpose && (
           <div className="flex items-center justify-center gap-2 mb-4">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step >= 1 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                step >= 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
             >
               1
             </div>
+
             <div
-              className={`w-12 h-0.5 ${step >= 2 ? "bg-blue-600" : "bg-gray-200"}`}
+              className={`w-12 h-0.5 ${
+                step >= 2 ? "bg-blue-600" : "bg-gray-200"
+              }`}
             />
+
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step >= 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                step >= 2
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
             >
               2
             </div>
@@ -212,6 +271,7 @@ export default function BookModal() {
                   ? "Factory Visit Details"
                   : "Confirm Booking"}
           </DialogTitle>
+
           <DialogDescription>
             {!purpose
               ? "Tell us about your visit so we can prepare the best experience for you."
@@ -244,36 +304,47 @@ export default function BookModal() {
                       <Label>
                         First Name <span className="text-red-500">*</span>
                       </Label>
+
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                         <Input
                           name="firstName"
                           value={form.firstName}
                           onChange={handleChange}
                           placeholder="John"
-                          className={`pl-10 ${errors.firstName ? "border-red-500" : ""}`}
+                          className={`pl-10 ${
+                            errors.firstName ? "border-red-500" : ""
+                          }`}
                         />
                       </div>
+
                       {errors.firstName && (
                         <p className="text-red-500 text-xs">
                           {errors.firstName}
                         </p>
                       )}
                     </div>
+
                     <div className="space-y-2">
                       <Label>
                         Last Name <span className="text-red-500">*</span>
                       </Label>
+
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                         <Input
                           name="lastName"
                           value={form.lastName}
                           onChange={handleChange}
                           placeholder="Doe"
-                          className={`pl-10 ${errors.lastName ? "border-red-500" : ""}`}
+                          className={`pl-10 ${
+                            errors.lastName ? "border-red-500" : ""
+                          }`}
                         />
                       </div>
+
                       {errors.lastName && (
                         <p className="text-red-500 text-xs">
                           {errors.lastName}
@@ -286,17 +357,22 @@ export default function BookModal() {
                     <Label>
                       Email Address <span className="text-red-500">*</span>
                     </Label>
+
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                       <Input
                         name="email"
                         type="email"
                         value={form.email}
                         onChange={handleChange}
                         placeholder="myemail@gmail.com"
-                        className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          errors.email ? "border-red-500" : ""
+                        }`}
                       />
                     </div>
+
                     {errors.email && (
                       <p className="text-red-500 text-xs">{errors.email}</p>
                     )}
@@ -306,17 +382,22 @@ export default function BookModal() {
                     <Label>
                       Phone Number <span className="text-red-500">*</span>
                     </Label>
+
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                       <Input
                         name="phone"
                         type="tel"
                         value={form.phone}
                         onChange={handleChange}
                         placeholder="08129293939"
-                        className={`pl-10 ${errors.phone ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          errors.phone ? "border-red-500" : ""
+                        }`}
                       />
                     </div>
+
                     {errors.phone && (
                       <p className="text-red-500 text-xs">{errors.phone}</p>
                     )}
@@ -335,16 +416,21 @@ export default function BookModal() {
                     <Label>
                       Factory Name <span className="text-red-500">*</span>
                     </Label>
+
                     <div className="relative">
                       <Factory className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                       <Input
                         name="factoryName"
                         value={form.factoryName}
                         onChange={handleChange}
                         placeholder="Factory Name"
-                        className={`pl-10 ${errors.factoryName ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          errors.factoryName ? "border-red-500" : ""
+                        }`}
                       />
                     </div>
+
                     {errors.factoryName && (
                       <p className="text-red-500 text-xs">
                         {errors.factoryName}
@@ -356,16 +442,21 @@ export default function BookModal() {
                     <Label>
                       Factory Address <span className="text-red-500">*</span>
                     </Label>
+
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                       <Input
                         name="factoryAddress"
                         value={form.factoryAddress}
                         onChange={handleChange}
                         placeholder="Factory Address"
-                        className={`pl-10 ${errors.factoryAddress ? "border-red-500" : ""}`}
+                        className={`pl-10 ${
+                          errors.factoryAddress ? "border-red-500" : ""
+                        }`}
                       />
                     </div>
+
                     {errors.factoryAddress && (
                       <p className="text-red-500 text-xs">
                         {errors.factoryAddress}
@@ -378,6 +469,7 @@ export default function BookModal() {
                       Preferred Visit Date{" "}
                       <span className="text-red-500">*</span>
                     </Label>
+
                     <Calendar
                       mode="single"
                       selected={date}
@@ -385,6 +477,7 @@ export default function BookModal() {
                       className="rounded-lg border"
                       disabled={(date) => date < new Date()}
                     />
+
                     {errors.date && (
                       <p className="text-red-500 text-xs">{errors.date}</p>
                     )}
@@ -397,9 +490,11 @@ export default function BookModal() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-green-600" />
                   </div>
+
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
                     Ready to Book!
                   </h3>
+
                   <p className="text-gray-600 text-sm">
                     Click the button below to submit your booking request.
                     We&apos;ll get back to you within 24 hours.
@@ -421,6 +516,7 @@ export default function BookModal() {
               Back
             </Button>
           )}
+
           {needsPersonalInfo && step === 1 && purpose && (
             <Button
               type="button"
@@ -431,6 +527,7 @@ export default function BookModal() {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           )}
+
           {isFactoryVisit && step === 2 && (
             <Button
               type="button"
@@ -448,6 +545,7 @@ export default function BookModal() {
               )}
             </Button>
           )}
+
           {purpose === "Tour Guide" && step === 2 && (
             <Button
               type="button"
