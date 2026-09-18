@@ -1,25 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { TableCell } from "@/components/ui/table";
-import AdminTable from "@/components/Admin/AdminTable";
+import { useEffect, useState } from "react";
 import {
-  Search,
-  CloudDownload,
-  Eye,
-  PackageSearch,
+  BadgeCheck,
+  Calendar,
   ChevronDown,
+  ChevronUp,
+  Eye,
+  Image as ImageIcon,
+  Mail,
+  MessageCircle,
+  PackageSearch,
+  RefreshCcw,
   X,
-  Check,
-  Clock,
-  Loader2,
 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import Image from "next/image";
 
 type SpecialOrder = {
   id: number;
@@ -29,642 +24,734 @@ type SpecialOrder = {
   description: string;
   images: string[];
   status: string;
-};
 
-const statusConfig: Record<
-  string,
-  {
-    label: string;
-    color: string;
-    icon: React.ReactNode;
-    nextStatuses: string[];
-  }
-> = {
-  pending: {
-    label: "Pending",
-    color: "bg-yellow-100 text-yellow-700",
-    icon: <Clock className="w-3 h-3" />,
-    nextStatuses: ["reviewing", "fulfilled", "cancelled"],
-  },
-  reviewing: {
-    label: "Reviewing",
-    color: "bg-blue-100 text-blue-700",
-    icon: <Loader2 className="w-3 h-3" />,
-    nextStatuses: ["fulfilled", "cancelled"],
-  },
-  fulfilled: {
-    label: "Fulfilled",
-    color: "bg-green-100 text-green-700",
-    icon: <Check className="w-3 h-3" />,
-    nextStatuses: [],
-  },
-  cancelled: {
-    label: "Cancelled",
-    color: "bg-red-100 text-red-700",
-    icon: <X className="w-3 h-3" />,
-    nextStatuses: [],
-  },
-};
+  deposit_amount: number;
+  deposit_reference: string | null;
+  deposit_status: "pending" | "paid" | "refunded";
+  deposit_paid_at: string | null;
+  deposit_refunded_at: string | null;
 
-const headers = [
-  "ID",
-  "Customer",
-  "Description",
-  "Images",
-  "Date",
-  "Status",
-  "Actions",
-];
-
-const fetchSpecialOrders = async () => {
-  const res = await fetch("/api/admin/special-orders");
-  if (!res.ok) throw new Error("Failed to fetch special orders");
-  return res.json();
+  refund_reference: string | null;
+  refund_status: string | null;
+  refund_initiated_at: string | null;
 };
 
 export default function SpecialOrdersTab() {
-  const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState<number | null>(
-    null,
-  );
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [specialOrders, setSpecialOrders] = useState<SpecialOrder[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+
   const [selectedOrder, setSelectedOrder] = useState<SpecialOrder | null>(null);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["specialOrders"],
-    queryFn: fetchSpecialOrders,
-  });
+  const [refundingId, setRefundingId] = useState<number | null>(null);
 
-  const orders: SpecialOrder[] = data?.specialOrders ?? [];
+  useEffect(() => {
+    fetchSpecialOrders();
+  }, []);
 
-  const { mutate: updateStatus } = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await fetch("/api/admin/special-orders", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+  const fetchSpecialOrders = async () => {
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api/admin/special-orders", {
+        method: "GET",
+        cache: "no-store",
       });
-      if (!res.ok) throw new Error("Failed to update status");
-      return res.json();
-    },
-    onMutate: ({ id }) => setUpdatingId(id),
-    onSuccess: (_, { id, status }) => {
-      queryClient.setQueryData(
-        ["specialOrders"],
-        (old: { specialOrders: SpecialOrder[] } | undefined) => ({
-          specialOrders: (old?.specialOrders ?? []).map((o) =>
-            o.id === id ? { ...o, status } : o,
-          ),
-        }),
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch special orders.");
+      }
+
+      setSpecialOrders(
+        Array.isArray(data.specialOrders) ? data.specialOrders : [],
       );
-      toast.success(`Order marked as ${status}`);
-    },
-    onError: () => toast.error("Failed to update status"),
-    onSettled: () => {
-      setUpdatingId(null);
-      setStatusDropdownOpen(null);
-    },
-  });
+    } catch (error) {
+      console.error("Fetch special orders error:", error);
 
-  const filteredOrders = useMemo(() => {
-    const q = search.toLowerCase();
-    return orders
-      .filter(
-        (o) =>
-          !q ||
-          o.email.toLowerCase().includes(q) ||
-          o.description?.toLowerCase().includes(q) ||
-          o.id.toString().includes(q),
-      )
-      .filter((o) => statusFilter === "all" || o.status === statusFilter);
-  }, [search, statusFilter, orders]);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to load special orders.",
+      );
 
-  const stats = {
-    total: orders.length,
-    pending: orders.filter((o) => o.status === "pending").length,
-    reviewing: orders.filter((o) => o.status === "reviewing").length,
-    fulfilled: orders.filter((o) => o.status === "fulfilled").length,
-    cancelled: orders.filter((o) => o.status === "cancelled").length,
+      setSpecialOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getStatusBadge = (status: string) => {
-    const config = statusConfig[status] || statusConfig.pending;
+  const toggleExpanded = (id: number) => {
+    setExpandedOrder((current) => (current === id ? null : id));
+  };
+
+  const updateStatus = async (id: number, status: string) => {
+    try {
+      const response = await fetch("/api/admin/special-orders", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          status,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update order status.");
+      }
+
+      setSpecialOrders((orders) =>
+        orders.map((order) =>
+          order.id === id
+            ? {
+                ...order,
+                status,
+              }
+            : order,
+        ),
+      );
+
+      setSelectedOrder((order) =>
+        order?.id === id
+          ? {
+              ...order,
+              status,
+            }
+          : order,
+      );
+
+      toast.success("Special order status updated.");
+    } catch (error) {
+      console.error("Status update error:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update order status.",
+      );
+    }
+  };
+
+  const refundDeposit = async (id: number) => {
+    try {
+      setRefundingId(id);
+
+      const response = await fetch("/api/admin/special-orders/refund", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to initiate refund.");
+      }
+
+      setSpecialOrders((orders) =>
+        orders.map((order) =>
+          order.id === id
+            ? {
+                ...order,
+                refund_reference:
+                  data.refundReference ?? order.refund_reference,
+                refund_status: data.refundStatus ?? "pending",
+                refund_initiated_at: new Date().toISOString(),
+              }
+            : order,
+        ),
+      );
+
+      setSelectedOrder((order) =>
+        order?.id === id
+          ? {
+              ...order,
+              refund_reference: data.refundReference ?? order.refund_reference,
+              refund_status: data.refundStatus ?? "pending",
+              refund_initiated_at: new Date().toISOString(),
+            }
+          : order,
+      );
+
+      toast.success("The ₦50,000 refund has been requested successfully.");
+    } catch (error) {
+      console.error("Refund error:", error);
+
+      toast.error(
+        error instanceof Error ? error.message : "Failed to initiate refund.",
+      );
+    } finally {
+      setRefundingId(null);
+    }
+  };
+
+  const handleRefund = (order: SpecialOrder) => {
+    if (order.deposit_status !== "paid") {
+      toast.error("Only paid deposits can be refunded.");
+      return;
+    }
+
+    if (
+      order.refund_status === "pending" ||
+      order.refund_status === "processing"
+    ) {
+      toast.info("A refund is already being processed.");
+      return;
+    }
+
+    const amount = Number(order.deposit_amount || 50_000).toLocaleString(
+      "en-NG",
+    );
+
+    const confirmed = window.confirm(
+      `Refund ₦${amount} to ${order.email}?\n\n` +
+        `This will request a refund through Paystack. Continue?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    refundDeposit(order.id);
+  };
+
+  const getDepositBadge = (order: SpecialOrder) => {
+    if (order.deposit_status === "refunded") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+          <BadgeCheck size={13} />
+          Refunded
+        </span>
+      );
+    }
+
+    if (order.refund_status === "pending") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700">
+          <RefreshCcw size={13} />
+          Refund Pending
+        </span>
+      );
+    }
+
+    if (order.refund_status === "processing") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-medium text-yellow-700">
+          <RefreshCcw size={13} />
+          Refund Processing
+        </span>
+      );
+    }
+
+    if (order.deposit_status === "paid") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">
+          <BadgeCheck size={13} />
+          Deposit Paid
+        </span>
+      );
+    }
+
     return (
-      <span
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}
-      >
-        {config.icon}
-        {config.label}
+      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
+        Pending
       </span>
     );
   };
 
-  const handleExport = () => {
-    const csv = [
-      ["ID", "Email", "Description", "Images", "Status", "Date"],
-      ...orders.map((o) => [
-        o.id,
-        o.email,
-        `"${o.description?.replace(/"/g, '""') ?? ""}"`,
-        o.images?.length ?? 0,
-        o.status,
-        new Date(o.created_at).toLocaleDateString(),
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+  const getRefundButton = (order: SpecialOrder) => {
+    if (order.deposit_status === "refunded") {
+      return null;
+    }
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `special-orders_${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Special orders exported!");
+    if (
+      order.refund_status === "pending" ||
+      order.refund_status === "processing"
+    ) {
+      return (
+        <button
+          type="button"
+          disabled
+          className="inline-flex items-center gap-2 rounded-lg bg-yellow-100 px-3 py-2 text-sm font-medium text-yellow-700"
+        >
+          <RefreshCcw size={15} />
+          Refund Pending
+        </button>
+      );
+    }
+
+    if (order.refund_status === "processed") {
+      return (
+        <span className="inline-flex items-center gap-2 rounded-lg bg-green-100 px-3 py-2 text-sm font-medium text-green-700">
+          <BadgeCheck size={15} />
+          Refund Processed
+        </span>
+      );
+    }
+
+    if (order.deposit_status === "paid") {
+      return (
+        <button
+          type="button"
+          onClick={() => handleRefund(order)}
+          disabled={refundingId === order.id}
+          className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+        >
+          <RefreshCcw
+            size={15}
+            className={refundingId === order.id ? "animate-spin" : ""}
+          />
+
+          {refundingId === order.id ? "Refunding..." : "Refund ₦50,000"}
+        </button>
+      );
+    }
+
+    return null;
   };
 
-  if (isLoading) {
+  const formatDate = (date: string | null) => {
+    if (!date) return "—";
+
+    return new Date(date).toLocaleString("en-NG", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
+
+  if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-24 bg-gray-200 rounded-xl animate-pulse"
-            />
-          ))}
+      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+          <RefreshCcw size={16} className="animate-spin" />
+          Loading special orders...
         </div>
-        <div className="h-12 bg-gray-200 rounded-lg animate-pulse" />
-        <div className="h-96 bg-gray-200 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
+  if (specialOrders.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
+        <PackageSearch size={32} className="mx-auto mb-3 text-gray-400" />
+
+        <p className="text-sm font-medium text-gray-700">
+          No special orders found.
+        </p>
+
+        <p className="mt-1 text-xs text-gray-500">
+          Special orders will appear here after a customer submits one.
+        </p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Total</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600">
-              {stats.pending}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Reviewing</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {stats.reviewing}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Fulfilled</p>
-            <p className="text-2xl font-bold text-green-600">
-              {stats.fulfilled}
-            </p>
-          </div>
-        </div>
+      <div className="space-y-4">
+        {specialOrders.map((order) => {
+          const isExpanded = expandedOrder === order.id;
 
-        {/* Search & Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by email, description, ID..."
-                className="pl-9 py-2 text-sm"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="reviewing">Reviewing</option>
-                <option value="fulfilled">Fulfilled</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                className="gap-2"
-              >
-                <CloudDownload className="w-4 h-4" />
-                Export CSV
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Orders List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <PackageSearch className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No special orders found</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Try adjusting your search or filters
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Mobile: Card layout */}
-              <div className="md:hidden divide-y divide-gray-100">
-                {filteredOrders.map((order, index) => (
-                  <motion.div
-                    key={order.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    className="p-4 hover:bg-gray-50 transition-colors space-y-3"
-                  >
-                    {/* Top row: ID + Status with dropdown */}
-                    <div className="flex items-center justify-between">
-                      <p className="font-mono text-xs text-gray-400">
-                        #{order.id}
-                      </p>
-                      <div className="relative">
-                        <button
-                          onClick={() =>
-                            setStatusDropdownOpen(
-                              statusDropdownOpen === order.id ? null : order.id,
-                            )
-                          }
-                          disabled={updatingId === order.id}
-                          className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50 cursor-pointer"
-                        >
-                          {getStatusBadge(order.status)}
-                          {statusConfig[order.status]?.nextStatuses.length >
-                            0 && (
-                            <ChevronDown className="w-3 h-3 text-gray-400" />
-                          )}
-                        </button>
-                        {statusDropdownOpen === order.id && (
-                          <div className="absolute right-0 z-10 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
-                            {statusConfig[order.status]?.nextStatuses.map(
-                              (nextStatus) => (
-                                <button
-                                  key={nextStatus}
-                                  onClick={() =>
-                                    updateStatus({
-                                      id: order.id,
-                                      status: nextStatus,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <span
-                                    className={`w-2 h-2 rounded-full ${statusConfig[nextStatus]?.color.split(" ")[0].replace("100", "500")}`}
-                                  />
-                                  Mark as {statusConfig[nextStatus]?.label}
-                                </button>
-                              ),
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Customer email */}
-                    <p className="text-sm text-gray-700">{order.email}</p>
-
-                    {/* Description */}
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {order.description?.length > 100
-                        ? order.description.substring(0, 100) + "..."
-                        : order.description || "—"}
-                    </p>
-
-                    {/* Images preview */}
-                    {order.images?.length > 0 && (
-                      <div className="flex gap-2">
-                        {order.images.slice(0, 3).map((img, i) => (
-                          <div
-                            key={i}
-                            className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 shrink-0"
-                          >
-                            <Image
-                              src={img}
-                              alt={`Order image ${i + 1}`}
-                              width={64}
-                              height={64}
-                              className="object-cover w-full h-full"
-                            />
-                          </div>
-                        ))}
-                        {order.images.length > 3 && (
-                          <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-500">
-                            +{order.images.length - 3}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Date */}
-                    <p className="text-xs text-gray-400">
-                      {new Date(order.created_at).toLocaleDateString("en-NG", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-
-                    {/* Actions */}
-                    <div className="pt-2 border-t border-gray-100">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedOrder(order)}
-                        className="w-full justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer text-xs"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View Details
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Desktop: Table layout */}
-              <div className="hidden md:block overflow-x-auto">
-                <AdminTable
-                  headers={headers}
-                  caption="A list of special orders."
-                >
-                  {filteredOrders.map((order, index) => (
-                    <motion.tr
-                      key={order.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                    >
-                      <TableCell className="font-mono text-sm text-gray-500">
-                        #{order.id}
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm text-gray-700">{order.email}</p>
-                      </TableCell>
-                      <TableCell className="max-w-xs">
-                        <p
-                          className="text-sm text-gray-600 truncate"
-                          title={order.description}
-                        >
-                          {order.description?.length > 60
-                            ? order.description.substring(0, 60) + "..."
-                            : order.description || "—"}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        {order.images?.length > 0 ? (
-                          <div className="flex gap-1">
-                            {order.images.slice(0, 2).map((img, i) => (
-                              <div
-                                key={i}
-                                className="w-10 h-10 rounded-md overflow-hidden border border-gray-200 bg-gray-50 shrink-0"
-                              >
-                                <Image
-                                  src={img}
-                                  alt={`Order image ${i + 1}`}
-                                  width={40}
-                                  height={40}
-                                  className="object-cover w-full h-full"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400">
-                            No images
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString(
-                          "en-NG",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          },
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setStatusDropdownOpen(
-                                statusDropdownOpen === order.id
-                                  ? null
-                                  : order.id,
-                              )
-                            }
-                            disabled={updatingId === order.id}
-                            className="flex items-center gap-1 hover:opacity-80 disabled:opacity-50 cursor-pointer"
-                          >
-                            {getStatusBadge(order.status)}
-                            {statusConfig[order.status]?.nextStatuses.length >
-                              0 && (
-                              <ChevronDown className="w-3 h-3 text-gray-400" />
-                            )}
-                          </button>
-                          {statusDropdownOpen === order.id && (
-                            <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-100 py-1">
-                              {statusConfig[order.status]?.nextStatuses.map(
-                                (nextStatus) => (
-                                  <button
-                                    key={nextStatus}
-                                    onClick={() =>
-                                      updateStatus({
-                                        id: order.id,
-                                        status: nextStatus,
-                                      })
-                                    }
-                                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
-                                  >
-                                    <span
-                                      className={`w-2 h-2 rounded-full ${statusConfig[nextStatus]?.color.split(" ")[0].replace("100", "500")}`}
-                                    />
-                                    Mark as {statusConfig[nextStatus]?.label}
-                                  </button>
-                                ),
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedOrder(order)}
-                          className="text-gray-400 hover:text-blue-600 cursor-pointer"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-                </AdminTable>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Detail Modal */}
-      <AnimatePresence>
-        {selectedOrder && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-            onClick={() => setSelectedOrder(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          return (
+            <div
+              key={order.id}
+              className="overflow-hidden rounded-xl border border-gray-200 bg-white"
             >
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    Special Order #{selectedOrder.id}
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {selectedOrder.email}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSelectedOrder(null)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
+              <div className="p-4 sm:p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold text-gray-900">
+                        Special Order #{order.id}
+                      </h3>
 
-              <div className="p-6 space-y-5">
-                {/* Status */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">
-                    Status
-                  </span>
-                  {getStatusBadge(selectedOrder.status)}
-                </div>
+                      {getDepositBadge(order)}
 
-                {/* Date */}
-                <div>
-                  <span className="text-sm font-medium text-gray-600">
-                    Submitted
-                  </span>
-                  <p className="text-sm text-gray-700 mt-1">
-                    {new Date(selectedOrder.created_at).toLocaleDateString(
-                      "en-NG",
-                      {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )}
-                  </p>
-                </div>
+                      <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-gray-600">
+                        {order.status}
+                      </span>
+                    </div>
 
-                {/* Description */}
-                <div>
-                  <span className="text-sm font-medium text-gray-600">
-                    Description
-                  </span>
-                  <p className="text-sm text-gray-700 mt-1 leading-relaxed bg-gray-50 rounded-lg p-3">
-                    {selectedOrder.description || "No description provided"}
-                  </p>
-                </div>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Mail size={14} />
+                        {order.email}
+                      </span>
 
-                {/* Images */}
-                {selectedOrder.images?.length > 0 && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-600">
-                      Reference Images ({selectedOrder.images.length})
-                    </span>
-                    <div className="grid grid-cols-2 gap-3 mt-2">
-                      {selectedOrder.images.map((img, i) => (
-                        <a
-                          key={i}
-                          href={img}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <div className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50 hover:opacity-90 transition-opacity">
-                            <Image
-                              src={img}
-                              alt={`Reference image ${i + 1}`}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 50vw, 25vw"
-                            />
-                          </div>
-                        </a>
-                      ))}
+                      <span className="flex items-center gap-1">
+                        <Calendar size={14} />
+                        {formatDate(order.created_at)}
+                      </span>
                     </div>
                   </div>
-                )}
 
-                {/* Status Actions */}
-                {statusConfig[selectedOrder.status]?.nextStatuses.length >
-                  0 && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-600 block mb-2">
-                      Update Status
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {statusConfig[selectedOrder.status].nextStatuses.map(
-                        (nextStatus) => (
-                          <Button
-                            key={nextStatus}
-                            size="sm"
-                            variant="outline"
-                            disabled={updatingId === selectedOrder.id}
-                            onClick={() => {
-                              updateStatus({
-                                id: selectedOrder.id,
-                                status: nextStatus,
-                              });
-                              setSelectedOrder({
-                                ...selectedOrder,
-                                status: nextStatus,
-                              });
-                            }}
-                            className="capitalize cursor-pointer"
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrder(order)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+                    >
+                      <Eye size={15} />
+                      View
+                    </button>
+
+                    {getRefundButton(order)}
+
+                    <button
+                      type="button"
+                      onClick={() => toggleExpanded(order.id)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 cursor-pointer"
+                    >
+                      {isExpanded ? (
+                        <>
+                          <ChevronUp size={15} />
+                          Hide
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={15} />
+                          Details
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <div className="mt-5 border-t border-gray-100 pt-5">
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <div>
+                        <h4 className="mb-2 text-sm font-semibold text-gray-900">
+                          Description
+                        </h4>
+
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">
+                          {order.description}
+                        </p>
+                      </div>
+
+                      <div>
+                        <h4 className="mb-2 text-sm font-semibold text-gray-900">
+                          Contact
+                        </h4>
+
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <p className="flex items-center gap-2">
+                            <Mail size={15} />
+                            {order.email}
+                          </p>
+
+                          <p className="flex items-center gap-2">
+                            <MessageCircle size={15} />
+                            User ID: {order.userId}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="mb-2 text-sm font-semibold text-gray-900">
+                          Deposit
+                        </h4>
+
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <p>
+                            Amount:{" "}
+                            <span className="font-medium text-gray-900">
+                              ₦
+                              {Number(
+                                order.deposit_amount || 50_000,
+                              ).toLocaleString("en-NG")}
+                            </span>
+                          </p>
+
+                          <p>
+                            Status:{" "}
+                            <span className="font-medium capitalize text-gray-900">
+                              {order.deposit_status}
+                            </span>
+                          </p>
+
+                          <p>Paid: {formatDate(order.deposit_paid_at)}</p>
+
+                          <p className="break-all">
+                            Reference: {order.deposit_reference || "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="mb-2 text-sm font-semibold text-gray-900">
+                          Refund
+                        </h4>
+
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <p>
+                            Status:{" "}
+                            <span className="font-medium capitalize text-gray-900">
+                              {order.refund_status || "Not requested"}
+                            </span>
+                          </p>
+
+                          <p>
+                            Requested: {formatDate(order.refund_initiated_at)}
+                          </p>
+
+                          <p>
+                            Refunded: {formatDate(order.deposit_refunded_at)}
+                          </p>
+
+                          <p className="break-all">
+                            Reference: {order.refund_reference || "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {order.images?.length > 0 && (
+                      <div className="mt-5">
+                        <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                          <ImageIcon size={15} />
+                          Reference Images
+                        </h4>
+
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                          {order.images.map((image, index) => (
+                            <a
+                              key={`${image}-${index}`}
+                              href={image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group overflow-hidden rounded-lg border border-gray-200"
+                            >
+                              <img
+                                src={image}
+                                alt={`Special order reference ${index + 1}`}
+                                className="aspect-square w-full object-cover transition group-hover:scale-105"
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-5">
+                      <span className="mr-1 text-sm font-medium text-gray-700">
+                        Update status:
+                      </span>
+
+                      {["pending", "reviewing", "fulfilled", "cancelled"].map(
+                        (status) => (
+                          <button
+                            key={status}
+                            type="button"
+                            onClick={() => updateStatus(order.id, status)}
+                            disabled={order.status === status}
+                            className={`rounded-lg px-3 py-2 text-xs font-medium capitalize transition ${
+                              order.status === status
+                                ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                                : "bg-gray-900 text-white hover:bg-gray-800"
+                            }`}
                           >
-                            Mark as {statusConfig[nextStatus].label}
-                          </Button>
+                            {status}
+                          </button>
                         ),
                       )}
+
+                      {getRefundButton(order)}
                     </div>
                   </div>
                 )}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+
+      {selectedOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setSelectedOrder(null)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Special Order #{selectedOrder.id}
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  {selectedOrder.email}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-6 p-5">
+              <section>
+                <h3 className="mb-2 text-sm font-semibold text-gray-900">
+                  Description
+                </h3>
+
+                <p className="whitespace-pre-wrap rounded-lg bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+                  {selectedOrder.description}
+                </p>
+              </section>
+
+              <section>
+                <h3 className="mb-3 text-sm font-semibold text-gray-900">
+                  Deposit Information
+                </h3>
+
+                <div className="grid gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-gray-500">Amount</p>
+
+                    <p className="mt-1 font-semibold text-gray-900">
+                      ₦
+                      {Number(
+                        selectedOrder.deposit_amount || 50_000,
+                      ).toLocaleString("en-NG")}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-500">Deposit Status</p>
+
+                    <div className="mt-1">{getDepositBadge(selectedOrder)}</div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-500">Payment Reference</p>
+
+                    <p className="mt-1 break-all text-sm text-gray-900">
+                      {selectedOrder.deposit_reference || "—"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-500">Paid At</p>
+
+                    <p className="mt-1 text-sm text-gray-900">
+                      {formatDate(selectedOrder.deposit_paid_at)}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="mb-3 text-sm font-semibold text-gray-900">
+                  Refund Information
+                </h3>
+
+                <div className="rounded-lg bg-gray-50 p-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-xs text-gray-500">Refund Status</p>
+
+                      <p className="mt-1 text-sm font-medium capitalize text-gray-900">
+                        {selectedOrder.refund_status || "Not requested"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-500">Refund Reference</p>
+
+                      <p className="mt-1 break-all text-sm text-gray-900">
+                        {selectedOrder.refund_reference || "—"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-500">Refund Requested</p>
+
+                      <p className="mt-1 text-sm text-gray-900">
+                        {formatDate(selectedOrder.refund_initiated_at)}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-500">Refund Completed</p>
+
+                      <p className="mt-1 text-sm text-gray-900">
+                        {formatDate(selectedOrder.deposit_refunded_at)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {selectedOrder.refund_status &&
+                    selectedOrder.deposit_status !== "refunded" && (
+                      <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                        The refund has been requested through Paystack. The
+                        deposit will be marked as refunded once the refund is
+                        confirmed.
+                      </div>
+                    )}
+                </div>
+              </section>
+
+              {selectedOrder.images?.length > 0 && (
+                <section>
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <ImageIcon size={16} />
+                    Reference Images
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {selectedOrder.images.map((image, index) => (
+                      <a
+                        key={`${image}-${index}`}
+                        href={image}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group overflow-hidden rounded-lg border border-gray-200"
+                      >
+                        <img
+                          src={image}
+                          alt={`Special order reference ${index + 1}`}
+                          className="aspect-square w-full object-cover transition group-hover:scale-105"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <section className="flex flex-wrap items-center gap-2 border-t border-gray-200 pt-5">
+                {getRefundButton(selectedOrder)}
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrder(null)}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

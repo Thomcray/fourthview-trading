@@ -15,34 +15,85 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+
+const SPECIAL_ORDER_DEPOSIT = 50_000;
+const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
+
+declare global {
+  interface Window {
+    PaystackPop: {
+      setup: (config: object) => {
+        openIframe: () => void;
+      };
+    };
+  }
+}
+
+function loadPaystackScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.PaystackPop) {
+      resolve();
+      return;
+    }
+
+    const existingScript = document.querySelector(
+      'script[src="https://js.paystack.co/v1/inline.js"]',
+    );
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve());
+      existingScript.addEventListener("error", () =>
+        reject(new Error("Failed to load Paystack script")),
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://js.paystack.co/v1/inline.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Paystack script"));
+
+    document.body.appendChild(script);
+  });
+}
 
 export default function SpecialOrders() {
   const [orderImages, setOrderImages] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
   const MAX_IMAGES = 2;
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   const router = useRouter();
+
+  useEffect(() => {
+    loadPaystackScript().catch(() => {});
+  }, []);
 
   const validateImage = (file: File): boolean => {
     if (!file.type.startsWith("image/")) {
       toast.error(`${file.name} is not an image file`);
       return false;
     }
+
     if (file.size > MAX_FILE_SIZE) {
-      toast.error(`${file.name} exceeds 2MB limit`);
+      console.log(
+        `File size: ${file.size} bytes, Max size: ${MAX_FILE_SIZE} bytes`,
+      );
+      toast.error(`${file.name} exceeds 5MB limit`);
       return false;
     }
+
     return true;
   };
 
@@ -94,6 +145,7 @@ export default function SpecialOrders() {
       setIsDragging(false);
 
       const files = Array.from(e.dataTransfer.files);
+
       files.forEach((file) => {
         if (!validateImage(file)) return;
 
@@ -116,35 +168,146 @@ export default function SpecialOrders() {
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const form = e.currentTarget;
-    const formData = new FormData(form as HTMLFormElement);
-    const description = formData.get("description") as string;
-
-    if (!description?.trim()) {
-      toast.error("Please provide an order description");
+    if (!userId) {
+      toast.error("Please sign in before submitting a special order.");
       return;
     }
 
-    startTransition(async () => {
-      try {
-        await specialOrders(formData, userId, orderImages);
-        toast.success("Your order has been sent successfully!");
+    if (isPaymentLoading || isPending) {
+      return;
+    }
 
-        // Reset form
-        form.reset();
-        setOrderImages([]);
-        setError("");
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const description = formData.get("description") as string;
+    const email = formData.get("email") as string;
+    const whatsapp = formData.get("whatsapp") as string;
 
-        router.push("/");
-      } catch (error) {
-        const errorMessage = (error as Error).message;
-        setError(errorMessage);
-        toast.error(
-          errorMessage || "Failed to submit order. Please try again.",
-        );
-      }
-    });
+    if (!email?.trim()) {
+      toast.error("Please provide your email address.");
+      return;
+    }
+
+    if (!whatsapp?.trim()) {
+      toast.error("Please provide your WhatsApp number.");
+      return;
+    }
+
+    if (!description?.trim()) {
+      toast.error("Please provide an order description.");
+      return;
+    }
+
+    setError("");
+    setIsPaymentLoading(true);
+
+    try {
+      await loadPaystackScript();
+
+      /*
+       * This reference belongs ONLY to this special-order deposit.
+       * It is completely separate from the reference generated
+       * by the normal cart checkout.
+       */
+      const reference = `SPECIAL-${Date.now()}-${crypto
+        .randomUUID()
+        .replace(/-/g, "")
+        .slice(0, 12)}`;
+
+      const handlePaymentSuccess = () => {
+        startTransition(async () => {
+          try {
+            /*
+             * The server action will independently verify this
+             * reference with Paystack before creating the order.
+             */
+            await specialOrders(formData, userId, orderImages, reference);
+
+            setIsPaymentLoading(false);
+
+            toast.success(
+              "Payment received! Your special order has been submitted successfully.",
+              {
+                autoClose: 2000,
+                onClose: () => router.push("/"),
+              },
+            );
+
+            form.reset();
+            setOrderImages([]);
+            setError("");
+          } catch (error) {
+            console.error("Special order submission failed:", error);
+
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "Payment was successful, but we could not submit your special order.";
+
+            setError(errorMessage);
+            setIsPaymentLoading(false);
+
+            toast.error(errorMessage);
+          }
+        });
+      };
+
+      const handler = window.PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email,
+        amount: SPECIAL_ORDER_DEPOSIT * 100,
+        currency: "NGN",
+        ref: reference,
+
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Payment Type",
+              variable_name: "payment_type",
+              value: "Special Order Refundable Deposit",
+            },
+            {
+              display_name: "Customer Name",
+              variable_name: "customer_name",
+              value: `${session?.user?.firstName ?? ""} ${
+                session?.user?.lastName ?? ""
+              }`.trim(),
+            },
+            {
+              display_name: "WhatsApp",
+              variable_name: "whatsapp",
+              value: whatsapp,
+            },
+          ],
+        },
+
+        callback: () => {
+          handlePaymentSuccess();
+        },
+
+        onClose: () => {
+          setIsPaymentLoading(false);
+          toast.info("Payment cancelled");
+        },
+      });
+
+      handler.openIframe();
+    } catch (error) {
+      console.error("Special-order payment initialization failed:", error);
+
+      setIsPaymentLoading(false);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to start payment. Please try again.";
+
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
   };
+
+  const isSubmitting = isPending || isPaymentLoading;
 
   return (
     <section className="min-h-screen bg-linear-to-b from-gray-50 to-white py-8 sm:py-12">
@@ -154,6 +317,7 @@ export default function SpecialOrders() {
           <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">
             Special Orders & Enquiries
           </h1>
+
           <p className="text-gray-600 max-w-2xl mx-auto">
             Have a special request? Let us know and we&apos;ll get back to you
             within 24 hours
@@ -163,6 +327,29 @@ export default function SpecialOrders() {
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <form className="p-6 sm:p-8 space-y-6" onSubmit={handleOrder}>
+            {/* Deposit Notice */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-blue-50 border border-blue-200 rounded-xl p-4"
+            >
+              <div className="flex gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+
+                <div>
+                  <h3 className="font-semibold text-blue-900">
+                    ₦50,000 Refundable Commitment Deposit
+                  </h3>
+
+                  <p className="text-sm text-blue-800 mt-1 leading-relaxed">
+                    A refundable ₦50,000 deposit is required when submitting a
+                    special order request. The deposit will be refunded when
+                    your actual order is placed.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
             {/* Error Alert */}
             {error && (
               <motion.div
@@ -175,12 +362,13 @@ export default function SpecialOrders() {
               </motion.div>
             )}
 
-            {/* Email Field - Readonly if logged in */}
+            {/* Email Field */}
             <div className="space-y-2">
               <Label className="text-gray-700 font-medium">
                 Email Address
                 {!session?.user && <span className="text-red-500 ml-1">*</span>}
               </Label>
+
               <Input
                 type="email"
                 name="email"
@@ -190,6 +378,7 @@ export default function SpecialOrders() {
                 readOnly={!!session?.user}
                 required={!session?.user}
               />
+
               {session?.user && (
                 <p className="text-xs text-gray-500">
                   Using your registered email address
@@ -202,6 +391,7 @@ export default function SpecialOrders() {
               <Label className="text-gray-700 font-medium">
                 WhatsApp Number <span className="text-red-500">*</span>
               </Label>
+
               <Input
                 type="tel"
                 name="whatsapp"
@@ -209,6 +399,7 @@ export default function SpecialOrders() {
                 className="py-6 px-4 bg-gray-50 border-gray-200 focus:bg-white"
                 required
               />
+
               <p className="text-xs text-gray-500">
                 We&apos;ll contact you on WhatsApp with updates on your order
               </p>
@@ -219,6 +410,7 @@ export default function SpecialOrders() {
               <Label className="text-gray-700 font-medium">
                 Order Description <span className="text-red-500">*</span>
               </Label>
+
               <Textarea
                 name="description"
                 placeholder="Describe your special order, request, or enquiry in detail..."
@@ -233,6 +425,7 @@ export default function SpecialOrders() {
                 <Label className="text-gray-700 font-medium">
                   Reference Images (Optional)
                 </Label>
+
                 <p className="text-xs text-gray-500 mt-1">
                   Upload up to {MAX_IMAGES} images to help us understand your
                   request better
@@ -252,7 +445,11 @@ export default function SpecialOrders() {
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-300 hover:border-blue-400 bg-gray-50"
                   }
-                  ${orderImages.length >= MAX_IMAGES ? "opacity-50 pointer-events-none" : ""}
+                  ${
+                    orderImages.length >= MAX_IMAGES
+                      ? "opacity-50 pointer-events-none"
+                      : ""
+                  }
                 `}
               >
                 <Input
@@ -264,13 +461,17 @@ export default function SpecialOrders() {
                   disabled={orderImages.length >= MAX_IMAGES}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
+
                 <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+
                 <p className="text-sm text-gray-600">
                   Click to upload or drag and drop
                 </p>
+
                 <p className="text-xs text-gray-400 mt-1">
-                  PNG, JPG, GIF up to 2MB each
+                  PNG, JPG, GIF up to 5MB each
                 </p>
+
                 <p className="text-xs text-orange-500 mt-2">
                   ⚠️ Maximum {MAX_IMAGES} images
                 </p>
@@ -283,6 +484,7 @@ export default function SpecialOrders() {
                     <p className="text-sm font-medium text-gray-700">
                       {orderImages.length} of {MAX_IMAGES} images added
                     </p>
+
                     <Button
                       type="button"
                       variant="ghost"
@@ -300,9 +502,18 @@ export default function SpecialOrders() {
                       {orderImages.map((image, index) => (
                         <motion.div
                           key={`${image.name}-${index}`}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
+                          initial={{
+                            opacity: 0,
+                            scale: 0.8,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            scale: 1,
+                          }}
+                          exit={{
+                            opacity: 0,
+                            scale: 0.8,
+                          }}
                           className="relative group"
                         >
                           <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
@@ -313,6 +524,7 @@ export default function SpecialOrders() {
                               className="object-cover"
                               sizes="(max-width: 640px) 50vw, 25vw"
                             />
+
                             {/* Overlay */}
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                               <button
@@ -323,6 +535,7 @@ export default function SpecialOrders() {
                                 <Trash2 className="w-4 h-4 text-white" />
                               </button>
                             </div>
+
                             {/* File Size Badge */}
                             <div className="absolute bottom-1 left-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
                               {(image.size / (1024 * 1024)).toFixed(2)} MB
@@ -339,26 +552,29 @@ export default function SpecialOrders() {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isPending}
+              disabled={isSubmitting}
               className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {isPending ? (
+              {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Submitting...
+                  {isPaymentLoading
+                    ? "Waiting for payment..."
+                    : "Submitting..."}
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
                   <Send className="w-5 h-5" />
-                  Submit Special Order
+                  Pay ₦50,000 & Submit Special Order
                 </div>
               )}
             </Button>
 
             {/* Help Text */}
             <p className="text-center text-xs text-gray-500 pt-4 border-t">
-              We&apos;ll review your request and get back to you within 24-48
-              hours
+              Your ₦50,000 commitment deposit is refundable when your actual
+              order is placed. We&apos;ll review your request and get back to
+              you within 24-48 hours.
             </p>
           </form>
         </div>

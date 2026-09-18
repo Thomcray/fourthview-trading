@@ -2,12 +2,16 @@ import { cache } from "react";
 import { createClient } from "./supabase-server";
 import countriesData from "./countries.json";
 
-type Orders = {
+type SpecialOrder = {
   email: string;
   description: string;
   userId: string;
   images: string[];
   whatsapp: string;
+  deposit_amount: number;
+  deposit_reference: string;
+  deposit_status: "paid";
+  deposit_paid_at?: string | null;
 };
 
 type Car = {
@@ -210,13 +214,48 @@ export async function getProductById(id: number) {
   return product;
 }
 
-export async function newSpecialOrders(orders: Orders) {
+export async function newSpecialOrders(order: SpecialOrder) {
   const supabase = await createClient(true);
-  const { data, error } = await supabase.from("specialOrders").insert([orders]);
+
+  const { data, error } = await supabase
+    .from("specialOrders")
+    .insert([
+      {
+        email: order.email,
+        description: order.description,
+        userId: order.userId,
+        images: order.images,
+        whatsapp: order.whatsapp,
+        deposit_amount: order.deposit_amount,
+        deposit_reference: order.deposit_reference,
+        deposit_status: order.deposit_status,
+        deposit_paid_at: order.deposit_paid_at ?? new Date().toISOString(),
+      },
+    ])
+    .select()
+    .single();
 
   if (error) {
-    console.error(error);
-    throw new Error("Error placing order. Try again!");
+    console.error("Special order database error:", error);
+    throw new Error("Error placing special order. Try again!");
+  }
+
+  return data;
+}
+
+export async function updateSpecialOrderImages(id: number, images: string[]) {
+  const supabase = await createClient(true);
+
+  const { data, error } = await supabase
+    .from("specialOrders")
+    .update({ images })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Special order image update error:", error);
+    throw new Error("Could not attach special-order images.");
   }
 
   return data;
