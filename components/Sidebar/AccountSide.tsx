@@ -1,4 +1,3 @@
-// components/Sidebar/AccountSide.tsx
 "use client";
 
 import Link from "next/link";
@@ -6,10 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   UserRoundCog,
   WalletCards,
-  LogOut,
-  ShoppingBag,
-  Heart,
-  Settings,
   HelpCircle,
   ChevronRight,
 } from "lucide-react";
@@ -41,12 +36,12 @@ export default function AccountSide() {
   ];
 
   const secondaryLinks = [
-    {
-      href: "/account/settings",
-      label: "Settings",
-      icon: <Settings className="w-5 h-5" />,
-      description: "Preferences",
-    },
+    // {
+    //   href: "/account/settings",
+    //   label: "Settings",
+    //   icon: <Settings className="w-5 h-5" />,
+    //   description: "Preferences",
+    // },
     {
       href: "/contact",
       label: "Help Center",

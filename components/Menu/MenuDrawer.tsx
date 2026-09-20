@@ -80,7 +80,7 @@ const mainMenuItems = [
 
 const accountMenuItems = [
   { title: "My Account", path: "/account/profile", icon: Settings },
-  { title: "Help Center", path: "/help", icon: HelpCircle },
+  { title: "Help Center", path: "/contact", icon: HelpCircle },
 ];
 
 export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
