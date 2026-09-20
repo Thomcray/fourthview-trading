@@ -1,5 +1,5 @@
 import { createClient } from "./../../_lib/supabase-server";
-import { getUserByEmail } from "@/app/_lib/data-services";
+import { getUserByEmail, getUserByPhone } from "@/app/_lib/data-services";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const phone = formData.get("phone") as string;
     const password = formData.get("password") as string;
 
-    // NEW
+    // Address fields
     const streetAddress = formData.get("streetAddress") as string;
     const apartment = formData.get("apartment") as string;
     const city = formData.get("city") as string;
@@ -42,21 +42,38 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Check if email already exists
     const existingUser = await getUserByEmail(email);
 
     if (existingUser) {
       return NextResponse.json(
-        { success: false, message: "User already exists." },
+        {
+          success: false,
+          message: "User already exists.",
+        },
         { status: 400 },
       );
     }
 
-    //convert expiry to iso string to prevent timezone issues
+    // Check if phone number already exists
+    const existingPhone = await getUserByPhone(phone);
+
+    if (existingPhone) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Phone number already exists.",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Token expires in 10 minutes
     const tokenExpiry = new Date(Date.now() + 1000 * 60 * 10).toISOString();
 
-    const supabase = await createClient(true); // admin - inserting temp user data
+    const supabase = await createClient(true);
 
-    // store user in temp location in db
+    // Store temporary user data
     const { error } = await supabase.from("tempUsers").insert({
       firstName,
       lastName,
@@ -76,27 +93,55 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error("Supabase error:", error);
+
       return NextResponse.json(
-        { success: false, message: "Something went wrong." },
+        {
+          success: false,
+          message: "Something went wrong.",
+        },
         { status: 500 },
       );
     }
+
+    // Application URL
+    // Local: http://localhost:3000
+    // Production: https://fourthview.online
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    const verificationUrl = `${baseUrl}/verify-email?token=${encodeURIComponent(
+      token,
+    )}`;
 
     // Send confirmation email
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const { error: mailErr } = await resend.emails.send({
-      from: "Fourthview <onboarding@resend.dev>",
+      from: "Fourthview <onboarding@fourthview.online>",
       to: email,
       subject: "Confirm your email",
-      html: `<h1>Hello, ${firstName}!</h1>
-      <p>Thank you for signing up. Please confirm your email address by clicking the link below:</p>
-      <a href="http://localhost:3000/verify-email?token=${token}">Confirm Email</a>
-      <p>This link will expire in 10 minutes.</p>
-      <p>If you did not sign up for this account, please ignore this email.</p>`,
+      html: `
+        <h1>Hello, ${firstName}!</h1>
+
+        <p>
+          Thank you for signing up. Please confirm your email address
+          by clicking the link below:
+        </p>
+
+        <a href="${verificationUrl}">
+          Confirm Email
+        </a>
+
+        <p>This link will expire in 10 minutes.</p>
+
+        <p>
+          If you did not sign up for this account, please ignore this email.
+        </p>
+      `,
     });
 
     if (mailErr) {
+      console.error("Resend error:", mailErr);
+
       return NextResponse.json(
         {
           success: false,
@@ -114,11 +159,13 @@ export async function POST(req: Request) {
       { status: 200 },
     );
   } catch (error: unknown) {
-    console.error("Error", error);
+    console.error("Error:", error);
+
     return NextResponse.json(
       {
         success: false,
-        message: error || "Internal server error",
+        message:
+          error instanceof Error ? error.message : "Internal server error",
       },
       { status: 500 },
     );

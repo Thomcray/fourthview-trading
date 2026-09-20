@@ -1,4 +1,3 @@
-// app/admin/study-applications/[id]/page.tsx
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -16,12 +15,12 @@ import {
   XCircle,
   Clock,
   Eye,
-  Download,
   Send,
   RefreshCw,
   User,
   BookOpen,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,8 +112,10 @@ export default function StudyApplicationDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+
   const [status, setStatus] = useState<string>("");
   const [adminNote, setAdminNote] = useState("");
+
   const [viewerModal, setViewerModal] = useState<{
     isOpen: boolean;
     url: string;
@@ -129,51 +130,134 @@ export default function StudyApplicationDetailPage() {
 
   const applicationId = params.id as string;
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["studyApplication", applicationId],
     queryFn: async () => {
-      const res = await fetch(`/api/study-applications/${applicationId}`);
-      if (!res.ok) throw new Error("Failed to fetch application");
+      const res = await fetch(`/api/admin/study-applications/${applicationId}`);
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch application");
+      }
+
       return res.json();
     },
   });
 
   const application: StudyApplication = data?.application;
 
+  // Update status
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, note }: { status: string; note: string }) => {
-      const res = await fetch(`/api/study-applications/${applicationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, adminNote: note }),
-      });
-      if (!res.ok) throw new Error("Failed to update status");
+      const res = await fetch(
+        `/api/admin/study-applications/${applicationId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status,
+            adminNote: note,
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to update status");
+      }
+
       return res.json();
     },
+
     onSuccess: () => {
       toast.success("Application status updated successfully!");
+
       queryClient.invalidateQueries({
         queryKey: ["studyApplication", applicationId],
       });
-      queryClient.invalidateQueries({ queryKey: ["studyApplications"] });
+
+      queryClient.invalidateQueries({
+        queryKey: ["studyApplications"],
+      });
+
       setAdminNote("");
     },
+
     onError: () => {
       toast.error("Failed to update status");
     },
   });
+
+  // Delete application
+  const deleteApplicationMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(
+        `/api/admin/study-applications/${applicationId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to delete application");
+      }
+
+      return result;
+    },
+
+    onSuccess: () => {
+      toast.success("Application deleted successfully!");
+
+      queryClient.removeQueries({
+        queryKey: ["studyApplication", applicationId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["studyApplications"],
+      });
+
+      router.push("/admin/orders-request");
+    },
+
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete application");
+    },
+  });
+
+  const handleDeleteApplication = () => {
+    if (deleteApplicationMutation.isPending) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete application #${applicationId}?\n\nThis will also permanently delete all uploaded documents belonging to this application. This action cannot be undone.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    deleteApplicationMutation.mutate();
+  };
 
   const handleStatusUpdate = () => {
     if (!status) {
       toast.error("Please select a status");
       return;
     }
-    updateStatusMutation.mutate({ status, note: adminNote });
+
+    updateStatusMutation.mutate({
+      status,
+      note: adminNote,
+    });
   };
 
   const getStatusBadge = (status: string) => {
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
+
     return (
       <span
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${config.color}`}
@@ -184,12 +268,14 @@ export default function StudyApplicationDetailPage() {
     );
   };
 
+  // Loading
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-5xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-32 bg-gray-200 rounded" />
+
             <div className="bg-white rounded-xl p-6 space-y-4">
               <div className="h-6 w-48 bg-gray-200 rounded" />
               <div className="h-32 bg-gray-100 rounded" />
@@ -201,17 +287,21 @@ export default function StudyApplicationDetailPage() {
     );
   }
 
+  // Not found
   if (isError || !application) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-5xl mx-auto text-center py-12">
           <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             Application Not Found
           </h2>
+
           <p className="text-gray-500 mb-6">
             The application you&apos;re looking for doesn&apos;t exist.
           </p>
+
           <Button
             onClick={() => router.push("/admin/orders-request")}
             className="bg-blue-600 hover:bg-blue-700"
@@ -239,10 +329,12 @@ export default function StudyApplicationDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
+
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               Study Application Details
             </h1>
+
             <p className="text-sm text-gray-500 mt-1">
               Application #{application.id}
             </p>
@@ -261,41 +353,53 @@ export default function StudyApplicationDetailPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5 text-blue-600" />
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Personal Information
                   </h2>
                 </div>
               </div>
+
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Full Name</p>
+
                     <p className="font-medium text-gray-800">
                       {application.full_name}
                     </p>
                   </div>
+
                   <div>
                     <p className="text-sm text-gray-500">Email Address</p>
+
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-gray-400" />
+
                       <p className="font-medium text-gray-800">
                         {application.email}
                       </p>
                     </div>
                   </div>
+
                   <div>
                     <p className="text-sm text-gray-500">WhatsApp Number</p>
+
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-400" />
+
                       <p className="font-medium text-gray-800">
                         {application.whatsapp_number}
                       </p>
                     </div>
                   </div>
+
                   <div>
                     <p className="text-sm text-gray-500">Country</p>
+
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-400" />
+
                       <p className="font-medium text-gray-800">
                         {application.country || "—"}
                       </p>
@@ -315,33 +419,41 @@ export default function StudyApplicationDetailPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-blue-600" />
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Academic Information
                   </h2>
                 </div>
               </div>
+
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">
                       Preferred University
                     </p>
+
                     <p className="font-medium text-gray-800">
                       {application.preferred_university || "—"}
                     </p>
                   </div>
+
                   <div>
                     <p className="text-sm text-gray-500">Preferred Program</p>
+
                     <p className="font-medium text-gray-800">
                       {application.preferred_program || "—"}
                     </p>
                   </div>
                 </div>
+
                 {application.message && (
                   <div>
                     <p className="text-sm text-gray-500">Additional Message</p>
+
                     <div className="flex items-start gap-2 mt-1">
                       <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5" />
+
                       <p className="text-gray-700">{application.message}</p>
                     </div>
                   </div>
@@ -359,9 +471,11 @@ export default function StudyApplicationDetailPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-600" />
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Uploaded Documents
                   </h2>
+
                   <Badge variant="secondary" className="ml-2">
                     {application.documents
                       ? Object.keys(application.documents).length
@@ -370,6 +484,7 @@ export default function StudyApplicationDetailPage() {
                   </Badge>
                 </div>
               </div>
+
               <div className="p-6">
                 {application.documents &&
                 Object.keys(application.documents).length > 0 ? (
@@ -381,10 +496,12 @@ export default function StudyApplicationDetailPage() {
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+
                           <span className="text-sm text-gray-700 truncate">
                             {documentLabels[key] || key}
                           </span>
                         </div>
+
                         <Button
                           variant="ghost"
                           size="sm"
@@ -424,11 +541,13 @@ export default function StudyApplicationDetailPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center gap-2">
                   <StatusIcon className="w-5 h-5 text-blue-600" />
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Application Status
                   </h2>
                 </div>
               </div>
+
               <div className="p-6 space-y-4">
                 <div className="flex justify-center py-4">
                   {getStatusBadge(application.status)}
@@ -438,16 +557,20 @@ export default function StudyApplicationDetailPage() {
 
                 <div>
                   <p className="text-sm text-gray-500 mb-2">Update Status</p>
+
                   <Select value={status} onValueChange={setStatus}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select new status" />
                     </SelectTrigger>
+
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="reviewing">Reviewing</SelectItem>
+
                       <SelectItem value="documents_received">
                         Documents Received
                       </SelectItem>
+
                       <SelectItem value="approved">Approved</SelectItem>
                       <SelectItem value="rejected">Rejected</SelectItem>
                     </SelectContent>
@@ -458,6 +581,7 @@ export default function StudyApplicationDetailPage() {
                   <p className="text-sm text-gray-500 mb-2">
                     Admin Note (Optional)
                   </p>
+
                   <Textarea
                     value={adminNote}
                     onChange={(e) => setAdminNote(e.target.value)}
@@ -496,14 +620,17 @@ export default function StudyApplicationDetailPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-blue-600" />
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Timeline
                   </h2>
                 </div>
               </div>
+
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Submitted</span>
+
                   <span className="text-sm font-medium text-gray-700">
                     {new Date(application.created_at).toLocaleDateString(
                       "en-NG",
@@ -515,9 +642,11 @@ export default function StudyApplicationDetailPage() {
                     )}
                   </span>
                 </div>
+
                 {application.updated_at !== application.created_at && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Last Updated</span>
+
                     <span className="text-sm font-medium text-gray-700">
                       {new Date(application.updated_at).toLocaleDateString(
                         "en-NG",
@@ -543,11 +672,13 @@ export default function StudyApplicationDetailPage() {
               <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center gap-2">
                   <GraduationCap className="w-5 h-5 text-blue-600" />
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Quick Actions
                   </h2>
                 </div>
               </div>
+
               <div className="p-6 space-y-3">
                 <Button
                   variant="outline"
@@ -559,6 +690,7 @@ export default function StudyApplicationDetailPage() {
                   <Mail className="w-4 h-4" />
                   Send Email
                 </Button>
+
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-2"
@@ -572,6 +704,27 @@ export default function StudyApplicationDetailPage() {
                   <Phone className="w-4 h-4" />
                   WhatsApp Contact
                 </Button>
+
+                <Separator />
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                  onClick={handleDeleteApplication}
+                  disabled={deleteApplicationMutation.isPending}
+                >
+                  {deleteApplicationMutation.isPending ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Deleting Application...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Application
+                    </>
+                  )}
+                </Button>
               </div>
             </motion.div>
           </div>
@@ -581,7 +734,12 @@ export default function StudyApplicationDetailPage() {
       {/* Document Viewer Modal */}
       <DocumentViewerModal
         isOpen={viewerModal.isOpen}
-        onClose={() => setViewerModal({ ...viewerModal, isOpen: false })}
+        onClose={() =>
+          setViewerModal({
+            ...viewerModal,
+            isOpen: false,
+          })
+        }
         documentUrl={viewerModal.url}
         documentName={viewerModal.name}
         documentKey={viewerModal.key}

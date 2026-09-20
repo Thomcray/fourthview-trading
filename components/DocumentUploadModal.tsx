@@ -15,104 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 
-export interface UploadedFile {
-  file: File;
-  preview?: string;
-  name: string;
-  size: number;
-}
-
-export interface Document {
-  id: string;
-  name: string;
-  label: string;
-  description: string;
-  required: boolean;
-  accept?: string;
-}
-
-export const documents: Document[] = [
-  {
-    id: "recommendation1",
-    name: "recommendation1",
-    label: "Recommendation Letter 1",
-    description: "Academic or professional recommendation letter",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "recommendation2",
-    name: "recommendation2",
-    label: "Recommendation Letter 2",
-    description: "Second recommendation letter",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "englishProficiency",
-    name: "englishProficiency",
-    label: "English Proficiency Letter",
-    description: "IELTS, TOEFL, or other English proficiency certificate",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "transcript",
-    name: "transcript",
-    label: "Academic Transcript",
-    description: "All education transcripts",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "certificate",
-    name: "certificate",
-    label: "Degree Certificate",
-    description: "Educational degree certificate",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "nonCriminal",
-    name: "nonCriminal",
-    label: "Non-Criminal Record",
-    description: "Police clearance certificate",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "medicalForm",
-    name: "medicalForm",
-    label: "Physical Examination Form",
-    description: "Medical examination report",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "studyPlan",
-    name: "studyPlan",
-    label: "Study Plan",
-    description: "Your study plan or statement of purpose",
-    required: true,
-    accept: "image/*,.pdf",
-  },
-  {
-    id: "passportPhoto",
-    name: "passportPhoto",
-    label: "Passport Photo",
-    description: "White background, passport size",
-    required: true,
-    accept: "image/*",
-  },
-  {
-    id: "introductionVideo",
-    name: "introductionVideo",
-    label: "Introduction Video",
-    description: "Self-introduction video (max 100MB)",
-    required: true,
-    accept: "video/*",
-  },
-];
+import {
+  studyDocuments as documents,
+  type UploadedFile,
+} from "@/app/_lib/study-document-config";
 
 interface DocumentUploadModalProps {
   isOpen: boolean;
@@ -159,8 +65,12 @@ export default function DocumentUploadModal({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+
     const file = e.dataTransfer.files[0];
-    if (file && currentDoc) onFileUpload(currentDoc.id, file);
+
+    if (file && currentDoc) {
+      onFileUpload(currentDoc.id, file);
+    }
   };
 
   const nextDoc = () => {
@@ -173,7 +83,9 @@ export default function DocumentUploadModal({
   };
 
   const prevDoc = () => {
-    if (currentDocIndex > 0) setCurrentDocIndex(currentDocIndex - 1);
+    if (currentDocIndex > 0) {
+      setCurrentDocIndex(currentDocIndex - 1);
+    }
   };
 
   if (!currentDoc) return null;
@@ -201,10 +113,12 @@ export default function DocumentUploadModal({
                 <h2 className="text-xl font-semibold text-white">
                   Upload Documents
                 </h2>
+
                 <p className="text-blue-100 text-sm">
                   Step {currentDocIndex + 1} of {documents.length}
                 </p>
               </div>
+
               <button
                 onClick={onClose}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
@@ -229,12 +143,14 @@ export default function DocumentUploadModal({
                   <h3 className="font-semibold text-gray-800">
                     {currentDoc.label}
                   </h3>
+
                   {currentDoc.required && (
                     <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
                       Required
                     </span>
                   )}
                 </div>
+
                 <p className="text-sm text-gray-500">
                   {currentDoc.description}
                 </p>
@@ -256,11 +172,17 @@ export default function DocumentUploadModal({
                     className="cursor-pointer block"
                   >
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+
                     <p className="text-sm text-gray-600 font-medium">
                       Click to upload or drag and drop
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Max 100MB</p>
+
+                    <p className="text-xs text-gray-400 mt-1">
+                      {" "}
+                      Max {currentDoc.maxSizeMB}MB
+                    </p>
                   </label>
+
                   <input
                     id={`file-${currentDoc.id}`}
                     type="file"
@@ -288,15 +210,18 @@ export default function DocumentUploadModal({
                           <FileText className="w-7 h-7 text-blue-600" />
                         </div>
                       )}
+
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {currentFile.name}
                         </p>
+
                         <p className="text-xs text-gray-500">
                           {(currentFile.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
                     </div>
+
                     <div className="flex items-center gap-1">
                       {currentFile.preview && (
                         <button
@@ -308,6 +233,7 @@ export default function DocumentUploadModal({
                           <Eye className="w-4 h-4 text-green-600" />
                         </button>
                       )}
+
                       <button
                         onClick={() => onRemoveFile(currentDoc.id)}
                         className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
@@ -324,11 +250,14 @@ export default function DocumentUploadModal({
                         <span>Uploading to server...</span>
                         <span>{currentUpload.progress}%</span>
                       </div>
+
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                         <motion.div
                           className="h-full bg-blue-600"
                           initial={{ width: 0 }}
-                          animate={{ width: `${currentUpload.progress}%` }}
+                          animate={{
+                            width: `${currentUpload.progress}%`,
+                          }}
                           transition={{ duration: 0.2 }}
                         />
                       </div>
@@ -337,7 +266,8 @@ export default function DocumentUploadModal({
 
                   {currentUpload?.status === "done" && (
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> Upload complete
+                      <CheckCircle className="w-3 h-3" />
+                      Upload complete
                     </p>
                   )}
 
@@ -357,14 +287,17 @@ export default function DocumentUploadModal({
                 disabled={currentDocIndex === 0}
                 className="gap-2"
               >
-                <ChevronLeft className="w-4 h-4" /> Previous
+                <ChevronLeft className="w-4 h-4" />
+                Previous
               </Button>
+
               <Button
                 onClick={nextDoc}
                 disabled={!currentFile && currentDoc.required}
                 className="bg-blue-600 hover:bg-blue-700 gap-2"
               >
                 {currentDocIndex === documents.length - 1 ? "Complete" : "Next"}
+
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>

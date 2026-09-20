@@ -95,6 +95,7 @@ export default function CarDetails({
                   alt={`${car.year} ${car.brandName}`}
                   width={800}
                   height={600}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className={`w-full h-72 sm:h-96 object-cover ${
                     car.sold ? "grayscale" : ""
                   }`}
@@ -104,13 +105,6 @@ export default function CarDetails({
                 <div className="w-full h-72 sm:h-96 flex items-center justify-center">
                   <CarIcon className="w-16 h-16 text-gray-300" />
                 </div>
-              )}
-
-              {/* Sold Badge */}
-              {car.sold && (
-                <span className="absolute top-4 right-4 z-20 bg-red-600 text-white text-sm font-extrabold px-4 py-2 rounded-lg shadow-lg">
-                  SOLD
-                </span>
               )}
 
               {/* Sold Overlay */}
@@ -140,6 +134,7 @@ export default function CarDetails({
                       src={url}
                       alt={`View ${i + 1}`}
                       fill
+                      sizes="80px"
                       className={`object-cover ${car.sold ? "grayscale" : ""}`}
                     />
                   </button>

@@ -90,9 +90,9 @@ export default function FeatureSection({
                   src={image}
                   placeholder="blur"
                   alt={imageAlt}
-                  height={400}
                   width={600}
-                  className="rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                  height={400}
+                  className="w-full h-auto rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 {/* Overlay Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -5,11 +5,10 @@ import {
 } from "./emails/study-application";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = "noreply@yourdomain.com"; // replace later
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  "http://localhost:3000" ||
-  "http://localhost:3001";
+
+const FROM_EMAIL = "Fourthview <noreply@fourthview.online>";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export async function sendApplicationConfirmation({
   fullName,
@@ -20,7 +19,7 @@ export async function sendApplicationConfirmation({
   email: string;
   applicationId: number;
 }) {
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: "Your Study in China Application Has Been Received",
@@ -30,6 +29,11 @@ export async function sendApplicationConfirmation({
       baseUrl: BASE_URL,
     }),
   });
+
+  if (error) {
+    console.error("Failed to send application confirmation email:", error);
+    throw new Error("Failed to send application confirmation email");
+  }
 }
 
 export async function sendStatusUpdateEmail({
@@ -45,10 +49,14 @@ export async function sendStatusUpdateEmail({
   status: string;
   adminNote?: string;
 }) {
-  await resend.emails.send({
+  const formattedStatus = status
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: `Application Update: ${status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}`,
+    subject: `Application Update: ${formattedStatus}`,
     react: ApplicationStatusUpdateEmail({
       fullName,
       applicationId,
@@ -57,4 +65,9 @@ export async function sendStatusUpdateEmail({
       baseUrl: BASE_URL,
     }),
   });
+
+  if (error) {
+    console.error("Failed to send application status email:", error);
+    throw new Error("Failed to send application status email");
+  }
 }

@@ -48,7 +48,7 @@ export default function AccountSide() {
       description: "Preferences",
     },
     {
-      href: "/help",
+      href: "/contact",
       label: "Help Center",
       icon: <HelpCircle className="w-5 h-5" />,
       description: "Support",

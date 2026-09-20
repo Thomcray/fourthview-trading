@@ -33,7 +33,7 @@ export async function PATCH(req: Request) {
   // Send email notification via Resend
   try {
     const { error: emailError } = await resend.emails.send({
-      from: "FourthView <no-reply@yourdomain.com>",
+      from: "FourthView <no-reply@fourthview.online>",
       to: booking.email,
       subject: `Your booking has been ${status}`,
       html: `

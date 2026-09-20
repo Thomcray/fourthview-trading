@@ -165,8 +165,9 @@ export default function AdminHeader() {
                   width={40}
                   height={40}
                   priority
-                  className="object-cover rounded-lg"
+                  className="w-10 h-10 object-contain rounded-lg"
                 />
+
                 <div className="absolute inset-0 bg-blue-500 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity" />
               </div>
               <div className="hidden sm:block">

@@ -1,4 +1,3 @@
-import { cache } from "react";
 import { createClient } from "./supabase-server";
 import countriesData from "./countries.json";
 
@@ -41,7 +40,7 @@ export async function getUserRole(id: number) {
 }
 
 export async function getTempUserByToken(token: string) {
-  const supabase = await createClient();
+  const supabase = await createClient(true);
   const { data, error } = await supabase
     .from("tempUsers")
     .select("*")
@@ -63,6 +62,23 @@ export async function getUserByEmail(email: string) {
 
   if (error) {
     throw error;
+  }
+
+  return data;
+}
+
+export async function getUserByPhone(phone: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("id")
+    .eq("phone", phone)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error checking phone number:", error);
+    return null;
   }
 
   return data;

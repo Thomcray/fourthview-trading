@@ -4,17 +4,6 @@ import { authOptions } from "@/app/_lib/auth";
 import { createClient } from "@/app/_lib/supabase-server";
 import { sendOrderStatusEmail } from "@/app/_lib/email";
 
-// Define types
-// type OrderItem = {
-//   id: number;
-//   quantity: number;
-//   price: number;
-//   product?: {
-//     id: number;
-//     name: string;
-//   };
-// };
-
 type UpdateData = {
   order_status: string;
   updated_at: string;

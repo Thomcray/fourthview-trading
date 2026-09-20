@@ -38,8 +38,6 @@ export async function POST(req: Request) {
 
     const event = JSON.parse(body);
 
-    console.log("🔥 PAYSTACK WEBHOOK:", JSON.stringify(event, null, 2));
-
     // Handle special-order refund events
     if (event.event?.startsWith("refund.")) {
       const refund = event.data as PaystackRefundData | undefined;
@@ -144,11 +142,13 @@ export async function POST(req: Request) {
 
       // Ignore refunds belonging to normal orders
       if (!specialOrder) {
-        console.log("Refund webhook does not belong to a special order:", {
-          transactionReference,
-          refundReference,
-          refundStatus,
-        });
+        if (process.env.NODE_ENV === "development") {
+          console.log("Refund webhook does not belong to a special order:", {
+            transactionReference,
+            refundReference,
+            refundStatus,
+          });
+        }
 
         return NextResponse.json(
           {
@@ -203,14 +203,6 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-
-      console.log("✅ Special-order refund updated:", {
-        specialOrderId: specialOrder.id,
-        refundReference,
-        transactionReference,
-        refundStatus,
-        depositStatus: updatedOrder.deposit_status,
-      });
 
       return NextResponse.json(
         {
@@ -324,7 +316,7 @@ export async function POST(req: Request) {
       settings?.storeEmail
         ? resend.emails
             .send({
-              from: "Fourthview Orders <onboarding@resend.dev>",
+              from: "Fourthview Orders <onboarding@fourthview.online>",
               to: settings.storeEmail,
               subject: `New Order #${reference} — ₦${totalNGN.toLocaleString()}`,
               html: `

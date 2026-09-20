@@ -69,7 +69,7 @@ export default function StudyTab() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["studyApplications"],
     queryFn: async () => {
-      const res = await fetch("/api/study-applications");
+      const res = await fetch("/api/admin/study-applications");
       if (!res.ok) throw new Error("Failed to fetch applications");
       return res.json();
     },

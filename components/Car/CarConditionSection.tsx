@@ -116,13 +116,6 @@ export default function CarConditionSection({
                   </div>
                 )}
 
-                {/* Sold Badge */}
-                {car.sold && (
-                  <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md z-10">
-                    SOLD
-                  </span>
-                )}
-
                 {/* Sold Overlay */}
                 {car.sold && (
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-[5]">

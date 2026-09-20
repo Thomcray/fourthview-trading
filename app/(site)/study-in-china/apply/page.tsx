@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap,
@@ -16,10 +17,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import DocumentUploadModal, {
+import DocumentUploadModal from "@/components/DocumentUploadModal";
+import {
+  studyDocuments as documents,
   UploadedFile,
-  documents,
-} from "@/components/DocumentUploadModal";
+} from "@/app/_lib/study-document-config";
 import { useUploadWithProgress } from "@/hooks/useUploadWithProgress";
 
 export default function StudyInChinaApplyPage() {
@@ -31,6 +33,7 @@ export default function StudyInChinaApplyPage() {
     email: "",
     whatsappNumber: "",
     country: "",
+    age: "",
     preferredUniversity: "",
     preferredProgram: "",
     message: "",
@@ -51,6 +54,18 @@ export default function StudyInChinaApplyPage() {
   ).length;
   const isUploadComplete = completedCount === requiredDocuments.length;
 
+  const { data: session, status: sessionStatus } = useSession();
+
+  useEffect(() => {
+    if (!session?.user) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      fullName: session.user.name ?? "",
+      email: session.user.email ?? "",
+    }));
+  }, [session]);
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -61,13 +76,26 @@ export default function StudyInChinaApplyPage() {
 
   const handleFileUpload = (docId: string, file: File | null) => {
     if (!file) return;
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error("File size must be less than 100MB");
+
+    const document = documents.find((doc) => doc.id === docId);
+
+    if (!document) {
+      toast.error("Invalid document type");
+      return;
+    }
+
+    const maxSizeBytes = document.maxSizeMB * 1024 * 1024;
+
+    if (file.size > maxSizeBytes) {
+      toast.error(
+        `${document.label} must be less than ${document.maxSizeMB}MB`,
+      );
       return;
     }
 
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
+
       reader.onloadend = () => {
         setUploadedFiles((prev) => ({
           ...prev,
@@ -79,11 +107,17 @@ export default function StudyInChinaApplyPage() {
           },
         }));
       };
+
       reader.readAsDataURL(file);
     } else {
       setUploadedFiles((prev) => ({
         ...prev,
-        [docId]: { file, preview: undefined, name: file.name, size: file.size },
+        [docId]: {
+          file,
+          preview: undefined,
+          name: file.name,
+          size: file.size,
+        },
       }));
     }
   };
@@ -102,7 +136,11 @@ export default function StudyInChinaApplyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.whatsappNumber) {
+    if (
+      !formData.whatsappNumber ||
+      !formData.age ||
+      !formData.preferredProgram
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -188,16 +226,34 @@ export default function StudyInChinaApplyPage() {
         throw new Error(err.error ?? "Failed to update documents");
       }
 
+      const confirmationResponse = await fetch(
+        "/api/study-applications/confirmation",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            applicationId: application.id,
+          }),
+        },
+      );
+
+      if (!confirmationResponse.ok) {
+        console.error("Failed to send confirmation email.");
+      }
+
       toast.success(
         "Application submitted! We'll contact you within 48 hours.",
       );
 
       // Reset form
       setFormData({
-        fullName: "",
-        email: "",
+        fullName: session?.user?.name ?? "",
+        email: session?.user?.email ?? "",
         whatsappNumber: "",
         country: "",
+        age: "",
         preferredUniversity: "",
         preferredProgram: "",
         message: "",
@@ -263,9 +319,9 @@ export default function StudyInChinaApplyPage() {
                     <Input
                       name="fullName"
                       value={formData.fullName}
-                      onChange={handleInputChange}
+                      readOnly
                       placeholder="John Doe"
-                      className="mt-1"
+                      className="mt-1 bg-gray-50 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -277,9 +333,9 @@ export default function StudyInChinaApplyPage() {
                       name="email"
                       type="email"
                       value={formData.email}
-                      onChange={handleInputChange}
+                      readOnly
                       placeholder="john@example.com"
-                      className="mt-1"
+                      className="mt-1 bg-gray-50 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -309,6 +365,23 @@ export default function StudyInChinaApplyPage() {
                       className="mt-1"
                     />
                   </div>
+                  <div>
+                    <Label className="text-gray-700">
+                      Age <span className="text-red-500">*</span>
+                    </Label>
+
+                    <Input
+                      name="age"
+                      type="number"
+                      min={1}
+                      max={120}
+                      value={formData.age}
+                      onChange={handleInputChange}
+                      placeholder="Your age"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -331,13 +404,16 @@ export default function StudyInChinaApplyPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-gray-700">Preferred Program</Label>
+                    <Label className="text-gray-700">
+                      Preferred Program<span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       name="preferredProgram"
                       value={formData.preferredProgram}
                       onChange={handleInputChange}
                       placeholder="e.g., Computer Science"
                       className="mt-1"
+                      required
                     />
                   </div>
                 </div>
@@ -413,17 +489,17 @@ export default function StudyInChinaApplyPage() {
 
               <Button
                 type="submit"
-                disabled={isSubmitting || !isUploadComplete}
+                disabled={
+                  isSubmitting ||
+                  sessionStatus === "loading" ||
+                  !session?.user ||
+                  !isUploadComplete
+                }
                 className="w-full bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold cursor-pointer"
               >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Application"
-                )}
+                {sessionStatus === "loading"
+                  ? "Loading your account..."
+                  : "Submit Application"}
               </Button>
 
               <p className="text-center text-xs text-gray-400">

@@ -2,65 +2,69 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/_lib/auth";
 import { createClient } from "@/app/_lib/supabase-server";
 import { NextResponse } from "next/server";
-import { sendApplicationConfirmation } from "@/app/_lib/send-study-email";
 import { createNotification } from "@/app/_lib/create-notification";
 
-// GET: Admin only - list all applications
-export async function GET(req: Request) {
+// POST: Create a new application for the authenticated user
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user.userRole !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const supabase = await createClient(true);
-
-    const { data, error } = await supabase
-      .from("study_applications")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Database error:", error);
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Failed to fetch applications" },
-        { status: 500 },
+        { error: "You must be logged in to apply." },
+        { status: 401 },
       );
     }
 
-    return NextResponse.json({ applications: data });
-  } catch (error) {
-    console.error("Study applications GET error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}
+    const userId = Number(session.user.id);
 
-// POST: Public - create new application
-export async function POST(req: Request) {
-  try {
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return NextResponse.json(
+        { error: "Invalid user account." },
+        { status: 401 },
+      );
+    }
+
     const supabase = await createClient(true);
     const body = await req.json();
+
+    const age = Number(body.age);
+
+    if (!Number.isInteger(age) || age < 1 || age > 120) {
+      return NextResponse.json(
+        { error: "Please provide a valid age" },
+        { status: 400 },
+      );
+    }
+
+    if (
+      !body.fullName ||
+      !body.email ||
+      !body.whatsappNumber ||
+      !body.country ||
+      !body.preferredUniversity ||
+      !body.preferredProgram
+    ) {
+      return NextResponse.json(
+        { error: "Please complete all required fields." },
+        { status: 400 },
+      );
+    }
 
     const { data: application, error } = await supabase
       .from("study_applications")
       .insert([
         {
+          user_id: userId,
           full_name: body.fullName,
           email: body.email,
           whatsapp_number: body.whatsappNumber,
           country: body.country,
+          age,
           preferred_university: body.preferredUniversity,
           preferred_program: body.preferredProgram,
-          message: body.message,
-          documents: body.documents ?? {},
+          message: body.message ?? null,
+          documents: {},
           status: "pending",
         },
       ])
@@ -69,26 +73,29 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error("Insert error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+
+      return NextResponse.json(
+        { error: "Failed to create application." },
+        { status: 500 },
+      );
     }
 
-    // Send confirmation email
-    await sendApplicationConfirmation({
-      fullName: body.fullName,
-      email: body.email,
-      applicationId: application.id,
-    }).catch((err) => console.error("Confirmation email error:", err));
-
+    // Notify administrators
     await createNotification({
       title: "New Study Application",
-      message: `${body.fullName} applied for ${body.preferredProgram || "a program"}`,
+      message: `${body.fullName} applied for ${
+        body.preferredProgram || "a program"
+      }`,
       type: "study_application",
       referenceId: application.id.toString(),
-    }).catch((err) => console.error("Notification error:", err));
+    }).catch((err) => {
+      console.error("Notification error:", err);
+    });
 
-    return NextResponse.json(application);
+    return NextResponse.json(application, { status: 201 });
   } catch (error) {
     console.error("POST error:", error);
+
     return NextResponse.json(
       { error: "Failed to create application" },
       { status: 500 },
@@ -96,27 +103,74 @@ export async function POST(req: Request) {
   }
 }
 
-// ─── PATCH: Public - update application documents ───
+// PATCH: Update documents belonging to the authenticated user's application
 export async function PATCH(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "You must be logged in." },
+        { status: 401 },
+      );
+    }
+
+    const userId = Number(session.user.id);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return NextResponse.json(
+        { error: "Invalid user account." },
+        { status: 401 },
+      );
+    }
+
     const supabase = await createClient(true);
     const body = await req.json();
 
+    if (!body.applicationId) {
+      return NextResponse.json(
+        { error: "Application ID is required." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      !body.documents ||
+      typeof body.documents !== "object" ||
+      Array.isArray(body.documents)
+    ) {
+      return NextResponse.json(
+        { error: "Valid documents are required." },
+        { status: 400 },
+      );
+    }
+
     const { data, error } = await supabase
       .from("study_applications")
-      .update({ documents: body.documents })
+      .update({
+        documents: body.documents,
+      })
       .eq("id", body.applicationId)
+      .eq("user_id", userId)
       .select()
       .single();
 
     if (error) {
       console.error("PATCH error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+
+      return NextResponse.json(
+        { error: "Application not found or access denied." },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({
+      success: true,
+      data,
+    });
   } catch (error) {
     console.error("PATCH catch error:", error);
+
     return NextResponse.json(
       { error: "Failed to update documents" },
       { status: 500 },

@@ -87,9 +87,6 @@ export default function SpecialOrders() {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      console.log(
-        `File size: ${file.size} bytes, Max size: ${MAX_FILE_SIZE} bytes`,
-      );
       toast.error(`${file.name} exceeds 5MB limit`);
       return false;
     }

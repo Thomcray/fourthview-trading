@@ -299,8 +299,10 @@ export default function AllCarsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  whileHover={{ y: -5 }}
-                  className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                  whileHover={{ y: car.sold ? 0 : -5 }}
+                  className={`group/car bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ${
+                    car.sold ? "opacity-80" : ""
+                  }`}
                 >
                   <Link href={`/car/${car.id}`}>
                     {/* Car Image */}
@@ -310,7 +312,9 @@ export default function AllCarsPage() {
                           src={getPublicImageUrl(car.imageUrl[0])}
                           alt={`${car.year} ${car.brandName}`}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          className={`object-cover transition-transform duration-500 ${
+                            car.sold ? "grayscale" : "group-hover/car:scale-105"
+                          }`}
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         />
                       ) : (
@@ -319,17 +323,34 @@ export default function AllCarsPage() {
                         </div>
                       )}
 
-                      {/* Quick View Overlay */}
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                          View Details
+                      {/* Sold Overlay */}
+                      {car.sold && (
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-[5]">
+                          <div className="bg-red-600 text-white font-bold text-sm sm:text-base px-5 py-2 rounded-lg shadow-lg rotate-[-8deg]">
+                            SOLD
+                          </div>
                         </div>
-                      </div>
+                      )}
+
+                      {/* Quick View Overlay */}
+                      {!car.sold && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/car:opacity-100 transition-opacity duration-300">
+                          <div className="bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-full transform translate-y-4 group-hover/car:translate-y-0 transition-all duration-300">
+                            View Details
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Car Info */}
                     <div className="p-4">
-                      <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">
+                      <h3
+                        className={`font-semibold text-sm sm:text-base truncate transition-colors ${
+                          car.sold
+                            ? "text-gray-500"
+                            : "text-gray-800 group-hover/car:text-blue-600"
+                        }`}
+                      >
                         {car.brandName}
                       </h3>
 
@@ -340,14 +361,33 @@ export default function AllCarsPage() {
                       </p>
 
                       <div className="mt-2">
-                        <p className="text-lg font-bold text-blue-900">
+                        <p
+                          className={`text-lg font-bold ${
+                            car.sold
+                              ? "text-gray-400 line-through"
+                              : "text-blue-900"
+                          }`}
+                        >
                           <ProductPrice yuanPrice={car.totalPrice} />
                         </p>
 
-                        <p className="text-xs text-gray-400">
-                          (incl. shipping &amp; clearing)
-                        </p>
+                        {!car.sold && (
+                          <p className="text-xs text-gray-400">
+                            (incl. shipping &amp; clearing)
+                          </p>
+                        )}
                       </div>
+
+                      {/* Sold Status */}
+                      {car.sold && (
+                        <div className="mt-2 flex items-center gap-1.5 text-red-600">
+                          <BadgeCheck className="w-4 h-4" />
+
+                          <span className="text-xs font-semibold">
+                            This car has been sold
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </Link>
                 </motion.div>
@@ -360,7 +400,7 @@ export default function AllCarsPage() {
                 <Button
                   variant="outline"
                   onClick={handleLoadMore}
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50 px-8"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 px-8 cursor-pointer"
                 >
                   Load More Cars
                 </Button>

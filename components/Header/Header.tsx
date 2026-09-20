@@ -1,4 +1,3 @@
-// components/Header/Header.tsx
 "use client";
 
 import Image from "next/image";
@@ -28,7 +27,9 @@ export default function Header() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
+
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -39,6 +40,7 @@ export default function Header() {
     } else {
       document.body.style.overflow = "unset";
     }
+
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -60,7 +62,7 @@ export default function Header() {
       <header
         className={`
           fixed top-0 left-0 right-0 z-50
-          w-full py-3 px-4 sm:px-6 lg:px-8 
+          w-full py-3 px-4 sm:px-6 lg:px-8
           transition-all duration-300
           ${headerBg}
         `}
@@ -71,29 +73,31 @@ export default function Header() {
             href="/"
             className="flex flex-row items-center gap-2 hover:opacity-90 transition-opacity group"
           >
-            <div className="relative">
+            <div className="relative w-11 h-11 shrink-0">
               <Image
                 src={fourthviewLogo}
                 alt="FourthView Logo"
-                width={44}
-                height={44}
+                fill
                 priority
-                className="object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+                sizes="44px"
+                className="object-contain transition-transform duration-300 group-hover:scale-105"
               />
             </div>
+
             <div className="flex flex-col">
               <h2
                 className={`${dancingScript.className} text-2xl sm:text-3xl font-bold text-blue-950 leading-tight`}
               >
                 fourthview
               </h2>
+
               <span className="text-[8px] sm:text-[10px] font-semibold text-blue-900 tracking-widest uppercase leading-none">
                 Trading Company. Ltd
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation - Added CurrencySwitcher here */}
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex lg:items-center lg:gap-4">
             <CurrencySwitcher />
             <Navigation />
@@ -142,21 +146,26 @@ export default function Header() {
                 {/* Mobile Menu Header */}
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <Image
-                      src={fourthviewLogo}
-                      alt="FourthView Logo"
-                      width={36}
-                      height={36}
-                      className="object-contain"
-                    />
+                    <div className="relative w-9 h-9 shrink-0">
+                      <Image
+                        src={fourthviewLogo}
+                        alt="FourthView Logo"
+                        fill
+                        sizes="36px"
+                        className="object-contain"
+                      />
+                    </div>
+
                     <div>
                       <h3 className="font-bold text-blue-950">Menu</h3>
                       <p className="text-xs text-gray-500">Navigate to pages</p>
                     </div>
                   </div>
+
                   <button
                     onClick={() => setMobileMenuOpen(false)}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="Close menu"
                   >
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
