@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useState } from "react";
+import Image from "next/image";
 
 type Refund = {
   id: number;
@@ -310,11 +311,15 @@ export default function RefundDetailPage() {
                             href={evidence.url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            className="relative block w-full h-40"
                           >
-                            <img
+                            <Image
                               src={evidence.url}
                               alt={evidence.name}
-                              className="w-full h-40 object-cover hover:opacity-90 transition-opacity"
+                              fill
+                              unoptimized
+                              sizes="(min-width: 640px) 350px, 50vw"
+                              className="object-cover hover:opacity-90 transition-opacity"
                             />
                           </a>
                         ) : isVideo ? (

@@ -1,16 +1,8 @@
-// app/admin/product-services/page.tsx
 "use client";
 
 import AddProduct from "@/components/Admin/AddProduct/AddProduct";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Package,
-  Car,
-  DollarSign,
-  PlusCircle,
-  List,
-  Settings,
-} from "lucide-react";
+import { Package, Car, DollarSign, List, Settings } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import AddCar from "@/components/Admin/AddCar/AddCar";
@@ -77,7 +69,6 @@ export default function ProductServicesPage() {
               <TabsList className="flex flex-wrap gap-1 bg-transparent h-auto">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
 
                   return (
                     <TabsTrigger

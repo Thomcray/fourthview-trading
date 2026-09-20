@@ -25,6 +25,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 // Update the Document type to match your data structure
 interface Document {
@@ -65,6 +66,7 @@ export default function DocumentUploadModal({
   const [previewFile, setPreviewFile] = useState<{
     url: string;
     name: string;
+    isPdf: boolean;
   } | null>(null);
 
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
@@ -78,6 +80,13 @@ export default function DocumentUploadModal({
     (f) => f !== null,
   ).length;
   const isComplete = completedCount === documents.length;
+
+  const closePreview = () => {
+    if (previewFile?.url.startsWith("blob:")) {
+      URL.revokeObjectURL(previewFile.url);
+    }
+    setPreviewFile(null);
+  };
 
   const handleFileUpload = (file: File | null) => {
     if (!file) return;
@@ -172,26 +181,47 @@ export default function DocumentUploadModal({
   return (
     <>
       {/* Preview Modal */}
-      <Dialog open={!!previewFile} onOpenChange={() => setPreviewFile(null)}>
+      <Dialog
+        open={!!previewFile}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) closePreview();
+        }}
+      >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{previewFile?.name}</DialogTitle>
+            <DialogTitle className="truncate pr-6">
+              {previewFile?.name}
+            </DialogTitle>
           </DialogHeader>
+
           <div className="py-4">
-            {previewFile?.url.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-              <img
-                src={previewFile.url}
-                alt="Preview"
-                className="w-full rounded-lg"
-              />
-            ) : (
-              <div className="text-center py-12">
-                <File className="w-16 h-16 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">
-                  Preview not available for this file type
-                </p>
+            {previewFile?.isPdf ? (
+              <>
+                <iframe
+                  src={previewFile.url}
+                  title={previewFile.name}
+                  className="w-full h-[70vh] rounded-lg"
+                />
+                <a
+                  href={previewFile.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-sm text-blue-600 underline"
+                >
+                  Open in new tab
+                </a>
+              </>
+            ) : previewFile ? (
+              <div className="relative w-full h-[70vh]">
+                <Image
+                  src={previewFile.url}
+                  alt={previewFile.name}
+                  fill
+                  unoptimized
+                  className="object-contain rounded-lg"
+                />
               </div>
-            )}
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>
@@ -294,10 +324,13 @@ export default function DocumentUploadModal({
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       {currentFile.preview ? (
                         <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                          <img
+                          <Image
                             src={currentFile.preview}
-                            alt="Preview"
-                            className="w-full h-full object-cover"
+                            alt={currentFile.file.name}
+                            fill
+                            unoptimized
+                            sizes="56px"
+                            className="object-cover"
                           />
                         </div>
                       ) : (
@@ -317,21 +350,29 @@ export default function DocumentUploadModal({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      {currentFile.preview && (
-                        <button
-                          onClick={() =>
-                            setPreviewFile({
-                              url: currentFile.preview!,
-                              name: currentFile.file.name,
-                            })
-                          }
-                          className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
-                          title="Preview"
-                        >
-                          <Eye className="w-4 h-4 text-green-600" />
-                        </button>
-                      )}
                       <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewFile({
+                            url:
+                              currentFile.preview ??
+                              URL.createObjectURL(currentFile.file),
+                            name: currentFile.file.name,
+                            isPdf:
+                              currentFile.file.type === "application/pdf" ||
+                              currentFile.file.name
+                                .toLowerCase()
+                                .endsWith(".pdf"),
+                          })
+                        }
+                        className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
+                        title="Preview"
+                      >
+                        <Eye className="w-4 h-4 text-green-600" />
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={removeFile}
                         className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
                         title="Remove"

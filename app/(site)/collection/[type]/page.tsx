@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
 import AddToCart from "@/components/AddToCart";
 import { useTopPicks, TopPick } from "@/hooks/useTopPicks";
+import { getPublicImageUrl } from "@/lib/images";
 
 type CollectionType = "top-picks" | "on-sale";
 type SortOption = "default" | "price-asc" | "price-desc" | "name";
@@ -215,7 +216,7 @@ export default function CollectionPage() {
                 >
                   <div className="relative bg-gray-100 h-64 overflow-hidden">
                     <Image
-                      src={product.imageUrl[0]}
+                      src={getPublicImageUrl(product.imageUrl[0])}
                       alt={product.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"

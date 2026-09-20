@@ -1,4 +1,3 @@
-// app/open-a-company/page.tsx
 "use client";
 
 import AppCarousel from "@/components/Slider";
@@ -19,6 +18,7 @@ import {
   Shield,
   Clock,
   Users,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import DocumentUploadModal from "@/components/OpenCompany/DocumentUploadModal";
@@ -158,7 +158,6 @@ export default function OpenCompanyPage() {
 
     setIsSubmitting(true);
     try {
-      // Here you would submit both formData and uploadedFiles to your API
       const allFormData = {
         ...formData,
         documents: uploadedFiles,
@@ -170,9 +169,6 @@ export default function OpenCompanyPage() {
       toast.success(
         "Application submitted successfully! We'll contact you within 24 hours.",
       );
-
-      // Optionally reset form or redirect
-      // router.push("/thank-you");
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -183,19 +179,33 @@ export default function OpenCompanyPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <AppCarousel />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 text-center pb-12 px-4">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-lg">
+      <section className="w-full bg-gradient-to-b from-white to-gray-50">
+        {/* Carousel */}
+        <div className="w-full">
+          <AppCarousel />
+        </div>
+
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 text-center"
+        >
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium mb-4">
+            <Sparkles className="w-4 h-4" />
+            Start Your Business With Us
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-950 mb-4">
             Start your Business Journey in China
-          </h1>
-          <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto drop-shadow-md">
+          </h2>
+          <div className="w-20 h-1 bg-blue-600 mx-auto rounded-full mb-5" />
+          <p className="text-gray-700 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
             Unlock access to the world&apos;s largest markets. From company
             registration to legal compliance, our expert team guides you through
             every step.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* Benefits Section */}

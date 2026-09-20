@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useApp } from "@/components/AppContext";
+import { getPublicImageUrl } from "@/lib/images";
 
 const PALETTES = [
   "from-blue-500 to-blue-600",
@@ -79,7 +80,12 @@ export default function Category() {
                     key={i}
                     className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
                   >
-                    <Image src={src} alt="" fill className="object-cover" />
+                    <Image
+                      src={getPublicImageUrl(src)}
+                      alt=""
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                 ))}
                 {Array.from({ length: 4 - cat.images.length }).map((_, i) => (
