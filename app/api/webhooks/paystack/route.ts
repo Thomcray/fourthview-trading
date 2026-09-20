@@ -2,10 +2,8 @@ import { createClient } from "@/app/_lib/supabase-server";
 import { createNotification } from "@/app/_lib/create-notification";
 import { getStoreSettings } from "@/app/_lib/settings";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import crypto from "crypto";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendNewOrderEmail } from "@/app/_lib/email";
 
 type PaystackRefundData = {
   status?: string;
@@ -302,10 +300,20 @@ export async function POST(req: Request) {
       .update({ status: "completed" })
       .eq("reference", reference);
 
-    // Send notification and email without blocking the webhook response
+    // Prepare order data for the admin email
+    const orderItems = Array.isArray(intent.items) ? intent.items : [];
+
+    const shippingAddress =
+      intent.shipping_address && typeof intent.shipping_address === "object"
+        ? intent.shipping_address
+        : null;
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    // Send in-app notification and admin email
     const settings = await getStoreSettings();
 
-    Promise.all([
+    await Promise.all([
       createNotification({
         title: "New Order Placed",
         message: `Order #${order.reference} — ₦${totalNGN.toLocaleString()}`,
@@ -313,89 +321,16 @@ export async function POST(req: Request) {
         referenceId: order.id.toString(),
       }).catch((err) => console.error("Notification error:", err)),
 
-      settings?.storeEmail
-        ? resend.emails
-            .send({
-              from: "Fourthview Orders <onboarding@fourthview.online>",
-              to: settings.storeEmail,
-              subject: `New Order #${reference} — ₦${totalNGN.toLocaleString()}`,
-              html: `
-              <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-                <h2 style="color:#1e3a8a">New Order Received</h2>
-                <p><strong>Reference:</strong> ${reference}</p>
-                <p><strong>Total:</strong> ₦${totalNGN.toLocaleString()}</p>
-
-                ${
-                  intent.shipping_address
-                    ? `
-                <p><strong>Shipping Address:</strong><br/>
-                  ${intent.shipping_address.streetAddress}${
-                    intent.shipping_address.apartment
-                      ? `, ${intent.shipping_address.apartment}`
-                      : ""
-                  }<br/>
-                  ${intent.shipping_address.city}, ${intent.shipping_address.zipCode}<br/>
-                  ${intent.shipping_address.country}
-                </p>`
-                    : ""
-                }
-
-                <h3 style="color:#1e3a8a;margin-top:24px">
-                  Order Items
-                </h3>
-
-                <table style="width:100%;border-collapse:collapse">
-                  <thead>
-                    <tr style="background:#f8fafc">
-                      <th style="padding:8px 12px;text-align:left">
-                        Item
-                      </th>
-                      <th style="padding:8px 12px;text-align:center">
-                        Qty
-                      </th>
-                      <th style="padding:8px 12px;text-align:right">
-                        Price (CNY)
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    ${(intent.items ?? [])
-                      .map(
-                        (item: {
-                          itemName: string;
-                          quantity: number;
-                          price: number;
-                        }) => `
-                      <tr>
-                        <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0">
-                          ${item.itemName}
-                        </td>
-                        <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center">
-                          ${item.quantity}
-                        </td>
-                        <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:right">
-                          ¥${item.price.toLocaleString()}
-                        </td>
-                      </tr>`,
-                      )
-                      .join("")}
-                  </tbody>
-                </table>
-
-                <p style="margin-top:24px;color:#64748b;font-size:13px">
-                  View this order in your
-                  <a
-                    href="${process.env.NEXT_PUBLIC_BASE_URL}/admin/orders/${order.id}"
-                    style="color:#2563eb"
-                  >
-                    admin dashboard
-                  </a>.
-                </p>
-              </div>
-            `,
-            })
-            .catch((err) => console.error("Email error:", err))
+      settings?.storeEmail?.trim()
+        ? sendNewOrderEmail({
+            to: settings.storeEmail.trim(),
+            orderId: order.id,
+            orderReference: order.reference,
+            total: totalNGN,
+            items: orderItems,
+            shippingAddress,
+            baseUrl,
+          }).catch((err) => console.error("New order email error:", err))
         : Promise.resolve(),
     ]);
 

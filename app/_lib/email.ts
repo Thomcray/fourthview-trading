@@ -1,17 +1,10 @@
 import { Resend } from "resend";
+import { BookingRequestEmail } from "./emails/booking-email";
+import { RefundRequestEmail } from "./emails/refund-request";
+import { OrderStatusEmail } from "./emails/order-status-email";
+import { NewOrderEmail } from "./emails/new-order-email";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Define proper types
-type OrderItem = {
-  id: number;
-  quantity: number;
-  price: number;
-  product?: {
-    id: number;
-    name: string;
-  };
-};
 
 export async function sendOrderStatusEmail({
   to,
@@ -26,42 +19,21 @@ export async function sendOrderStatusEmail({
   customerName: string;
   total: number;
 }) {
-  const statusMessages: Record<string, string> = {
-    pending: "Your order has been received and is pending confirmation.",
-    processing: "Your order is now being processed and prepared for shipment.",
-    shipped: "Great news! Your order has been shipped and is on its way.",
-    delivered: "Your order has been delivered. Enjoy your purchase!",
-    cancelled:
-      "Your order has been cancelled. Contact us if you have questions.",
-  };
+  const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1);
 
-  const subject = `Order ${orderReference} - ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   await resend.emails.send({
     from: "Fourthview <orders@fourthview.online>",
     to,
-    subject,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #1e40af;">Order Update</h2>
-        <p>Hello ${customerName},</p>
-        <p>${statusMessages[status]}</p>
-        
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">Order Details</h3>
-          <p><strong>Reference:</strong> ${orderReference}</p>
-          <p><strong>Status:</strong> ${status.toUpperCase()}</p>
-          <p><strong>Total:</strong> ₦${total.toLocaleString()}</p>
-        </div>
-
-        <p>You can view your order details by logging into your account.</p>
-        
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
-        <p style="color: #6b7280; font-size: 12px;">
-          This is an automated message from Fourthview Trading Company.
-        </p>
-      </div>
-    `,
+    subject: `Order ${orderReference} - ${formattedStatus}`,
+    react: OrderStatusEmail({
+      orderReference,
+      status,
+      customerName,
+      total,
+      baseUrl,
+    }),
   });
 }
 
@@ -139,64 +111,107 @@ export async function sendRefundRequestEmail({
   reason: string;
   evidenceCount: number;
 }) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
   await resend.emails.send({
     from: "Fourthview <orders@fourthview.online>",
     to,
     subject: `New Refund Request - Order ${orderReference}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #1e40af;">New Refund Request</h2>
+    react: RefundRequestEmail({
+      orderId,
+      orderReference,
+      customerName,
+      customerEmail,
+      amount,
+      reason,
+      evidenceCount,
+      baseUrl,
+    }),
+  });
+}
 
-        <p>A customer has submitted a refund request that requires review.</p>
+export async function sendBookingRequestEmail({
+  to,
+  bookingId,
+  firstName,
+  lastName,
+  email,
+  phone,
+  purpose,
+  factoryName,
+  factoryAddress,
+  visitDate,
+  baseUrl,
+}: {
+  to: string;
+  bookingId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  purpose: string;
+  factoryName: string | null;
+  factoryAddress: string | null;
+  visitDate: string | null;
+  baseUrl: string;
+}) {
+  await resend.emails.send({
+    from: "Fourthview <orders@fourthview.online>",
+    to,
+    subject: `New Booking Request - ${firstName} ${lastName}`,
+    react: BookingRequestEmail({
+      bookingId,
+      firstName,
+      lastName,
+      email,
+      phone,
+      purpose,
+      factoryName,
+      factoryAddress,
+      visitDate,
+      baseUrl,
+    }),
+  });
+}
 
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">Customer Details</h3>
-
-          <p><strong>Name:</strong> ${customerName || "N/A"}</p>
-          <p><strong>Email:</strong> ${customerEmail}</p>
-        </div>
-
-        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">Order Details</h3>
-
-          <p><strong>Order ID:</strong> #${orderId}</p>
-          <p><strong>Reference:</strong> ${orderReference}</p>
-          <p><strong>Refund Amount:</strong> ₦${amount.toLocaleString()}</p>
-          <p><strong>Evidence Files:</strong> ${evidenceCount}</p>
-        </div>
-
-        <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 16px; margin: 20px 0;">
-          <h3 style="color: #92400e; margin-top: 0;">
-            Reason for Refund
-          </h3>
-
-          <p style="color: #78350f; white-space: pre-wrap;">
-            ${reason}
-          </p>
-        </div>
-
-        <div style="text-align: center; margin: 30px 0;">
-          <a
-            href="${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/admin/orders"
-            style="
-              display: inline-block;
-              background: #2563eb;
-              color: #ffffff;
-              padding: 12px 24px;
-              border-radius: 8px;
-              text-decoration: none;
-            "
-          >
-            Review Refund Requests
-          </a>
-        </div>
-
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
-
-        <p style="color: #6b7280; font-size: 12px;">
-          This is an automated refund notification from Fourthview Trading Company.
-        </p>
-      </div>
-    `,
+export async function sendNewOrderEmail({
+  to,
+  orderId,
+  orderReference,
+  total,
+  items,
+  shippingAddress,
+  baseUrl,
+}: {
+  to: string;
+  orderId: number;
+  orderReference: string;
+  total: number;
+  items: {
+    itemName: string;
+    quantity: number;
+    price: number;
+  }[];
+  shippingAddress: {
+    streetAddress?: string;
+    apartment?: string;
+    city?: string;
+    zipCode?: string;
+    country?: string;
+  } | null;
+  baseUrl: string;
+}) {
+  await resend.emails.send({
+    from: "Fourthview Orders <orders@fourthview.online>",
+    to,
+    subject: `New Order #${orderReference} — ₦${total.toLocaleString()}`,
+    react: NewOrderEmail({
+      orderId,
+      orderReference,
+      total,
+      items,
+      shippingAddress,
+      baseUrl,
+    }),
   });
 }

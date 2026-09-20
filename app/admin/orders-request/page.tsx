@@ -8,7 +8,8 @@ import {
   PackageSearch,
   GraduationCap,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import OrdersTab from "@/components/Admin/Tabs/OrdersTab";
 import RequestsTab from "@/components/Admin/Tabs/RequestsTab";
 import SpecialOrdersTab from "@/components/Admin/Tabs/SpecialOrdersTab";
@@ -19,6 +20,22 @@ type Tab = "orders" | "requests" | "special" | "study" | "refunds";
 
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<Tab>("orders");
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+
+    if (
+      tab === "orders" ||
+      tab === "requests" ||
+      tab === "special" ||
+      tab === "study" ||
+      tab === "refunds"
+    ) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
