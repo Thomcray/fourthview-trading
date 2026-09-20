@@ -10,6 +10,7 @@ import {
   X,
   Phone,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,9 +60,12 @@ export default function StudyInChinaApplyPage() {
   useEffect(() => {
     if (!session?.user) return;
 
+    const firstName = session?.user.firstName;
+    const lastName = session?.user.lastName;
+
     setFormData((prev) => ({
       ...prev,
-      fullName: session.user.name ?? "",
+      fullName: [firstName, lastName].filter(Boolean).join(" "),
       email: session.user.email ?? "",
     }));
   }, [session]);
@@ -497,9 +501,16 @@ export default function StudyInChinaApplyPage() {
                 }
                 className="w-full bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold cursor-pointer"
               >
-                {sessionStatus === "loading"
-                  ? "Loading your account..."
-                  : "Submit Application"}
+                {sessionStatus === "loading" ? (
+                  "Loading your account..."
+                ) : isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Uploading documents...
+                  </span>
+                ) : (
+                  "Submit Application"
+                )}
               </Button>
 
               <p className="text-center text-xs text-gray-400">

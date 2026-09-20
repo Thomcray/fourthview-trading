@@ -3,6 +3,8 @@ import { authOptions } from "@/app/_lib/auth";
 import { createClient } from "@/app/_lib/supabase-server";
 import { NextResponse } from "next/server";
 import { createNotification } from "@/app/_lib/create-notification";
+import { sendAdminStudyApplicationEmail } from "@/app/_lib/email";
+import { getStoreSettings } from "@/app/_lib/settings";
 
 // POST: Create a new application for the authenticated user
 export async function POST(req: Request) {
@@ -81,16 +83,40 @@ export async function POST(req: Request) {
     }
 
     // Notify administrators
-    await createNotification({
-      title: "New Study Application",
-      message: `${body.fullName} applied for ${
-        body.preferredProgram || "a program"
-      }`,
-      type: "study_application",
-      referenceId: application.id.toString(),
-    }).catch((err) => {
-      console.error("Notification error:", err);
-    });
+    const settings = await getStoreSettings();
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    await Promise.all([
+      createNotification({
+        title: "New Study Application",
+        message: `${body.fullName} applied for ${
+          body.preferredProgram || "a program"
+        }`,
+        type: "study_application",
+        referenceId: application.id.toString(),
+      }).catch((err) => {
+        console.error("Notification error:", err);
+      }),
+
+      settings?.storeEmail?.trim()
+        ? sendAdminStudyApplicationEmail({
+            to: settings.storeEmail.trim(),
+            applicationId: application.id,
+            fullName: body.fullName,
+            email: body.email,
+            whatsappNumber: body.whatsappNumber,
+            country: body.country,
+            age,
+            preferredUniversity: body.preferredUniversity,
+            preferredProgram: body.preferredProgram,
+            message: body.message ?? null,
+            baseUrl,
+          }).catch((err) => {
+            console.error("Study application email error:", err);
+          })
+        : Promise.resolve(),
+    ]);
 
     return NextResponse.json(application, { status: 201 });
   } catch (error) {

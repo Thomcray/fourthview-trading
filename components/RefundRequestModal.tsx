@@ -35,7 +35,7 @@ export default function RefundRequestModal({
   onClose,
   orderId,
   orderTotal,
-  whatsappNumber = "2348000000000", // replace with your actual number
+  whatsappNumber,
 }: RefundRequestModalProps) {
   const [reason, setReason] = useState("");
   const [evidence, setEvidence] = useState<UploadedEvidence[]>([]);

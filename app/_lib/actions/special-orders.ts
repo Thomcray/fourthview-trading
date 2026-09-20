@@ -1,7 +1,9 @@
 "use server";
 
 import { newSpecialOrders, updateSpecialOrderImages } from "../data-services";
+import { adminSendSpecialOrderEmail } from "../email";
 import { uploadProductImage } from "./upload-actions";
+import { getStoreSettings } from "@/app/_lib/settings";
 
 const SPECIAL_ORDER_DEPOSIT = 50_000;
 
@@ -35,9 +37,7 @@ export async function specialOrders(
     throw new Error("Payment reference is required");
   }
 
-  // ------------------------------------------------------------
-  // Verify the ₦50,000 deposit directly with Paystack
-  // ------------------------------------------------------------
+  // Verify the ₦50,000 Paystack deposit
 
   const paystackResponse = await fetch(
     `https://api.paystack.co/transaction/verify/${encodeURIComponent(
@@ -65,11 +65,6 @@ export async function specialOrders(
   }
 
   const transaction = paystackResult.data;
-
-  // ------------------------------------------------------------
-  // Validate payment
-  // ------------------------------------------------------------
-
   const expectedAmount = SPECIAL_ORDER_DEPOSIT * 100;
 
   if (transaction.status !== "success") {
@@ -92,9 +87,7 @@ export async function specialOrders(
     throw new Error("Invalid payment currency.");
   }
 
-  // ------------------------------------------------------------
-  // Create special order first
-  // ------------------------------------------------------------
+  // Create the special order
 
   const specialOrder = await newSpecialOrders({
     email,
@@ -114,9 +107,36 @@ export async function specialOrders(
     );
   }
 
-  // ------------------------------------------------------------
+  // Notify admin by email
+  // This is intentionally wrapped in try/catch so an email
+  // failure does not make an already-created paid order fail.
+
+  try {
+    const settings = await getStoreSettings();
+
+    if (settings?.storeEmail?.trim()) {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+      await adminSendSpecialOrderEmail({
+        to: settings.storeEmail.trim(),
+        specialOrderId: specialOrder.id,
+        email,
+        whatsapp,
+        description,
+        depositAmount: SPECIAL_ORDER_DEPOSIT,
+        depositReference: transaction.reference,
+        imageCount: orderImages.length,
+        baseUrl,
+      });
+    } else {
+      console.warn("Special order created, but no store email is configured.");
+    }
+  } catch (emailError) {
+    console.error("Special order notification email failed:", emailError);
+  }
+
   // Upload reference images
-  // ------------------------------------------------------------
 
   const uploadedImageUrls: string[] = [];
 
@@ -147,6 +167,8 @@ export async function specialOrders(
       "Your payment was successful and your special order was created, but there was a problem uploading the reference images. Please contact us.",
     );
   }
+
+  // Return success
 
   return {
     success: true,

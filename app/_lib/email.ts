@@ -3,6 +3,8 @@ import { BookingRequestEmail } from "./emails/booking-email";
 import { RefundRequestEmail } from "./emails/refund-request";
 import { OrderStatusEmail } from "./emails/order-status-email";
 import { NewOrderEmail } from "./emails/new-order-email";
+import { AdminStudyApplicationEmail } from "./emails/admin-study-application";
+import { AdminSpecialOrderEmail } from "./emails/admin-special-order-email";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -211,6 +213,88 @@ export async function sendNewOrderEmail({
       total,
       items,
       shippingAddress,
+      baseUrl,
+    }),
+  });
+}
+
+export async function sendAdminStudyApplicationEmail({
+  to,
+  applicationId,
+  fullName,
+  email,
+  whatsappNumber,
+  country,
+  age,
+  preferredUniversity,
+  preferredProgram,
+  message,
+  baseUrl,
+}: {
+  to: string;
+  applicationId: number;
+  fullName: string;
+  email: string;
+  whatsappNumber: string;
+  country: string;
+  age: number;
+  preferredUniversity: string;
+  preferredProgram: string;
+  message: string | null;
+  baseUrl: string;
+}) {
+  await resend.emails.send({
+    from: "Fourthview <study@fourthview.online>",
+    to,
+    subject: `New Study Application - ${fullName}`,
+    react: AdminStudyApplicationEmail({
+      applicationId,
+      fullName,
+      email,
+      whatsappNumber,
+      country,
+      age,
+      preferredUniversity,
+      preferredProgram,
+      message,
+      baseUrl,
+    }),
+  });
+}
+
+export async function adminSendSpecialOrderEmail({
+  to,
+  specialOrderId,
+  email,
+  whatsapp,
+  description,
+  depositAmount,
+  depositReference,
+  imageCount,
+  baseUrl,
+}: {
+  to: string;
+  specialOrderId: number;
+  email: string;
+  whatsapp: string;
+  description: string;
+  depositAmount: number;
+  depositReference: string;
+  imageCount: number;
+  baseUrl: string;
+}) {
+  await resend.emails.send({
+    from: "Fourthview <orders@fourthview.online>",
+    to,
+    subject: `New Special Order #${specialOrderId}`,
+    react: AdminSpecialOrderEmail({
+      specialOrderId,
+      email,
+      whatsapp,
+      description,
+      depositAmount,
+      depositReference,
+      imageCount,
       baseUrl,
     }),
   });

@@ -29,7 +29,7 @@ export function RefundRequestEmail({
   evidenceCount: number;
   baseUrl: string;
 }) {
-  const adminUrl = `${baseUrl}/admin/orders`;
+  const adminUrl = `${baseUrl}/admin/orders-request?tab=refunds`;
 
   return (
     <Html>
