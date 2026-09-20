@@ -10,6 +10,7 @@ import { useState, useMemo, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
 import AddToCart from "@/components/AddToCart";
+import { getPublicImageUrl } from "@/lib/images";
 
 type SortOption = "default" | "price-asc" | "price-desc" | "name";
 
@@ -144,13 +145,13 @@ export default function CategoryPage() {
                 >
                   <div className="relative bg-gray-50">
                     <Image
-                      src={product.imageUrl[0]}
+                      src={getPublicImageUrl(product.imageUrl[0])}
                       alt={product.name}
                       width={300}
                       height={300}
                       className="w-full h-56 object-cover hover:scale-105 transition-transform duration-500"
                     />
-                    {product.discount && (
+                    {!!product.discount && (
                       <span className="absolute top-2 left-2 bg-linear-to-r from-red-500 to-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md">
                         -{product.discount}%
                       </span>

@@ -3,13 +3,7 @@ import ProfileForm from "./ProfileForm";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { Dancing_Script } from "next/font/google";
-import { ArrowLeft, User } from "lucide-react";
 import ProfileHeader from "./ProfileHeader";
-
-const dancingScript = Dancing_Script({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
 
 interface Country {
   name: {

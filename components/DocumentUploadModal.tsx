@@ -223,16 +223,19 @@ export default function DocumentUploadModal({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      {currentFile.preview && (
-                        <button
-                          onClick={() =>
-                            onPreview(currentFile.preview!, currentFile.name)
-                          }
-                          className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
-                        >
-                          <Eye className="w-4 h-4 text-green-600" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onPreview(
+                            currentFile.preview ??
+                              URL.createObjectURL(currentFile.file),
+                            currentFile.name,
+                          )
+                        }
+                        className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
+                      >
+                        <Eye className="w-4 h-4 text-green-600" />
+                      </button>
 
                       <button
                         onClick={() => onRemoveFile(currentDoc.id)}

@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  X,
-  Upload,
-  Image as ImageIcon,
-  Trash2,
-  AlertCircle,
-  Send,
-} from "lucide-react";
+import { Upload, Trash2, AlertCircle, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState, useTransition, useCallback, useEffect } from "react";
@@ -159,7 +152,7 @@ export default function SpecialOrders() {
         setOrderImages((prev) => [...prev, file]);
       });
     },
-    [orderImages],
+    [orderImages, validateImage],
   );
 
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {

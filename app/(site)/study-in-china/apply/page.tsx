@@ -24,6 +24,7 @@ import {
   UploadedFile,
 } from "@/app/_lib/study-document-config";
 import { useUploadWithProgress } from "@/hooks/useUploadWithProgress";
+import Image from "next/image";
 
 export default function StudyInChinaApplyPage() {
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -271,6 +272,13 @@ export default function StudyInChinaApplyPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const closePreview = () => {
+    if (previewFile?.url.startsWith("blob:")) {
+      URL.revokeObjectURL(previewFile.url);
+    }
+    setPreviewFile(null);
   };
 
   return (
@@ -555,18 +563,40 @@ export default function StudyInChinaApplyPage() {
               <div className="flex justify-between items-center p-4 border-b">
                 <h3 className="font-semibold">{previewFile.name}</h3>
                 <button
-                  onClick={() => setPreviewFile(null)}
+                  onClick={closePreview}
                   className="p-1 hover:bg-gray-100 rounded"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-4">
-                <img
-                  src={previewFile.url}
-                  alt="Preview"
-                  className="w-full rounded-lg"
-                />
+                {previewFile.name.toLowerCase().endsWith(".pdf") ? (
+                  <>
+                    <iframe
+                      src={previewFile.url}
+                      title={previewFile.name}
+                      className="w-full h-[70vh] rounded-lg"
+                    />
+                    <a
+                      href={previewFile.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-block text-sm text-blue-600 underline"
+                    >
+                      Open in new tab
+                    </a>
+                  </>
+                ) : (
+                  <div className="relative w-full h-[70vh]">
+                    <Image
+                      src={previewFile.url}
+                      alt={previewFile.name}
+                      fill
+                      unoptimized
+                      className="object-contain rounded-lg"
+                    />
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

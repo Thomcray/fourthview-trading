@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Shield,
   Clock,
-  ArrowRight,
   CreditCard,
   Upload,
   QrCode,
