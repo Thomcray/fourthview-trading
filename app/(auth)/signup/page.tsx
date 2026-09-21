@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Dancing_Script } from "next/font/google";
 import SignupForm from "./SignupForm";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Sign Up",
@@ -35,12 +36,12 @@ export default function page() {
             <SignupForm />
             <p className="text-sm text-center text-gray-600 mt-6">
               Already have an account?{" "}
-              <a
+              <Link
                 href="/signin"
                 className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
               >
                 Sign In
-              </a>
+              </Link>
             </p>
           </div>
         </div>
