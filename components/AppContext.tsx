@@ -84,8 +84,8 @@ function normaliseProducts(
     discountType: p.discountType ?? null,
     slug: deriveSlug(p),
     _groupKeys: {
-      byProductType: (p.productType ?? "Other").toLowerCase().trim(),
-      byTarget: (p.target ?? "General").toLowerCase().trim(),
+      byProductType: (p.productType || "Other").toLowerCase().trim(),
+      byTarget: (p.target || "General").toLowerCase().trim(),
     },
   }));
 }
@@ -351,5 +351,5 @@ function useApp() {
   return context;
 }
 
-export { AppProvider, useApp };
+export { AppProvider, useApp, normaliseProducts };
 export type { AppContextType, Products, Categories, Cart };

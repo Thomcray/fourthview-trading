@@ -21,9 +21,32 @@
     "flag": "🇩🇿"
   },
   {
+    "name": { "common": "Andorra", "official": "Principality of Andorra" },
+    "idd": { "root": "+3", "suffixes": ["76"] },
+    "flag": "🇦🇩"
+  },
+  {
+    "name": { "common": "Angola", "official": "Republic of Angola" },
+    "idd": { "root": "+2", "suffixes": ["44"] },
+    "flag": "🇦🇴"
+  },
+  {
+    "name": {
+      "common": "Antigua and Barbuda",
+      "official": "Antigua and Barbuda"
+    },
+    "idd": { "root": "+1", "suffixes": ["268"] },
+    "flag": "🇦🇬"
+  },
+  {
     "name": { "common": "Argentina", "official": "Argentine Republic" },
     "idd": { "root": "+5", "suffixes": ["4"] },
     "flag": "🇦🇷"
+  },
+  {
+    "name": { "common": "Armenia", "official": "Republic of Armenia" },
+    "idd": { "root": "+3", "suffixes": ["74"] },
+    "flag": "🇦🇲"
   },
   {
     "name": { "common": "Australia", "official": "Commonwealth of Australia" },
@@ -36,6 +59,21 @@
     "flag": "🇦🇹"
   },
   {
+    "name": { "common": "Azerbaijan", "official": "Republic of Azerbaijan" },
+    "idd": { "root": "+9", "suffixes": ["94"] },
+    "flag": "🇦🇿"
+  },
+  {
+    "name": { "common": "Bahamas", "official": "Commonwealth of the Bahamas" },
+    "idd": { "root": "+1", "suffixes": ["242"] },
+    "flag": "🇧🇸"
+  },
+  {
+    "name": { "common": "Bahrain", "official": "Kingdom of Bahrain" },
+    "idd": { "root": "+9", "suffixes": ["73"] },
+    "flag": "🇧🇭"
+  },
+  {
     "name": {
       "common": "Bangladesh",
       "official": "People's Republic of Bangladesh"
@@ -44,9 +82,55 @@
     "flag": "🇧🇩"
   },
   {
+    "name": { "common": "Barbados", "official": "Barbados" },
+    "idd": { "root": "+1", "suffixes": ["246"] },
+    "flag": "🇧🇧"
+  },
+  {
+    "name": { "common": "Belarus", "official": "Republic of Belarus" },
+    "idd": { "root": "+3", "suffixes": ["75"] },
+    "flag": "🇧🇾"
+  },
+  {
     "name": { "common": "Belgium", "official": "Kingdom of Belgium" },
     "idd": { "root": "+3", "suffixes": ["2"] },
     "flag": "🇧🇪"
+  },
+  {
+    "name": { "common": "Belize", "official": "Belize" },
+    "idd": { "root": "+5", "suffixes": ["01"] },
+    "flag": "🇧🇿"
+  },
+  {
+    "name": { "common": "Benin", "official": "Republic of Benin" },
+    "idd": { "root": "+2", "suffixes": ["29"] },
+    "flag": "🇧🇯"
+  },
+  {
+    "name": { "common": "Bhutan", "official": "Kingdom of Bhutan" },
+    "idd": { "root": "+9", "suffixes": ["75"] },
+    "flag": "🇧🇹"
+  },
+  {
+    "name": {
+      "common": "Bolivia",
+      "official": "Plurinational State of Bolivia"
+    },
+    "idd": { "root": "+5", "suffixes": ["91"] },
+    "flag": "🇧🇴"
+  },
+  {
+    "name": {
+      "common": "Bosnia and Herzegovina",
+      "official": "Bosnia and Herzegovina"
+    },
+    "idd": { "root": "+3", "suffixes": ["87"] },
+    "flag": "🇧🇦"
+  },
+  {
+    "name": { "common": "Botswana", "official": "Republic of Botswana" },
+    "idd": { "root": "+2", "suffixes": ["67"] },
+    "flag": "🇧🇼"
   },
   {
     "name": { "common": "Brazil", "official": "Federative Republic of Brazil" },
@@ -54,9 +138,65 @@
     "flag": "🇧🇷"
   },
   {
+    "name": {
+      "common": "Brunei",
+      "official": "Nation of Brunei, Abode of Peace"
+    },
+    "idd": { "root": "+6", "suffixes": ["73"] },
+    "flag": "🇧🇳"
+  },
+  {
+    "name": { "common": "Bulgaria", "official": "Republic of Bulgaria" },
+    "idd": { "root": "+3", "suffixes": ["59"] },
+    "flag": "🇧🇬"
+  },
+  {
+    "name": { "common": "Burkina Faso", "official": "Burkina Faso" },
+    "idd": { "root": "+2", "suffixes": ["26"] },
+    "flag": "🇧🇫"
+  },
+  {
+    "name": { "common": "Burundi", "official": "Republic of Burundi" },
+    "idd": { "root": "+2", "suffixes": ["57"] },
+    "flag": "🇧🇮"
+  },
+  {
+    "name": { "common": "Cambodia", "official": "Kingdom of Cambodia" },
+    "idd": { "root": "+8", "suffixes": ["55"] },
+    "flag": "🇰🇭"
+  },
+  {
+    "name": { "common": "Cameroon", "official": "Republic of Cameroon" },
+    "idd": { "root": "+2", "suffixes": ["37"] },
+    "flag": "🇨🇲"
+  },
+  {
     "name": { "common": "Canada", "official": "Canada" },
     "idd": { "root": "+1", "suffixes": [""] },
     "flag": "🇨🇦"
+  },
+  {
+    "name": { "common": "Cape Verde", "official": "Republic of Cabo Verde" },
+    "idd": { "root": "+2", "suffixes": ["38"] },
+    "flag": "🇨🇻"
+  },
+  {
+    "name": {
+      "common": "Central African Republic",
+      "official": "Central African Republic"
+    },
+    "idd": { "root": "+2", "suffixes": ["36"] },
+    "flag": "🇨🇫"
+  },
+  {
+    "name": { "common": "Chad", "official": "Republic of Chad" },
+    "idd": { "root": "+2", "suffixes": ["35"] },
+    "flag": "🇹🇩"
+  },
+  {
+    "name": { "common": "Chile", "official": "Republic of Chile" },
+    "idd": { "root": "+5", "suffixes": ["6"] },
+    "flag": "🇨🇱"
   },
   {
     "name": { "common": "China", "official": "People's Republic of China" },
@@ -64,14 +204,146 @@
     "flag": "🇨🇳"
   },
   {
+    "name": { "common": "Colombia", "official": "Republic of Colombia" },
+    "idd": { "root": "+5", "suffixes": ["7"] },
+    "flag": "🇨🇴"
+  },
+  {
+    "name": { "common": "Comoros", "official": "Union of the Comoros" },
+    "idd": { "root": "+2", "suffixes": ["69"] },
+    "flag": "🇰🇲"
+  },
+  {
+    "name": { "common": "Costa Rica", "official": "Republic of Costa Rica" },
+    "idd": { "root": "+5", "suffixes": ["06"] },
+    "flag": "🇨🇷"
+  },
+  {
+    "name": { "common": "Croatia", "official": "Republic of Croatia" },
+    "idd": { "root": "+3", "suffixes": ["85"] },
+    "flag": "🇭🇷"
+  },
+  {
+    "name": { "common": "Cuba", "official": "Republic of Cuba" },
+    "idd": { "root": "+5", "suffixes": ["3"] },
+    "flag": "🇨🇺"
+  },
+  {
+    "name": { "common": "Cyprus", "official": "Republic of Cyprus" },
+    "idd": { "root": "+3", "suffixes": ["57"] },
+    "flag": "🇨🇾"
+  },
+  {
+    "name": { "common": "Czechia", "official": "Czech Republic" },
+    "idd": { "root": "+4", "suffixes": ["20"] },
+    "flag": "🇨🇿"
+  },
+  {
+    "name": { "common": "Denmark", "official": "Kingdom of Denmark" },
+    "idd": { "root": "+4", "suffixes": ["5"] },
+    "flag": "🇩🇰"
+  },
+  {
+    "name": { "common": "Djibouti", "official": "Republic of Djibouti" },
+    "idd": { "root": "+2", "suffixes": ["53"] },
+    "flag": "🇩🇯"
+  },
+  {
+    "name": { "common": "Dominica", "official": "Commonwealth of Dominica" },
+    "idd": { "root": "+1", "suffixes": ["767"] },
+    "flag": "🇩🇲"
+  },
+  {
+    "name": {
+      "common": "Dominican Republic",
+      "official": "Dominican Republic"
+    },
+    "idd": { "root": "+1", "suffixes": ["809"] },
+    "flag": "🇩🇴"
+  },
+  {
+    "name": {
+      "common": "DR Congo",
+      "official": "Democratic Republic of the Congo"
+    },
+    "idd": { "root": "+2", "suffixes": ["43"] },
+    "flag": "🇨🇩"
+  },
+  {
+    "name": { "common": "Ecuador", "official": "Republic of Ecuador" },
+    "idd": { "root": "+5", "suffixes": ["93"] },
+    "flag": "🇪🇨"
+  },
+  {
     "name": { "common": "Egypt", "official": "Arab Republic of Egypt" },
     "idd": { "root": "+2", "suffixes": ["0"] },
     "flag": "🇪🇬"
   },
   {
+    "name": { "common": "El Salvador", "official": "Republic of El Salvador" },
+    "idd": { "root": "+5", "suffixes": ["03"] },
+    "flag": "🇸🇻"
+  },
+  {
+    "name": {
+      "common": "Equatorial Guinea",
+      "official": "Republic of Equatorial Guinea"
+    },
+    "idd": { "root": "+2", "suffixes": ["40"] },
+    "flag": "🇬🇶"
+  },
+  {
+    "name": { "common": "Eritrea", "official": "State of Eritrea" },
+    "idd": { "root": "+2", "suffixes": ["91"] },
+    "flag": "🇪🇷"
+  },
+  {
+    "name": { "common": "Estonia", "official": "Republic of Estonia" },
+    "idd": { "root": "+3", "suffixes": ["72"] },
+    "flag": "🇪🇪"
+  },
+  {
+    "name": { "common": "Eswatini", "official": "Kingdom of Eswatini" },
+    "idd": { "root": "+2", "suffixes": ["68"] },
+    "flag": "🇸🇿"
+  },
+  {
+    "name": {
+      "common": "Ethiopia",
+      "official": "Federal Democratic Republic of Ethiopia"
+    },
+    "idd": { "root": "+2", "suffixes": ["51"] },
+    "flag": "🇪🇹"
+  },
+  {
+    "name": { "common": "Fiji", "official": "Republic of Fiji" },
+    "idd": { "root": "+6", "suffixes": ["79"] },
+    "flag": "🇫🇯"
+  },
+  {
+    "name": { "common": "Finland", "official": "Republic of Finland" },
+    "idd": { "root": "+3", "suffixes": ["58"] },
+    "flag": "🇫🇮"
+  },
+  {
     "name": { "common": "France", "official": "French Republic" },
     "idd": { "root": "+3", "suffixes": ["3"] },
     "flag": "🇫🇷"
+  },
+  {
+    "name": { "common": "Gabon", "official": "Gabonese Republic" },
+    "idd": { "root": "+2", "suffixes": ["41"] },
+    "flag": "🇬🇦"
+  },
+  {
+    "name": { "common": "Gambia", "official": "Republic of the Gambia" },
+    "idd": { "root": "+2", "suffixes": ["20"] },
+    "flag": "🇬🇲"
+  },
+  {
+    "name": { "common": "Georgia", "official": "Georgia" },
+    "idd": { "root": "+9", "suffixes": ["95"] },
+    "flag": "🇬🇪"
   },
   {
     "name": { "common": "Germany", "official": "Federal Republic of Germany" },
@@ -84,6 +356,62 @@
     "flag": "🇬🇭"
   },
   {
+    "name": { "common": "Greece", "official": "Hellenic Republic" },
+    "idd": { "root": "+3", "suffixes": ["0"] },
+    "flag": "🇬🇷"
+  },
+  {
+    "name": { "common": "Grenada", "official": "Grenada" },
+    "idd": { "root": "+1", "suffixes": ["473"] },
+    "flag": "🇬🇩"
+  },
+  {
+    "name": { "common": "Guatemala", "official": "Republic of Guatemala" },
+    "idd": { "root": "+5", "suffixes": ["02"] },
+    "flag": "🇬🇹"
+  },
+  {
+    "name": { "common": "Guinea", "official": "Republic of Guinea" },
+    "idd": { "root": "+2", "suffixes": ["24"] },
+    "flag": "🇬🇳"
+  },
+  {
+    "name": {
+      "common": "Guinea-Bissau",
+      "official": "Republic of Guinea-Bissau"
+    },
+    "idd": { "root": "+2", "suffixes": ["45"] },
+    "flag": "🇬🇼"
+  },
+  {
+    "name": {
+      "common": "Guyana",
+      "official": "Co-operative Republic of Guyana"
+    },
+    "idd": { "root": "+5", "suffixes": ["92"] },
+    "flag": "🇬🇾"
+  },
+  {
+    "name": { "common": "Haiti", "official": "Republic of Haiti" },
+    "idd": { "root": "+5", "suffixes": ["09"] },
+    "flag": "🇭🇹"
+  },
+  {
+    "name": { "common": "Honduras", "official": "Republic of Honduras" },
+    "idd": { "root": "+5", "suffixes": ["04"] },
+    "flag": "🇭🇳"
+  },
+  {
+    "name": { "common": "Hungary", "official": "Hungary" },
+    "idd": { "root": "+3", "suffixes": ["6"] },
+    "flag": "🇭🇺"
+  },
+  {
+    "name": { "common": "Iceland", "official": "Iceland" },
+    "idd": { "root": "+3", "suffixes": ["54"] },
+    "flag": "🇮🇸"
+  },
+  {
     "name": { "common": "India", "official": "Republic of India" },
     "idd": { "root": "+9", "suffixes": ["1"] },
     "flag": "🇮🇳"
@@ -94,9 +422,42 @@
     "flag": "🇮🇩"
   },
   {
+    "name": { "common": "Iran", "official": "Islamic Republic of Iran" },
+    "idd": { "root": "+9", "suffixes": ["8"] },
+    "flag": "🇮🇷"
+  },
+  {
+    "name": { "common": "Iraq", "official": "Republic of Iraq" },
+    "idd": { "root": "+9", "suffixes": ["64"] },
+    "flag": "🇮🇶"
+  },
+  {
+    "name": { "common": "Ireland", "official": "Republic of Ireland" },
+    "idd": { "root": "+3", "suffixes": ["53"] },
+    "flag": "🇮🇪"
+  },
+  {
+    "name": { "common": "Israel", "official": "State of Israel" },
+    "idd": { "root": "+9", "suffixes": ["72"] },
+    "flag": "🇮🇱"
+  },
+  {
     "name": { "common": "Italy", "official": "Italian Republic" },
     "idd": { "root": "+3", "suffixes": ["9"] },
     "flag": "🇮🇹"
+  },
+  {
+    "name": {
+      "common": "Ivory Coast",
+      "official": "Republic of Côte d'Ivoire"
+    },
+    "idd": { "root": "+2", "suffixes": ["25"] },
+    "flag": "🇨🇮"
+  },
+  {
+    "name": { "common": "Jamaica", "official": "Jamaica" },
+    "idd": { "root": "+1", "suffixes": ["876"] },
+    "flag": "🇯🇲"
   },
   {
     "name": { "common": "Japan", "official": "Japan" },
@@ -104,14 +465,208 @@
     "flag": "🇯🇵"
   },
   {
+    "name": { "common": "Jordan", "official": "Hashemite Kingdom of Jordan" },
+    "idd": { "root": "+9", "suffixes": ["62"] },
+    "flag": "🇯🇴"
+  },
+  {
+    "name": { "common": "Kazakhstan", "official": "Republic of Kazakhstan" },
+    "idd": { "root": "+7", "suffixes": [""] },
+    "flag": "🇰🇿"
+  },
+  {
     "name": { "common": "Kenya", "official": "Republic of Kenya" },
     "idd": { "root": "+2", "suffixes": ["54"] },
     "flag": "🇰🇪"
   },
   {
+    "name": {
+      "common": "Kiribati",
+      "official": "Independent and Sovereign Republic of Kiribati"
+    },
+    "idd": { "root": "+6", "suffixes": ["86"] },
+    "flag": "🇰🇮"
+  },
+  {
+    "name": { "common": "Kuwait", "official": "State of Kuwait" },
+    "idd": { "root": "+9", "suffixes": ["65"] },
+    "flag": "🇰🇼"
+  },
+  {
+    "name": { "common": "Kyrgyzstan", "official": "Kyrgyz Republic" },
+    "idd": { "root": "+9", "suffixes": ["96"] },
+    "flag": "🇰🇬"
+  },
+  {
+    "name": {
+      "common": "Laos",
+      "official": "Lao People's Democratic Republic"
+    },
+    "idd": { "root": "+8", "suffixes": ["56"] },
+    "flag": "🇱🇦"
+  },
+  {
+    "name": { "common": "Latvia", "official": "Republic of Latvia" },
+    "idd": { "root": "+3", "suffixes": ["71"] },
+    "flag": "🇱🇻"
+  },
+  {
+    "name": { "common": "Lebanon", "official": "Lebanese Republic" },
+    "idd": { "root": "+9", "suffixes": ["61"] },
+    "flag": "🇱🇧"
+  },
+  {
+    "name": { "common": "Lesotho", "official": "Kingdom of Lesotho" },
+    "idd": { "root": "+2", "suffixes": ["66"] },
+    "flag": "🇱🇸"
+  },
+  {
+    "name": { "common": "Liberia", "official": "Republic of Liberia" },
+    "idd": { "root": "+2", "suffixes": ["31"] },
+    "flag": "🇱🇷"
+  },
+  {
+    "name": { "common": "Libya", "official": "State of Libya" },
+    "idd": { "root": "+2", "suffixes": ["18"] },
+    "flag": "🇱🇾"
+  },
+  {
+    "name": {
+      "common": "Liechtenstein",
+      "official": "Principality of Liechtenstein"
+    },
+    "idd": { "root": "+4", "suffixes": ["23"] },
+    "flag": "🇱🇮"
+  },
+  {
+    "name": { "common": "Lithuania", "official": "Republic of Lithuania" },
+    "idd": { "root": "+3", "suffixes": ["70"] },
+    "flag": "🇱🇹"
+  },
+  {
+    "name": { "common": "Luxembourg", "official": "Grand Duchy of Luxembourg" },
+    "idd": { "root": "+3", "suffixes": ["52"] },
+    "flag": "🇱🇺"
+  },
+  {
+    "name": { "common": "Madagascar", "official": "Republic of Madagascar" },
+    "idd": { "root": "+2", "suffixes": ["61"] },
+    "flag": "🇲🇬"
+  },
+  {
+    "name": { "common": "Malawi", "official": "Republic of Malawi" },
+    "idd": { "root": "+2", "suffixes": ["65"] },
+    "flag": "🇲🇼"
+  },
+  {
+    "name": { "common": "Malaysia", "official": "Malaysia" },
+    "idd": { "root": "+6", "suffixes": ["0"] },
+    "flag": "🇲🇾"
+  },
+  {
+    "name": { "common": "Maldives", "official": "Republic of the Maldives" },
+    "idd": { "root": "+9", "suffixes": ["60"] },
+    "flag": "🇲🇻"
+  },
+  {
+    "name": { "common": "Mali", "official": "Republic of Mali" },
+    "idd": { "root": "+2", "suffixes": ["23"] },
+    "flag": "🇲🇱"
+  },
+  {
+    "name": { "common": "Malta", "official": "Republic of Malta" },
+    "idd": { "root": "+3", "suffixes": ["56"] },
+    "flag": "🇲🇹"
+  },
+  {
+    "name": {
+      "common": "Marshall Islands",
+      "official": "Republic of the Marshall Islands"
+    },
+    "idd": { "root": "+6", "suffixes": ["92"] },
+    "flag": "🇲🇭"
+  },
+  {
+    "name": {
+      "common": "Mauritania",
+      "official": "Islamic Republic of Mauritania"
+    },
+    "idd": { "root": "+2", "suffixes": ["22"] },
+    "flag": "🇲🇷"
+  },
+  {
+    "name": { "common": "Mauritius", "official": "Republic of Mauritius" },
+    "idd": { "root": "+2", "suffixes": ["30"] },
+    "flag": "🇲🇺"
+  },
+  {
     "name": { "common": "Mexico", "official": "United Mexican States" },
     "idd": { "root": "+5", "suffixes": ["2"] },
     "flag": "🇲🇽"
+  },
+  {
+    "name": {
+      "common": "Micronesia",
+      "official": "Federated States of Micronesia"
+    },
+    "idd": { "root": "+6", "suffixes": ["91"] },
+    "flag": "🇫🇲"
+  },
+  {
+    "name": { "common": "Moldova", "official": "Republic of Moldova" },
+    "idd": { "root": "+3", "suffixes": ["73"] },
+    "flag": "🇲🇩"
+  },
+  {
+    "name": { "common": "Monaco", "official": "Principality of Monaco" },
+    "idd": { "root": "+3", "suffixes": ["77"] },
+    "flag": "🇲🇨"
+  },
+  {
+    "name": { "common": "Mongolia", "official": "Mongolia" },
+    "idd": { "root": "+9", "suffixes": ["76"] },
+    "flag": "🇲🇳"
+  },
+  {
+    "name": { "common": "Montenegro", "official": "Montenegro" },
+    "idd": { "root": "+3", "suffixes": ["82"] },
+    "flag": "🇲🇪"
+  },
+  {
+    "name": { "common": "Morocco", "official": "Kingdom of Morocco" },
+    "idd": { "root": "+2", "suffixes": ["12"] },
+    "flag": "🇲🇦"
+  },
+  {
+    "name": { "common": "Mozambique", "official": "Republic of Mozambique" },
+    "idd": { "root": "+2", "suffixes": ["58"] },
+    "flag": "🇲🇿"
+  },
+  {
+    "name": {
+      "common": "Myanmar",
+      "official": "Republic of the Union of Myanmar"
+    },
+    "idd": { "root": "+9", "suffixes": ["5"] },
+    "flag": "🇲🇲"
+  },
+  {
+    "name": { "common": "Namibia", "official": "Republic of Namibia" },
+    "idd": { "root": "+2", "suffixes": ["64"] },
+    "flag": "🇳🇦"
+  },
+  {
+    "name": { "common": "Nauru", "official": "Republic of Nauru" },
+    "idd": { "root": "+6", "suffixes": ["74"] },
+    "flag": "🇳🇷"
+  },
+  {
+    "name": {
+      "common": "Nepal",
+      "official": "Federal Democratic Republic of Nepal"
+    },
+    "idd": { "root": "+9", "suffixes": ["77"] },
+    "flag": "🇳🇵"
   },
   {
     "name": {
@@ -122,9 +677,50 @@
     "flag": "🇳🇱"
   },
   {
+    "name": { "common": "New Zealand", "official": "New Zealand" },
+    "idd": { "root": "+6", "suffixes": ["4"] },
+    "flag": "🇳🇿"
+  },
+  {
+    "name": { "common": "Nicaragua", "official": "Republic of Nicaragua" },
+    "idd": { "root": "+5", "suffixes": ["05"] },
+    "flag": "🇳🇮"
+  },
+  {
+    "name": { "common": "Niger", "official": "Republic of Niger" },
+    "idd": { "root": "+2", "suffixes": ["27"] },
+    "flag": "🇳🇪"
+  },
+  {
     "name": { "common": "Nigeria", "official": "Federal Republic of Nigeria" },
     "idd": { "root": "+2", "suffixes": ["34"] },
     "flag": "🇳🇬"
+  },
+  {
+    "name": {
+      "common": "North Korea",
+      "official": "Democratic People's Republic of Korea"
+    },
+    "idd": { "root": "+8", "suffixes": ["50"] },
+    "flag": "🇰🇵"
+  },
+  {
+    "name": {
+      "common": "North Macedonia",
+      "official": "Republic of North Macedonia"
+    },
+    "idd": { "root": "+3", "suffixes": ["89"] },
+    "flag": "🇲🇰"
+  },
+  {
+    "name": { "common": "Norway", "official": "Kingdom of Norway" },
+    "idd": { "root": "+4", "suffixes": ["7"] },
+    "flag": "🇳🇴"
+  },
+  {
+    "name": { "common": "Oman", "official": "Sultanate of Oman" },
+    "idd": { "root": "+9", "suffixes": ["68"] },
+    "flag": "🇴🇲"
   },
   {
     "name": {
@@ -135,14 +731,175 @@
     "flag": "🇵🇰"
   },
   {
+    "name": { "common": "Palau", "official": "Republic of Palau" },
+    "idd": { "root": "+6", "suffixes": ["80"] },
+    "flag": "🇵🇼"
+  },
+  {
+    "name": { "common": "Palestine", "official": "State of Palestine" },
+    "idd": { "root": "+9", "suffixes": ["70"] },
+    "flag": "🇵🇸"
+  },
+  {
+    "name": { "common": "Panama", "official": "Republic of Panama" },
+    "idd": { "root": "+5", "suffixes": ["07"] },
+    "flag": "🇵🇦"
+  },
+  {
+    "name": {
+      "common": "Papua New Guinea",
+      "official": "Independent State of Papua New Guinea"
+    },
+    "idd": { "root": "+6", "suffixes": ["75"] },
+    "flag": "🇵🇬"
+  },
+  {
+    "name": { "common": "Paraguay", "official": "Republic of Paraguay" },
+    "idd": { "root": "+5", "suffixes": ["95"] },
+    "flag": "🇵🇾"
+  },
+  {
+    "name": { "common": "Peru", "official": "Republic of Peru" },
+    "idd": { "root": "+5", "suffixes": ["1"] },
+    "flag": "🇵🇪"
+  },
+  {
+    "name": {
+      "common": "Philippines",
+      "official": "Republic of the Philippines"
+    },
+    "idd": { "root": "+6", "suffixes": ["3"] },
+    "flag": "🇵🇭"
+  },
+  {
+    "name": { "common": "Poland", "official": "Republic of Poland" },
+    "idd": { "root": "+4", "suffixes": ["8"] },
+    "flag": "🇵🇱"
+  },
+  {
+    "name": { "common": "Portugal", "official": "Portuguese Republic" },
+    "idd": { "root": "+3", "suffixes": ["51"] },
+    "flag": "🇵🇹"
+  },
+  {
+    "name": { "common": "Qatar", "official": "State of Qatar" },
+    "idd": { "root": "+9", "suffixes": ["74"] },
+    "flag": "🇶🇦"
+  },
+  {
+    "name": {
+      "common": "Republic of the Congo",
+      "official": "Republic of the Congo"
+    },
+    "idd": { "root": "+2", "suffixes": ["42"] },
+    "flag": "🇨🇬"
+  },
+  {
+    "name": { "common": "Romania", "official": "Romania" },
+    "idd": { "root": "+4", "suffixes": ["0"] },
+    "flag": "🇷🇴"
+  },
+  {
     "name": { "common": "Russia", "official": "Russian Federation" },
     "idd": { "root": "+7", "suffixes": [""] },
     "flag": "🇷🇺"
   },
   {
+    "name": { "common": "Rwanda", "official": "Republic of Rwanda" },
+    "idd": { "root": "+2", "suffixes": ["50"] },
+    "flag": "🇷🇼"
+  },
+  {
+    "name": {
+      "common": "Saint Kitts and Nevis",
+      "official": "Federation of Saint Christopher and Nevis"
+    },
+    "idd": { "root": "+1", "suffixes": ["869"] },
+    "flag": "🇰🇳"
+  },
+  {
+    "name": { "common": "Saint Lucia", "official": "Saint Lucia" },
+    "idd": { "root": "+1", "suffixes": ["758"] },
+    "flag": "🇱🇨"
+  },
+  {
+    "name": {
+      "common": "Saint Vincent and the Grenadines",
+      "official": "Saint Vincent and the Grenadines"
+    },
+    "idd": { "root": "+1", "suffixes": ["784"] },
+    "flag": "🇻🇨"
+  },
+  {
+    "name": { "common": "Samoa", "official": "Independent State of Samoa" },
+    "idd": { "root": "+6", "suffixes": ["85"] },
+    "flag": "🇼🇸"
+  },
+  {
+    "name": { "common": "San Marino", "official": "Republic of San Marino" },
+    "idd": { "root": "+3", "suffixes": ["78"] },
+    "flag": "🇸🇲"
+  },
+  {
+    "name": {
+      "common": "São Tomé and Príncipe",
+      "official": "Democratic Republic of São Tomé and Príncipe"
+    },
+    "idd": { "root": "+2", "suffixes": ["39"] },
+    "flag": "🇸🇹"
+  },
+  {
     "name": { "common": "Saudi Arabia", "official": "Kingdom of Saudi Arabia" },
     "idd": { "root": "+9", "suffixes": ["66"] },
     "flag": "🇸🇦"
+  },
+  {
+    "name": { "common": "Senegal", "official": "Republic of Senegal" },
+    "idd": { "root": "+2", "suffixes": ["21"] },
+    "flag": "🇸🇳"
+  },
+  {
+    "name": { "common": "Serbia", "official": "Republic of Serbia" },
+    "idd": { "root": "+3", "suffixes": ["81"] },
+    "flag": "🇷🇸"
+  },
+  {
+    "name": { "common": "Seychelles", "official": "Republic of Seychelles" },
+    "idd": { "root": "+2", "suffixes": ["48"] },
+    "flag": "🇸🇨"
+  },
+  {
+    "name": {
+      "common": "Sierra Leone",
+      "official": "Republic of Sierra Leone"
+    },
+    "idd": { "root": "+2", "suffixes": ["32"] },
+    "flag": "🇸🇱"
+  },
+  {
+    "name": { "common": "Singapore", "official": "Republic of Singapore" },
+    "idd": { "root": "+6", "suffixes": ["5"] },
+    "flag": "🇸🇬"
+  },
+  {
+    "name": { "common": "Slovakia", "official": "Slovak Republic" },
+    "idd": { "root": "+4", "suffixes": ["21"] },
+    "flag": "🇸🇰"
+  },
+  {
+    "name": { "common": "Slovenia", "official": "Republic of Slovenia" },
+    "idd": { "root": "+3", "suffixes": ["86"] },
+    "flag": "🇸🇮"
+  },
+  {
+    "name": { "common": "Solomon Islands", "official": "Solomon Islands" },
+    "idd": { "root": "+6", "suffixes": ["77"] },
+    "flag": "🇸🇧"
+  },
+  {
+    "name": { "common": "Somalia", "official": "Federal Republic of Somalia" },
+    "idd": { "root": "+2", "suffixes": ["52"] },
+    "flag": "🇸🇴"
   },
   {
     "name": {
@@ -158,14 +915,126 @@
     "flag": "🇰🇷"
   },
   {
+    "name": { "common": "South Sudan", "official": "Republic of South Sudan" },
+    "idd": { "root": "+2", "suffixes": ["11"] },
+    "flag": "🇸🇸"
+  },
+  {
     "name": { "common": "Spain", "official": "Kingdom of Spain" },
     "idd": { "root": "+3", "suffixes": ["4"] },
     "flag": "🇪🇸"
   },
   {
+    "name": {
+      "common": "Sri Lanka",
+      "official": "Democratic Socialist Republic of Sri Lanka"
+    },
+    "idd": { "root": "+9", "suffixes": ["4"] },
+    "flag": "🇱🇰"
+  },
+  {
+    "name": { "common": "Sudan", "official": "Republic of the Sudan" },
+    "idd": { "root": "+2", "suffixes": ["49"] },
+    "flag": "🇸🇩"
+  },
+  {
+    "name": { "common": "Suriname", "official": "Republic of Suriname" },
+    "idd": { "root": "+5", "suffixes": ["97"] },
+    "flag": "🇸🇷"
+  },
+  {
+    "name": { "common": "Sweden", "official": "Kingdom of Sweden" },
+    "idd": { "root": "+4", "suffixes": ["6"] },
+    "flag": "🇸🇪"
+  },
+  {
+    "name": { "common": "Switzerland", "official": "Swiss Confederation" },
+    "idd": { "root": "+4", "suffixes": ["1"] },
+    "flag": "🇨🇭"
+  },
+  {
+    "name": { "common": "Syria", "official": "Syrian Arab Republic" },
+    "idd": { "root": "+9", "suffixes": ["63"] },
+    "flag": "🇸🇾"
+  },
+  {
+    "name": { "common": "Tajikistan", "official": "Republic of Tajikistan" },
+    "idd": { "root": "+9", "suffixes": ["92"] },
+    "flag": "🇹🇯"
+  },
+  {
+    "name": { "common": "Tanzania", "official": "United Republic of Tanzania" },
+    "idd": { "root": "+2", "suffixes": ["55"] },
+    "flag": "🇹🇿"
+  },
+  {
+    "name": { "common": "Thailand", "official": "Kingdom of Thailand" },
+    "idd": { "root": "+6", "suffixes": ["6"] },
+    "flag": "🇹🇭"
+  },
+  {
+    "name": {
+      "common": "Timor-Leste",
+      "official": "Democratic Republic of Timor-Leste"
+    },
+    "idd": { "root": "+6", "suffixes": ["70"] },
+    "flag": "🇹🇱"
+  },
+  {
+    "name": { "common": "Togo", "official": "Togolese Republic" },
+    "idd": { "root": "+2", "suffixes": ["28"] },
+    "flag": "🇹🇬"
+  },
+  {
+    "name": { "common": "Tonga", "official": "Kingdom of Tonga" },
+    "idd": { "root": "+6", "suffixes": ["76"] },
+    "flag": "🇹🇴"
+  },
+  {
+    "name": {
+      "common": "Trinidad and Tobago",
+      "official": "Republic of Trinidad and Tobago"
+    },
+    "idd": { "root": "+1", "suffixes": ["868"] },
+    "flag": "🇹🇹"
+  },
+  {
+    "name": { "common": "Tunisia", "official": "Tunisian Republic" },
+    "idd": { "root": "+2", "suffixes": ["16"] },
+    "flag": "🇹🇳"
+  },
+  {
     "name": { "common": "Turkey", "official": "Republic of Turkey" },
     "idd": { "root": "+9", "suffixes": ["0"] },
     "flag": "🇹🇷"
+  },
+  {
+    "name": { "common": "Turkmenistan", "official": "Turkmenistan" },
+    "idd": { "root": "+9", "suffixes": ["93"] },
+    "flag": "🇹🇲"
+  },
+  {
+    "name": { "common": "Tuvalu", "official": "Tuvalu" },
+    "idd": { "root": "+6", "suffixes": ["88"] },
+    "flag": "🇹🇻"
+  },
+  {
+    "name": { "common": "Uganda", "official": "Republic of Uganda" },
+    "idd": { "root": "+2", "suffixes": ["56"] },
+    "flag": "🇺🇬"
+  },
+  {
+    "name": { "common": "Ukraine", "official": "Ukraine" },
+    "idd": { "root": "+3", "suffixes": ["80"] },
+    "flag": "🇺🇦"
+  },
+  {
+    "name": {
+      "common": "United Arab Emirates",
+      "official": "United Arab Emirates"
+    },
+    "idd": { "root": "+9", "suffixes": ["71"] },
+    "flag": "🇦🇪"
   },
   {
     "name": {
@@ -182,5 +1051,56 @@
     },
     "idd": { "root": "+1", "suffixes": [""] },
     "flag": "🇺🇸"
+  },
+  {
+    "name": { "common": "Uruguay", "official": "Oriental Republic of Uruguay" },
+    "idd": { "root": "+5", "suffixes": ["98"] },
+    "flag": "🇺🇾"
+  },
+  {
+    "name": { "common": "Uzbekistan", "official": "Republic of Uzbekistan" },
+    "idd": { "root": "+9", "suffixes": ["98"] },
+    "flag": "🇺🇿"
+  },
+  {
+    "name": { "common": "Vanuatu", "official": "Republic of Vanuatu" },
+    "idd": { "root": "+6", "suffixes": ["78"] },
+    "flag": "🇻🇺"
+  },
+  {
+    "name": { "common": "Vatican City", "official": "Vatican City State" },
+    "idd": { "root": "+3", "suffixes": ["79"] },
+    "flag": "🇻🇦"
+  },
+  {
+    "name": {
+      "common": "Venezuela",
+      "official": "Bolivarian Republic of Venezuela"
+    },
+    "idd": { "root": "+5", "suffixes": ["8"] },
+    "flag": "🇻🇪"
+  },
+  {
+    "name": {
+      "common": "Vietnam",
+      "official": "Socialist Republic of Vietnam"
+    },
+    "idd": { "root": "+8", "suffixes": ["4"] },
+    "flag": "🇻🇳"
+  },
+  {
+    "name": { "common": "Yemen", "official": "Republic of Yemen" },
+    "idd": { "root": "+9", "suffixes": ["67"] },
+    "flag": "🇾🇪"
+  },
+  {
+    "name": { "common": "Zambia", "official": "Republic of Zambia" },
+    "idd": { "root": "+2", "suffixes": ["60"] },
+    "flag": "🇿🇲"
+  },
+  {
+    "name": { "common": "Zimbabwe", "official": "Republic of Zimbabwe" },
+    "idd": { "root": "+2", "suffixes": ["63"] },
+    "flag": "🇿🇼"
   }
 ]

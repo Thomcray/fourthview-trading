@@ -27,8 +27,6 @@ export function CategorySection({
   decorativeColors,
   className = "",
 }: CategorySectionProps) {
-  console.log("CATEGORY", categories);
-
   return (
     <div className={`relative z-10 px-4 sm:px-6 lg:px-8 ${className}`}>
       {/* Header */}
