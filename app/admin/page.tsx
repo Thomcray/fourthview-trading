@@ -1,15 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { RefreshCw, TrendingDown } from "lucide-react";
+
 import OrderRanking from "@/components/Admin/OrderRanking/OrderRanking";
 import OrderRankingList from "@/components/Admin/OrderRanking/OrderRankingList";
 import DashboardCards from "@/components/Admin/Cards/DashboardCards";
 import { TransactionChart } from "@/components/TransactionChart";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+
 import { fetchDashboard } from "@/app/_lib/api";
 import { queryKeys } from "@/app/_lib/queryKeys";
-import { motion } from "framer-motion";
-import { TrendingDown, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 type DashboardData = {
   totalSales: number;
@@ -18,8 +21,14 @@ type DashboardData = {
   salesTrend: number | null;
   ordersTrend: number | null;
   customersTrend: number | null;
-  monthlyData: { month: string; value: number }[];
-  orderRanking: { product: string; total: number }[];
+  monthlyData: {
+    month: string;
+    value: number;
+  }[];
+  orderRanking: {
+    product: string;
+    total: number;
+  }[];
 };
 
 export default function AdminDashboard() {
@@ -27,20 +36,18 @@ export default function AdminDashboard() {
     useQuery<DashboardData>({
       queryKey: queryKeys.dashboard,
       queryFn: fetchDashboard,
+      staleTime: 60 * 1000,
     });
 
-  // Loading Skeleton
   if (isLoading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Header Skeleton */}
           <div className="mb-8">
             <div className="h-8 w-64 bg-gray-200 rounded-lg animate-pulse mb-2" />
             <div className="h-4 w-96 bg-gray-200 rounded-lg animate-pulse" />
           </div>
 
-          {/* Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-white rounded-xl p-6 shadow-sm">
@@ -50,14 +57,15 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Chart Skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm">
               <div className="h-5 w-48 bg-gray-200 rounded animate-pulse mb-4" />
               <div className="h-64 bg-gray-100 rounded animate-pulse" />
             </div>
+
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-4" />
+
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div
@@ -80,12 +88,15 @@ export default function AdminDashboard() {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <TrendingDown className="w-10 h-10 text-red-500" />
           </div>
+
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             Failed to Load Dashboard
           </h2>
+
           <p className="text-gray-500 mb-6">
             There was an error loading the dashboard data. Please try again.
           </p>
+
           <Button
             onClick={() => refetch()}
             className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -101,7 +112,6 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,15 +122,18 @@ export default function AdminDashboard() {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                 Admin Dashboard
               </h1>
+
               <p className="text-gray-500 mt-1">
                 Welcome back! Here&apos;s what&apos;s happening with your store
                 today.
               </p>
             </div>
+
             <div className="flex items-center gap-3">
               <p className="text-sm text-gray-400">
                 Last updated: {new Date().toLocaleDateString()}
               </p>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -137,7 +150,6 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Dashboard Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,29 +165,28 @@ export default function AdminDashboard() {
           />
         </motion.div>
 
-        {/* Charts and Rankings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8"
         >
-          {/* Transaction Chart */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-800">
-                Monthly Transaction Trend
+                Monthly Revenue
               </h2>
+
               <p className="text-sm text-gray-500 mt-1">
                 Revenue overview for the current year
               </p>
             </div>
+
             <div className="p-6">
               <TransactionChart data={data.monthlyData} />
             </div>
           </div>
 
-          {/* Order Ranking */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-800">
@@ -185,6 +196,7 @@ export default function AdminDashboard() {
                 Based on order volume
               </p>
             </div>
+
             <div className="p-4">
               <OrderRanking>
                 <OrderRankingList items={data.orderRanking} />
@@ -193,7 +205,6 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
 
-        {/* Optional: Quick Actions Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -206,18 +217,21 @@ export default function AdminDashboard() {
             icon="🛍️"
             href="/admin/product-services"
           />
+
           <QuickActionCard
             title="View Orders"
             description="Process and track orders"
             icon="📦"
             href="/admin/orders-request"
           />
+
           <QuickActionCard
             title="Manage Users"
             description="View and manage customers"
             icon="👥"
             href="/admin/customers"
           />
+
           <QuickActionCard
             title="Settings"
             description="Configure store settings"
@@ -230,7 +244,6 @@ export default function AdminDashboard() {
   );
 }
 
-// Quick Action Card Component
 function QuickActionCard({
   title,
   description,
@@ -253,13 +266,13 @@ function QuickActionCard({
         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
           {icon}
         </div>
+
         <div>
           <h3 className="font-semibold text-gray-800">{title}</h3>
+
           <p className="text-xs text-gray-500">{description}</p>
         </div>
       </div>
     </div>
   );
 }
-
-import { useRouter } from "next/navigation";

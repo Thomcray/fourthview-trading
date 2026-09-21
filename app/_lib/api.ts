@@ -58,6 +58,22 @@ export const fetchOrders = async ({
   return res.json();
 };
 
+export const fetchAnalytics = async (
+  range: "today" | "week" | "month" | "year" | "all",
+) => {
+  const params = new URLSearchParams({
+    range,
+  });
+
+  const res = await fetch(`/api/admin/analytics?${params.toString()}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch analytics data");
+  }
+
+  return res.json();
+};
+
 export const fetchOrderById = async (id: string) => {
   const res = await fetch(`/api/orders/${id}`);
   if (!res.ok) throw new Error("Failed to fetch order");
