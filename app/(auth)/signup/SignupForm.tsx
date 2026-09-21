@@ -1,4 +1,3 @@
-// app/signup/SignupForm.tsx (improved but compatible)
 "use client";
 
 import { useState, useTransition } from "react";
@@ -16,7 +15,23 @@ export default function SignupForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
+
+    const formData = new FormData(e.currentTarget);
+
+    const streetAddress =
+      formData.get("streetAddress")?.toString().trim() || "";
+
+    const apartment = formData.get("apartment")?.toString().trim() || "";
+
+    const city = formData.get("city")?.toString().trim() || "";
+
+    const zipCode = formData.get("zipCode")?.toString().trim() || "";
+
+    const fullAddress = [streetAddress, apartment, city, zipCode]
+      .filter(Boolean)
+      .join(", ");
+
+    formData.set("address", fullAddress);
 
     startTransition(async () => {
       const res = await fetch("/api/send", {
@@ -26,8 +41,11 @@ export default function SignupForm() {
 
       const data = await res.json();
 
-      if (!res.ok) toast.error(data?.message);
-      else toast.success(data?.message);
+      if (!res.ok) {
+        toast.error(data?.message);
+      } else {
+        toast.success(data?.message);
+      }
     });
   };
 
@@ -85,7 +103,7 @@ export default function SignupForm() {
         </div>
       </div>
 
-      {/* Address Section - NEW but using 'address' field name for compatibility */}
+      {/* Address Section */}
       <div className="space-y-4 pt-2 border-t border-gray-200">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-gray-500" />
@@ -149,7 +167,7 @@ export default function SignupForm() {
           </div>
         </div>
 
-        {/* Combined address field (hidden but included for backward compatibility) */}
+        {/* Combined address field */}
         <input type="hidden" id="address" name="address" />
       </div>
 
@@ -173,17 +191,18 @@ export default function SignupForm() {
               className="pl-10 pr-12 py-6 border-gray-200 focus:ring-blue-500 focus:border-blue-500"
               required
             />
-            {showPassword ? (
-              <Eye
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 cursor-pointer hover:text-gray-600"
-                onClick={() => setShowPassword(!showPassword)}
-              />
-            ) : (
-              <EyeClosed
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 cursor-pointer hover:text-gray-600"
-                onClick={() => setShowPassword(!showPassword)}
-              />
-            )}
+            <button
+              type="button"
+              onClick={() => setShowPassword((value) => !value)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <Eye className="w-4" />
+              ) : (
+                <EyeClosed className="w-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>

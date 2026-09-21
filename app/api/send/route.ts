@@ -9,20 +9,42 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
-    const email = formData.get("email") as string;
-    const country = formData.get("country") as string;
-    const address = formData.get("address") as string;
-    const countryCode = formData.get("countryCode") as string;
-    const phone = formData.get("phone") as string;
-    const password = formData.get("password") as string;
+    const firstName = formData.get("firstName")?.toString().trim() || "";
+    const lastName = formData.get("lastName")?.toString().trim() || "";
+    const email = formData.get("email")?.toString().trim() || "";
+    const country = formData.get("country")?.toString().trim() || "";
+    const address = formData.get("address")?.toString().trim() || "";
+    const countryCode = formData.get("countryCode")?.toString().trim() || "";
+    const phone = formData.get("phone")?.toString().trim() || "";
+    const password = formData.get("password")?.toString() || "";
 
     // Address fields
-    const streetAddress = formData.get("streetAddress") as string;
-    const apartment = formData.get("apartment") as string;
-    const city = formData.get("city") as string;
-    const zipCode = formData.get("zipCode") as string;
+    const streetAddress =
+      formData.get("streetAddress")?.toString().trim() || "";
+    const apartment = formData.get("apartment")?.toString().trim() || "";
+    const city = formData.get("city")?.toString().trim() || "";
+    const zipCode = formData.get("zipCode")?.toString().trim() || "";
+
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !country ||
+      !countryCode ||
+      !phone ||
+      !password ||
+      !streetAddress ||
+      !city ||
+      !zipCode
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please fill in all required fields.",
+        },
+        { status: 400 },
+      );
+    }
 
     const token = uuidv4();
 
@@ -103,9 +125,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Application URL
-    // Local: http://localhost:3000
-    // Production: https://fourthview.online
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     const verificationUrl = `${baseUrl}/verify-email?token=${encodeURIComponent(
