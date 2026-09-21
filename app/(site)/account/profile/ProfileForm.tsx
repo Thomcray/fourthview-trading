@@ -4,7 +4,6 @@ import { updateUserProfile } from "@/app/_lib/actions/user-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import UserImage from "@/components/UserImage";
-import Phone from "@/components/Phone";
 import Country from "@/components/Country";
 import {
   SquarePen,

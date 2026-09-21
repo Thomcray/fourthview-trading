@@ -1,5 +1,6 @@
 import { createClient } from "./supabase-server";
 import countriesData from "./countries.json";
+import { PRODUCT_COLUMNS } from "./products-query";
 
 type SpecialOrder = {
   email: string;
@@ -200,9 +201,7 @@ export async function getAllProducts() {
 
   const { data: products, error } = await supabase
     .from("products")
-    .select(
-      "id, created_at, name, description, categoryId, price, discount, discountType, target, imageUrl, productType, colours, sizes, weight, shippingCost",
-    );
+    .select(PRODUCT_COLUMNS);
 
   if (error) {
     console.error("Failed to fetch products:", error.message);

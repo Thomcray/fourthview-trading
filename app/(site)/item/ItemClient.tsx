@@ -2,15 +2,24 @@
 
 import React, { useState, useMemo, ChangeEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ShoppingCart, ArrowLeft, Filter } from "lucide-react";
+import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  ShoppingCart,
+  ArrowLeft,
+  Filter,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { getPublicImageUrl } from "@/lib/images";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useApp } from "@/components/AppContext";
+import { normaliseProducts } from "@/components/AppContext";
 import Image from "next/image";
 import Link from "next/link";
 import AddToCart from "@/components/AddToCart";
 import ProductPrice from "@/components/ProductPrice";
+
+const PAGE_SIZE = 12;
 
 type SortOption = "default" | "price-asc" | "price-desc" | "name";
 
@@ -44,48 +53,55 @@ function useFilterConfig(searchParams: URLSearchParams): FilterConfig {
 }
 
 export default function ItemClient() {
-  const { allProducts: products } = useApp();
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const filter = useFilterConfig(searchParams);
 
-  const categoryItems = useMemo(() => {
-    if (filter.mode === "none") return products;
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["items", filter.mode, filter.value, sortBy],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({
+        sort: sortBy,
+        limit: String(PAGE_SIZE),
+      });
 
-    const searchValue = filter.value.toLowerCase();
+      if (pageParam !== null) params.set("cursor", String(pageParam));
 
-    return products.filter((product) => {
-      if (filter.mode === "target") {
-        return product.target?.toLowerCase() === searchValue;
+      if (filter.mode !== "none") {
+        params.set("mode", filter.mode);
+        params.set("value", filter.value);
       }
-      return product.productType.toLowerCase() === searchValue;
-    });
-  }, [products, filter]);
 
-  // Sort products
-  const sortedItems = useMemo(() => {
-    const items = [...categoryItems];
-    switch (sortBy) {
-      case "price-asc":
-        return items.sort((a, b) => a.price - b.price);
-      case "price-desc":
-        return items.sort((a, b) => b.price - a.price);
-      case "name":
-        return items.sort((a, b) => a.name.localeCompare(b.name));
-      default:
-        return items;
-    }
-  }, [categoryItems, sortBy]);
+      const res = await fetch(`/api/products?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch products");
+      return res.json();
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    placeholderData: keepPreviousData, // no skeleton flash when changing sort
+  });
 
-  const loading = products.length === 0;
+  const items = useMemo(
+    () => normaliseProducts(data?.pages.flatMap((p) => p.products) ?? []),
+    [data],
+  );
+  const total: number = data?.pages[0]?.total ?? 0;
 
   const handleSortChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value as SortOption);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-12">
         <div className="container mx-auto px-4">
@@ -108,7 +124,29 @@ export default function ItemClient() {
     );
   }
 
-  if (categoryItems.length === 0) {
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-12">
+        <div className="max-w-md mx-auto px-4 text-center">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Failed to load products
+          </h2>
+          <p className="text-gray-500 mb-6">
+            Something went wrong while loading this page.
+          </p>
+          <Button
+            onClick={() => refetch()}
+            className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (total === 0) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
@@ -125,7 +163,7 @@ export default function ItemClient() {
             </p>
             <Button
               onClick={() => router.push("/shop")}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
             >
               Continue Shopping
             </Button>
@@ -157,8 +195,7 @@ export default function ItemClient() {
                 : `Explore our collection of ${filter.label.toLowerCase()} products`}
             </p>
             <div className="inline-block mt-4 px-3 py-1 bg-white/20 rounded-full text-white text-sm">
-              {categoryItems.length}{" "}
-              {categoryItems.length === 1 ? "Product" : "Products"}
+              {total} {total === 1 ? "Product" : "Products"}
             </div>
           </div>
         </div>
@@ -182,18 +219,18 @@ export default function ItemClient() {
             </select>
           </div>
           <p className="text-sm text-gray-500">
-            Showing {sortedItems.length} of {categoryItems.length} products
+            Showing {items.length} of {total} products
           </p>
         </div>
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedItems.map((item, index) => (
+          {items.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ delay: (index % PAGE_SIZE) * 0.05 }}
               whileHover={{ y: -5 }}
               className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
             >
@@ -260,15 +297,30 @@ export default function ItemClient() {
         </div>
 
         {/* Load More */}
-        {categoryItems.length >= 8 && (
+        {hasNextPage && (
           <div className="text-center mt-12">
             <Button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
               variant="outline"
-              className="border-blue-200 text-blue-600 hover:bg-blue-50 px-8"
+              className="border-blue-200 text-blue-600 hover:bg-blue-50 px-8 gap-2 cursor-pointer"
             >
-              Load More Products
+              {isFetchingNextPage ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                "Load More Products"
+              )}
             </Button>
           </div>
+        )}
+
+        {!hasNextPage && items.length > PAGE_SIZE && (
+          <p className="text-center text-sm text-gray-400 mt-12">
+            End of results — {items.length} products loaded
+          </p>
         )}
       </div>
     </div>
