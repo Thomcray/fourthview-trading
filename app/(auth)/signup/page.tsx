@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import { Dancing_Script } from "next/font/google";
 import SignupForm from "./SignupForm";
-import SelectCountryData from "@/components/SelectCountryData";
 
 export const metadata: Metadata = {
   title: "Sign Up",

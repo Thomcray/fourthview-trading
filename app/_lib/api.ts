@@ -22,9 +22,55 @@ export const fetchBookings = async () => {
   return res.json();
 };
 
-export const fetchOrders = async () => {
-  const res = await fetch("/api/admin/orders");
-  if (!res.ok) throw new Error("Failed to fetch orders");
+export const fetchOrders = async ({
+  cursor,
+  limit = 10,
+  search = "",
+  status = "all",
+}: {
+  cursor?: string | null;
+  limit?: number;
+  search?: string;
+  status?: string;
+} = {}) => {
+  const params = new URLSearchParams();
+
+  if (cursor) {
+    params.append("cursor", cursor);
+  }
+
+  params.append("limit", String(limit));
+
+  if (search.trim()) {
+    params.append("search", search.trim());
+  }
+
+  if (status && status !== "all") {
+    params.append("status", status);
+  }
+
+  const res = await fetch(`/api/admin/orders?${params.toString()}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch orders");
+  }
+
+  return res.json();
+};
+
+export const fetchAnalytics = async (
+  range: "today" | "week" | "month" | "year" | "all",
+) => {
+  const params = new URLSearchParams({
+    range,
+  });
+
+  const res = await fetch(`/api/admin/analytics?${params.toString()}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch analytics data");
+  }
+
   return res.json();
 };
 
