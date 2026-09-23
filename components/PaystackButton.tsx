@@ -17,17 +17,53 @@ interface ShippingAddress {
   country: string;
 }
 
+interface CheckoutItem {
+  id?: number;
+  productId?: number;
+  cartId?: number;
+  itemName?: string;
+  name?: string;
+  price?: number;
+  unitPrice?: number;
+  quantity?: number;
+  size?: string | null;
+  colour?: string;
+  image?: string | null;
+  shipping?: number;
+  shippingCost?: number;
+  discount?: number;
+  itemTotal?: number;
+}
+
 interface PaystackButtonProps {
   total: number;
-  items: any[];
+  items: CheckoutItem[];
   shippingAddress?: ShippingAddress;
   paymentMethod?: string;
+}
+
+interface PaystackConfig {
+  key: string;
+  email: string;
+  amount: number;
+  currency: string;
+  ref: string;
+  metadata: {
+    signature: string;
+    custom_fields: Array<{
+      display_name: string;
+      variable_name: string;
+      value: string;
+    }>;
+  };
+  callback: () => void;
+  onClose: () => void;
 }
 
 declare global {
   interface Window {
     PaystackPop: {
-      setup: (config: object) => {
+      setup: (config: PaystackConfig) => {
         openIframe: () => void;
       };
     };
@@ -218,7 +254,7 @@ export default function PaystackButton({
   if (currencyLoading) {
     return (
       <Button disabled className="cursor-pointer h-10 w-full">
-        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2 animate-spin" />
         Loading...
       </Button>
     );
@@ -236,7 +272,7 @@ export default function PaystackButton({
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2 animate-spin" />
             Processing...
           </>
         ) : (
