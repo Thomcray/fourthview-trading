@@ -25,9 +25,27 @@ interface ShippingAddress {
   country: string;
 }
 
+interface CheckoutItem {
+  id?: number;
+  productId?: number;
+  cartId?: number;
+  itemName?: string;
+  name?: string;
+  price?: number;
+  unitPrice?: number;
+  quantity?: number;
+  size?: string | null;
+  colour?: string;
+  image?: string | null;
+  shipping?: number;
+  shippingCost?: number;
+  discount?: number;
+  itemTotal?: number;
+}
+
 interface OrderSummaryProps {
   selectedCount: number;
-  selectedItems: any[];
+  selectedItems: CheckoutItem[];
   subtotal: number;
   totalShipping: number;
   totalDiscount: number;
@@ -46,7 +64,7 @@ export default function OrderSummary({
   const { data: session } = useSession();
 
   const isNigeria = country === "NG";
-  const isGhana = country === "GH";
+  //const isGhana = country === "GH";
 
   const shippingAddress: ShippingAddress = {
     streetAddress: session?.user?.streetAddress ?? "",
@@ -57,26 +75,26 @@ export default function OrderSummary({
   };
 
   return (
-    <div className="w-full lg:w-96 shrink-0">
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
+    <div className="w-full shrink-0 lg:w-96">
+      <div className="sticky top-24 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
         <div className="bg-linear-to-r from-blue-600 to-blue-700 px-5 py-4">
-          <h2 className="text-white font-semibold text-lg">Order Summary</h2>
+          <h2 className="text-lg font-semibold text-white">Order Summary</h2>
 
-          <p className="text-blue-100 text-sm">
+          <p className="text-sm text-blue-100">
             {selectedCount} item{selectedCount !== 1 ? "s" : ""} selected
           </p>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="space-y-4 p-5">
           {selectedCount === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <ShoppingCart className="w-6 h-6 text-gray-400" />
+            <div className="py-8 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                <ShoppingCart className="h-6 w-6 text-gray-400" />
               </div>
 
-              <p className="text-gray-500 text-sm">No items selected</p>
+              <p className="text-sm text-gray-500">No items selected</p>
 
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="mt-1 text-xs text-gray-400">
                 Select items to checkout
               </p>
             </div>
@@ -91,7 +109,7 @@ export default function OrderSummary({
               {/* Shipping */}
               <div className="flex justify-between text-sm">
                 <div className="flex items-center gap-1.5">
-                  <Truck className="w-3.5 h-3.5 text-gray-400" />
+                  <Truck className="h-3.5 w-3.5 text-gray-400" />
                   <span className="text-gray-600">Shipping</span>
                 </div>
 
@@ -102,7 +120,7 @@ export default function OrderSummary({
                     <span className="text-green-600">Free</span>
                   )
                 ) : (
-                  <span className="text-amber-600 text-xs font-medium">
+                  <span className="text-xs font-medium text-amber-600">
                     Calculated after checkout
                   </span>
                 )}
@@ -110,8 +128,8 @@ export default function OrderSummary({
 
               {/* International shipping notice */}
               {!isNigeria && (
-                <div className="flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-3">
-                  <Mail className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <div className="flex gap-2 rounded-lg border border-amber-100 bg-amber-50 p-3">
+                  <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
 
                   <p className="text-xs text-amber-700">
                     Shipping to countries outside Nigeria will be calculated and
@@ -124,20 +142,20 @@ export default function OrderSummary({
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm">
                   <div className="flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-green-500" />
+                    <Tag className="h-3.5 w-3.5 text-green-500" />
 
                     <span className="text-gray-600">Discount</span>
                   </div>
 
-                  <span className="flex text-green-600 whitespace-nowrap">
+                  <span className="flex whitespace-nowrap text-green-600">
                     - <ProductPrice yuanPrice={totalDiscount} />
                   </span>
                 </div>
               )}
 
               {/* Total */}
-              <div className="pt-3 border-t border-gray-200">
-                <div className="flex justify-between items-center">
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex items-center justify-between">
                   <span className="font-semibold text-gray-800">Total</span>
 
                   <span className="text-xl font-bold text-blue-600">
@@ -145,7 +163,7 @@ export default function OrderSummary({
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-gray-400">
                   {isNigeria
                     ? "*Shipping cost included where applicable"
                     : "*Excludes international shipping"}
@@ -162,10 +180,10 @@ export default function OrderSummary({
             </>
           )}
 
-          <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 pt-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+          <div className="flex items-center justify-center gap-1.5 pt-2 text-xs text-gray-400">
+            <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
             Secure Checkout
-            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-1" />
+            <div className="ml-1 h-1.5 w-1.5 rounded-full bg-blue-500" />
             100% Safe
           </div>
         </div>
