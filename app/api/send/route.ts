@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     const token = uuidv4();
 
     const passwordCheck =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,20}$/;
 
     if (!passwordCheck.test(password)) {
       return NextResponse.json(
