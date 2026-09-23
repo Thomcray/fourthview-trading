@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
+import { useApp } from "./AppContext";
 import type { Cart } from "./AppContext";
 
 const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
@@ -64,6 +65,8 @@ export default function PaystackButton({
   const [isLoading, setIsLoading] = useState(false);
 
   const { currency, isLoading: currencyLoading, convertPrice } = useCurrency();
+
+  const { clearCart } = useApp();
 
   const { data: session } = useSession();
 
@@ -131,6 +134,16 @@ export default function PaystackButton({
             const data = await response.json();
 
             if (data.status === "completed") {
+              // Order is confirmed. Now clear the cart.
+              try {
+                await clearCart();
+              } catch (error) {
+                console.error(
+                  "Order was placed, but failed to clear cart:",
+                  error,
+                );
+              }
+
               setIsLoading(false);
 
               toast.success("Order placed successfully!", {
