@@ -29,7 +29,7 @@ interface NavigationProps {
 
 export default function Navigation({ isMobile, onClose }: NavigationProps) {
   const navList: Array<NavType> = [
-    { name: "help", href: "/help", icon: HelpCircle },
+    { name: "help", href: "/contact", icon: HelpCircle },
     { name: "cart", href: "/cart", icon: ShoppingCart, badge: true },
   ];
 
@@ -69,12 +69,12 @@ export default function Navigation({ isMobile, onClose }: NavigationProps) {
       <nav className="flex flex-col space-y-1">
         {/* Help Link */}
         <Link
-          href="/help"
+          href="/contact"
           onClick={handleLinkClick}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
         >
           <HelpCircle className="w-5 h-5" />
-          {/* <span>Help Center</span> */}
+          <span>Help Center</span>
         </Link>
 
         {/* Cart Link */}
