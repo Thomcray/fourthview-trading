@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { useSession } from "next-auth/react";
-import { useApp } from "./AppContext";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
+import type { Cart } from "./AppContext";
 
 const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
 
@@ -20,43 +20,57 @@ interface ShippingAddress {
 
 interface PaystackButtonProps {
   total: number;
+  items: Cart[];
   shippingAddress?: ShippingAddress;
   paymentMethod?: string;
 }
 
-declare global {
-  interface Window {
-    PaystackPop: {
-      setup: (config: object) => { openIframe: () => void };
-    };
-  }
-}
-
 function loadPaystackScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (window.PaystackPop) return resolve();
+    if (window.PaystackPop) {
+      return resolve();
+    }
+
+    const existingScript = document.querySelector(
+      'script[src="https://js.paystack.co/v1/inline.js"]',
+    );
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve());
+      existingScript.addEventListener("error", () =>
+        reject(new Error("Failed to load Paystack script")),
+      );
+      return;
+    }
+
     const script = document.createElement("script");
+
     script.src = "https://js.paystack.co/v1/inline.js";
+
     script.onload = () => resolve();
+
     script.onerror = () => reject(new Error("Failed to load Paystack script"));
+
     document.body.appendChild(script);
   });
 }
 
 export default function PaystackButton({
   total,
+  items,
   shippingAddress,
   paymentMethod = "paystack",
 }: PaystackButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+
   const { currency, isLoading: currencyLoading, convertPrice } = useCurrency();
+
   const { data: session } = useSession();
-  const { cart, clearCart } = useApp();
+
   const router = useRouter();
 
   const user = session?.user;
 
-  // Preload Paystack script on mount
   useEffect(() => {
     loadPaystackScript().catch(() => {});
   }, []);
@@ -67,8 +81,8 @@ export default function PaystackButton({
       return;
     }
 
-    if (!cart || cart.length === 0) {
-      toast.error("Your cart is empty");
+    if (!items || items.length === 0) {
+      toast.error("No items selected for checkout");
       return;
     }
 
@@ -77,11 +91,15 @@ export default function PaystackButton({
     try {
       await loadPaystackScript();
 
+      console.log("Checkout items being sent to payment intent:", items);
+
       const intentRes = await fetch("/api/payment/intent", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          items: cart,
+          items,
           shippingAddress: shippingAddress ?? null,
           paymentMethod,
         }),
@@ -113,12 +131,12 @@ export default function PaystackButton({
             const data = await response.json();
 
             if (data.status === "completed") {
-              await clearCart();
-
               setIsLoading(false);
 
               toast.success("Order placed successfully!", {
-                onClose: () => router.push("/account/purchased-items"),
+                onClose: async () => {
+                  router.push("/account/purchased-items");
+                },
                 autoClose: 1500,
               });
 
@@ -150,8 +168,10 @@ export default function PaystackButton({
         amount,
         currency: "NGN",
         ref: reference,
+
         metadata: {
           signature,
+
           custom_fields: [
             {
               display_name: "Customer Name",
@@ -173,11 +193,11 @@ export default function PaystackButton({
             },
           ],
         },
-        // Paystack v1 uses "callback" not "onSuccess"
-        // Order saving is handled by the webhook — client just redirects
+
         callback: () => {
           handlePaymentSuccess();
         },
+
         onClose: () => {
           setIsLoading(false);
           toast.info("Payment cancelled");
@@ -187,19 +207,21 @@ export default function PaystackButton({
       handler.openIframe();
     } catch (error) {
       console.error("Payment initialization failed:", error);
+
       toast.error(
         error instanceof Error
           ? error.message
           : "Failed to start payment. Please try again.",
       );
+
       setIsLoading(false);
     }
   };
 
   if (currencyLoading) {
     return (
-      <Button disabled className="cursor-pointer h-10 w-full">
-        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+      <Button disabled className="h-10 w-full cursor-pointer">
+        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
         Loading...
       </Button>
     );
@@ -212,19 +234,20 @@ export default function PaystackButton({
       <Button
         type="button"
         onClick={handlePayment}
-        disabled={isLoading || !user}
-        className="cursor-pointer h-10 w-full"
+        disabled={isLoading || !user || items.length === 0}
+        className="h-10 w-full cursor-pointer"
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             Processing...
           </>
         ) : (
           `Pay ${currency.symbol}${Math.round(displayAmount).toLocaleString()}`
         )}
       </Button>
-      <p className="text-xs text-gray-400 mt-1 text-center">
+
+      <p className="mt-1 text-center text-xs text-gray-400">
         Billed in Nigerian Naira (NGN)
       </p>
     </div>

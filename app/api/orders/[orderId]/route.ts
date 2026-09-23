@@ -6,13 +6,16 @@ import { createClient } from "@/app/_lib/supabase-server";
 // Define item type
 type OrderItem = {
   id?: number;
+  productId?: number | string;
   itemName?: string;
   name?: string;
   product_name?: string;
   quantity?: number;
   price?: string | number;
-  size?: string;
-  image?: string;
+  size?: string | null;
+  image?: string | null;
+  colour?: string;
+  shippingCost?: string | number;
 };
 
 export async function GET(
@@ -42,6 +45,7 @@ export async function GET(
 
     // Fetch user data
     let userData = null;
+
     if (order.userId) {
       const { data: user } = await supabase
         .from("users")
@@ -54,6 +58,7 @@ export async function GET(
 
     // Parse items from JSONB
     let parsedItems: OrderItem[] = [];
+
     if (order.items) {
       try {
         parsedItems =
@@ -76,25 +81,47 @@ export async function GET(
       total: parseFloat(order.total) || 0,
       shipping_address: order.shipping_address ?? null,
       payment_method: order.payment_method,
+
       customerName: userData
         ? `${userData.firstName || ""} ${userData.lastName || ""}`.trim() ||
           userData.email ||
           "Customer"
         : "Guest Customer",
+
       customerEmail: userData?.email || "No email provided",
+
       items:
         Array.isArray(parsedItems) && parsedItems.length > 0
           ? parsedItems.map((item: OrderItem, index: number) => ({
               id: item.id || index + 1,
+
+              // Keep the actual product ID so the frontend
+              // can navigate to the correct product page.
+              productId:
+                item.productId !== undefined
+                  ? Number(item.productId)
+                  : undefined,
+
               itemName:
                 item.itemName ||
                 item.name ||
                 item.product_name ||
                 `Item ${index + 1}`,
+
               quantity: item.quantity || 1,
+
               price: parseFloat(String(item.price)) || 0,
+
               size: item.size || null,
+
               image: item.image || null,
+
+              colour: item.colour || undefined,
+
+              shippingCost:
+                item.shippingCost !== undefined
+                  ? parseFloat(String(item.shippingCost)) || 0
+                  : undefined,
             }))
           : [],
     };
@@ -102,6 +129,7 @@ export async function GET(
     return NextResponse.json(formattedOrder);
   } catch (error) {
     console.error("Error in order detail API:", error);
+
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },

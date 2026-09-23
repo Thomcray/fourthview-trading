@@ -5,6 +5,7 @@ import PaystackButton from "./PaystackButton";
 // import StripeButton from "./StripeButton"; // Uncomment when ready
 
 import { Button } from "./ui/button";
+import type { Cart } from "./AppContext";
 
 interface ShippingAddress {
   streetAddress: string;
@@ -16,6 +17,7 @@ interface ShippingAddress {
 
 interface CheckoutButtonProps {
   total: number;
+  items: Cart[];
   shippingAddress?: ShippingAddress;
 }
 
@@ -24,6 +26,7 @@ const PAYSTACK_COUNTRIES = ["NG", "GH", "KE", "ZA"];
 
 export default function CheckoutButton({
   total,
+  items,
   shippingAddress,
 }: CheckoutButtonProps) {
   const { country, isLoading } = useCurrency();
@@ -37,13 +40,35 @@ export default function CheckoutButton({
     );
   }
 
+  if (!items || items.length === 0) {
+    return (
+      <Button disabled className="cursor-pointer h-10 w-full">
+        Select items to checkout
+      </Button>
+    );
+  }
+
   // Paystack-supported countries, always charge in NGN
   if (country && PAYSTACK_COUNTRIES.includes(country)) {
-    return <PaystackButton total={total} shippingAddress={shippingAddress} paymentMethod="paystack" />;
+    return (
+      <PaystackButton
+        total={total}
+        items={items}
+        shippingAddress={shippingAddress}
+        paymentMethod="paystack"
+      />
+    );
   }
 
   // Everyone else → Stripe (uncomment when ready)
-  // return <StripeButton total={total} shippingAddress={shippingAddress} paymentMethod="stripe" />;
+  // return (
+  //   <StripeButton
+  //     total={total}
+  //     items={items}
+  //     shippingAddress={shippingAddress}
+  //     paymentMethod="stripe"
+  //   />
+  // );
 
   // Temporary fallback until Stripe is set up
   return (
@@ -51,6 +76,7 @@ export default function CheckoutButton({
       <Button disabled className="cursor-pointer h-10 w-full">
         Checkout unavailable in {country || "your region"}
       </Button>
+
       <p className="text-xs text-gray-500 text-center">
         We currently only accept payments from Nigeria, Ghana, Kenya, and South
         Africa.
