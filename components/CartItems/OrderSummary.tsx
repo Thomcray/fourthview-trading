@@ -35,7 +35,7 @@ interface CheckoutItem {
   unitPrice?: number;
   quantity?: number;
   size?: string | null;
-  colour?: string;
+  colour?: string | null;
   image?: string | null;
   shipping?: number;
   shippingCost?: number;
