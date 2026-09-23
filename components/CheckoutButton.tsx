@@ -14,9 +14,27 @@ interface ShippingAddress {
   country: string;
 }
 
+interface CheckoutItem {
+  id?: number;
+  productId?: number;
+  cartId?: number;
+  itemName?: string;
+  name?: string;
+  price?: number;
+  unitPrice?: number;
+  quantity?: number;
+  size?: string | null;
+  colour?: string;
+  image?: string | null;
+  shipping?: number;
+  shippingCost?: number;
+  discount?: number;
+  itemTotal?: number;
+}
+
 interface CheckoutButtonProps {
   total: number;
-  items: any[];
+  items: CheckoutItem[];
   shippingAddress?: ShippingAddress;
 }
 
