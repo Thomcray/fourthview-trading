@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
+import type { Cart } from "./AppContext";
 
 const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
 
@@ -17,27 +18,9 @@ interface ShippingAddress {
   country: string;
 }
 
-interface CheckoutItem {
-  id?: number;
-  productId?: number;
-  cartId?: number;
-  itemName?: string;
-  name?: string;
-  price?: number;
-  unitPrice?: number;
-  quantity?: number;
-  size?: string | null;
-  colour?: string | null;
-  image?: string | null;
-  shipping?: number;
-  shippingCost?: number;
-  discount?: number;
-  itemTotal?: number;
-}
-
 interface PaystackButtonProps {
   total: number;
-  items: CheckoutItem[];
+  items: Cart[];
   shippingAddress?: ShippingAddress;
   paymentMethod?: string;
 }

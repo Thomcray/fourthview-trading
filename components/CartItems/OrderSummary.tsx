@@ -6,6 +6,7 @@ import ProductPrice from "../ProductPrice";
 import { useCurrency } from "../CurrencyContext";
 import { ShoppingCart, Truck, Tag, Mail } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { Cart } from "../AppContext";
 
 const CheckoutButton = dynamic(() => import("../CheckoutButton"), {
   ssr: false,
@@ -25,27 +26,9 @@ interface ShippingAddress {
   country: string;
 }
 
-interface CheckoutItem {
-  id?: number;
-  productId?: number;
-  cartId?: number;
-  itemName?: string;
-  name?: string;
-  price?: number;
-  unitPrice?: number;
-  quantity?: number;
-  size?: string | null;
-  colour?: string | null;
-  image?: string | null;
-  shipping?: number;
-  shippingCost?: number;
-  discount?: number;
-  itemTotal?: number;
-}
-
 interface OrderSummaryProps {
   selectedCount: number;
-  selectedItems: CheckoutItem[];
+  selectedItems: Cart[];
   subtotal: number;
   totalShipping: number;
   totalDiscount: number;
@@ -64,7 +47,6 @@ export default function OrderSummary({
   const { data: session } = useSession();
 
   const isNigeria = country === "NG";
-  //const isGhana = country === "GH";
 
   const shippingAddress: ShippingAddress = {
     streetAddress: session?.user?.streetAddress ?? "",

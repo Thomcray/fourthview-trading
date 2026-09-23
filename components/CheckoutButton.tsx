@@ -5,6 +5,7 @@ import PaystackButton from "./PaystackButton";
 // import StripeButton from "./StripeButton"; // Uncomment when ready
 
 import { Button } from "./ui/button";
+import type { Cart } from "./AppContext";
 
 interface ShippingAddress {
   streetAddress: string;
@@ -14,27 +15,9 @@ interface ShippingAddress {
   country: string;
 }
 
-interface CheckoutItem {
-  id?: number;
-  productId?: number;
-  cartId?: number;
-  itemName?: string;
-  name?: string;
-  price?: number;
-  unitPrice?: number;
-  quantity?: number;
-  size?: string | null;
-  colour?: string | null;
-  image?: string | null;
-  shipping?: number;
-  shippingCost?: number;
-  discount?: number;
-  itemTotal?: number;
-}
-
 interface CheckoutButtonProps {
   total: number;
-  items: CheckoutItem[];
+  items: Cart[];
   shippingAddress?: ShippingAddress;
 }
 
