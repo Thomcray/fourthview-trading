@@ -14,6 +14,7 @@ import {
   Clock,
   AlertCircle,
   Printer,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductPrice from "@/components/ProductPrice";
@@ -26,6 +27,7 @@ import { getPublicImageUrl } from "@/lib/images";
 
 type OrderItem = {
   id: number;
+  productId: number;
   itemName: string;
   image?: string;
   price?: number;
@@ -131,7 +133,6 @@ export default function OrderDetailPage() {
 
   const whatsappNumber = settingsData?.settings?.whatsapp ?? "";
 
-  // Eligibility check:
   const canRequestRefund = () => {
     if (!order || order.order_status !== "delivered") return false;
     if (!order.delivered_at) return false;
@@ -152,9 +153,9 @@ export default function OrderDetailPage() {
 
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${config.color}`}
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ${config.color}`}
       >
-        <Icon className="w-4 h-4" />
+        <Icon className="h-4 w-4" />
         {config.label}
       </span>
     );
@@ -162,16 +163,21 @@ export default function OrderDetailPage() {
 
   const handlePrint = () => window.print();
 
+  const handleReview = (productId: number) => {
+    router.push(`/item-description?id=${productId}&tab=reviews`);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-8">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="mx-auto max-w-4xl px-4">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 w-32 bg-gray-200 rounded" />
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
-              <div className="h-6 w-48 bg-gray-200 rounded" />
-              <div className="h-32 bg-gray-100 rounded" />
-              <div className="h-48 bg-gray-100 rounded" />
+            <div className="h-8 w-32 rounded bg-gray-200" />
+
+            <div className="space-y-6 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="h-6 w-48 rounded bg-gray-200" />
+              <div className="h-32 rounded bg-gray-100" />
+              <div className="h-48 rounded bg-gray-100" />
             </div>
           </div>
         </div>
@@ -182,21 +188,21 @@ export default function OrderDetailPage() {
   if (isError || !order) {
     return (
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-8">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <div className="rounded-xl border border-gray-100 bg-white p-12 shadow-sm">
+            <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
 
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            <h1 className="mb-2 text-2xl font-bold text-gray-800">
               Order Not Found
             </h1>
 
-            <p className="text-gray-500 mb-6">
+            <p className="mb-6 text-gray-500">
               We couldn&apos;t find the order you&apos;re looking for.
             </p>
 
             <Button
               onClick={() => router.push("/account/purchased-items")}
-              className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              className="cursor-pointer bg-blue-600 hover:bg-blue-700"
             >
               Back to Orders
             </Button>
@@ -219,24 +225,24 @@ export default function OrderDetailPage() {
       `}</style>
 
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-white py-8">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="mx-auto max-w-4xl px-4">
           {/* Header — hidden on print */}
-          <div className="flex items-center justify-between mb-6 no-print">
+          <div className="no-print mb-6 flex items-center justify-between">
             <Button
               variant="outline"
               onClick={() => router.back()}
-              className="gap-2 cursor-pointer"
+              className="cursor-pointer gap-2"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
 
             <Button
               variant="outline"
               onClick={handlePrint}
-              className="gap-2 cursor-pointer"
+              className="cursor-pointer gap-2"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Print Receipt</span>
             </Button>
           </div>
@@ -247,16 +253,16 @@ export default function OrderDetailPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6"
+              className="mb-6 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
             >
               <div className="bg-linear-to-r from-blue-900 to-blue-800 px-6 py-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h1 className="text-xl font-bold text-white">
                       Order Details
                     </h1>
 
-                    <p className="text-blue-200 text-sm mt-0.5">
+                    <p className="mt-0.5 text-sm text-blue-200">
                       Order Reference #{order.reference}
                     </p>
                   </div>
@@ -266,10 +272,10 @@ export default function OrderDetailPage() {
               </div>
 
               <div className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <Calendar className="h-4 w-4 text-gray-400" />
 
                       <span className="text-gray-600">Order Date:</span>
 
@@ -288,7 +294,7 @@ export default function OrderDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-2 text-sm">
-                      <Hash className="w-4 h-4 text-gray-400" />
+                      <Hash className="h-4 w-4 text-gray-400" />
 
                       <span className="text-gray-600">Order ID:</span>
 
@@ -299,7 +305,7 @@ export default function OrderDetailPage() {
 
                     {order.payment_id && (
                       <div className="flex items-center gap-2 text-sm">
-                        <CreditCard className="w-4 h-4 text-gray-400" />
+                        <CreditCard className="h-4 w-4 text-gray-400" />
 
                         <span className="text-gray-600">Transaction ID:</span>
 
@@ -312,18 +318,18 @@ export default function OrderDetailPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <CreditCard className="w-4 h-4 text-gray-400" />
+                      <CreditCard className="h-4 w-4 text-gray-400" />
 
                       <span className="text-gray-600">Payment Method:</span>
 
-                      <span className="font-medium text-gray-800 capitalize">
+                      <span className="font-medium capitalize text-gray-800">
                         {order.payment_method}
                       </span>
                     </div>
 
                     {order.tracking_number && (
                       <div className="flex items-center gap-2 text-sm">
-                        <Truck className="w-4 h-4 text-gray-400" />
+                        <Truck className="h-4 w-4 text-gray-400" />
 
                         <span className="text-gray-600">Tracking Number:</span>
 
@@ -335,7 +341,7 @@ export default function OrderDetailPage() {
 
                     {order.estimated_delivery && (
                       <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <Calendar className="h-4 w-4 text-gray-400" />
 
                         <span className="text-gray-600">
                           Estimated Delivery:
@@ -357,11 +363,11 @@ export default function OrderDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6"
+                className="mb-6 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
               >
-                <div className="px-6 py-4 border-b border-gray-100">
+                <div className="border-b border-gray-100 px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+                    <MapPin className="h-5 w-5 text-blue-600" />
 
                     <h2 className="text-lg font-semibold text-gray-800">
                       Shipping Address
@@ -377,7 +383,7 @@ export default function OrderDetailPage() {
                       `, ${order.shipping_address.apartment}`}
                   </p>
 
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="mt-1 text-sm text-gray-500">
                     {order.shipping_address.city}
 
                     {order.shipping_address.zipCode &&
@@ -395,17 +401,17 @@ export default function OrderDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6"
+              className="mb-6 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
             >
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="border-b border-gray-100 px-6 py-4">
                 <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-blue-600" />
+                  <Package className="h-5 w-5 text-blue-600" />
 
                   <h2 className="text-lg font-semibold text-gray-800">
                     Order Items
                   </h2>
 
-                  <span className="text-sm text-gray-500 ml-2">
+                  <span className="ml-2 text-sm text-gray-500">
                     ({order.items.length} items)
                   </span>
                 </div>
@@ -415,17 +421,17 @@ export default function OrderDetailPage() {
                 {order.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-4 hover:bg-gray-50 transition-colors"
+                    className="p-4 transition-colors hover:bg-gray-50"
                   >
                     <div className="flex gap-4">
                       {item.image && (
-                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0 no-print">
+                        <div className="no-print h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                           <Image
                             src={getPublicImageUrl(item.image)}
                             alt={item.itemName}
                             width={80}
                             height={80}
-                            className="object-cover w-full h-full"
+                            className="h-full w-full object-cover"
                           />
                         </div>
                       )}
@@ -435,14 +441,14 @@ export default function OrderDetailPage() {
                           {item.itemName}
                         </h3>
 
-                        <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-500">
+                        <div className="mt-1 flex flex-wrap gap-3 text-sm text-gray-500">
                           {item.size && <span>Size: {item.size}</span>}
 
                           {item.colour && (
                             <span className="flex items-center gap-1">
                               Colour:{" "}
                               <span
-                                className="inline-block w-3 h-3 rounded-full border border-gray-300"
+                                className="inline-block h-3 w-3 rounded-full border border-gray-300"
                                 style={{ backgroundColor: item.colour }}
                               />
                             </span>
@@ -450,13 +456,26 @@ export default function OrderDetailPage() {
 
                           <span>Qty: {item.quantity}</span>
                         </div>
+
+                        {/* Review button — only available after delivery */}
+                        {order.order_status === "delivered" && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleReview(item.productId)}
+                            className="mt-3 cursor-pointer gap-2 bg-yellow-500 px-4 font-semibold text-white shadow-sm transition-all hover:bg-yellow-600 hover:shadow-md"
+                          >
+                            <Star className="h-4 w-4 fill-current" />
+                            Write a Review
+                          </Button>
+                        )}
                       </div>
 
-                      <div className="text-right shrink-0">
+                      <div className="shrink-0 text-right">
                         <ProductPrice yuanPrice={item.price || 0} />
 
                         {item.quantity && item.quantity > 1 && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="mt-1 text-xs text-gray-400">
                             Total:{" "}
                             <ProductPrice
                               yuanPrice={(item.price || 0) * item.quantity}
@@ -471,7 +490,7 @@ export default function OrderDetailPage() {
 
               {/* Order Total */}
               <div className="border-t border-gray-100 bg-gray-50 p-6">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold text-gray-800">
                     Total Amount
                   </span>
@@ -481,7 +500,7 @@ export default function OrderDetailPage() {
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-500 text-right mt-1">
+                <p className="mt-1 text-right text-xs text-gray-500">
                   *Shipping cost is included in item prices
                 </p>
               </div>
@@ -492,11 +511,11 @@ export default function OrderDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden no-print"
+              className="no-print overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
             >
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="border-b border-gray-100 px-6 py-4">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" />
+                  <Clock className="h-5 w-5 text-blue-600" />
 
                   <h2 className="text-lg font-semibold text-gray-800">
                     Order Timeline
@@ -509,10 +528,10 @@ export default function OrderDetailPage() {
                   {/* Order Placed */}
                   <div className="flex gap-3">
                     <div className="relative">
-                      <div className="w-3 h-3 mt-1.5 rounded-full bg-green-500 ring-4 ring-green-100" />
+                      <div className="mt-1.5 h-3 w-3 rounded-full bg-green-500 ring-4 ring-green-100" />
 
                       {order.order_status !== "delivered" && (
-                        <div className="absolute top-6 left-1.5 w-0.5 h-full bg-gray-200" />
+                        <div className="absolute left-1.5 top-6 h-full w-0.5 bg-gray-200" />
                       )}
                     </div>
 
@@ -541,9 +560,9 @@ export default function OrderDetailPage() {
                     <div className="flex gap-3">
                       <div className="relative">
                         <div
-                          className={`w-3 h-3 mt-1.5 rounded-full ring-4 ${
+                          className={`mt-1.5 h-3 w-3 rounded-full ring-4 ${
                             order.order_status === "processing"
-                              ? "bg-blue-500 ring-blue-100 animate-pulse"
+                              ? "animate-pulse bg-blue-500 ring-blue-100"
                               : "bg-green-500 ring-green-100"
                           }`}
                         />
@@ -551,7 +570,7 @@ export default function OrderDetailPage() {
                         {["shipped", "delivered"].includes(
                           order.order_status,
                         ) && (
-                          <div className="absolute top-6 left-1.5 w-0.5 h-full bg-gray-200" />
+                          <div className="absolute left-1.5 top-6 h-full w-0.5 bg-gray-200" />
                         )}
                       </div>
 
@@ -570,15 +589,15 @@ export default function OrderDetailPage() {
                     <div className="flex gap-3">
                       <div className="relative">
                         <div
-                          className={`w-3 h-3 mt-1.5 rounded-full ring-4 ${
+                          className={`mt-1.5 h-3 w-3 rounded-full ring-4 ${
                             order.order_status === "shipped"
-                              ? "bg-purple-500 ring-purple-100 animate-pulse"
+                              ? "animate-pulse bg-purple-500 ring-purple-100"
                               : "bg-green-500 ring-green-100"
                           }`}
                         />
 
                         {order.order_status === "delivered" && (
-                          <div className="absolute top-6 left-1.5 w-0.5 h-full bg-gray-200" />
+                          <div className="absolute left-1.5 top-6 h-full w-0.5 bg-gray-200" />
                         )}
                       </div>
 
@@ -595,7 +614,7 @@ export default function OrderDetailPage() {
                   {/* Delivered */}
                   {order.order_status === "delivered" && (
                     <div className="flex gap-3">
-                      <div className="w-3 h-3 mt-1.5 rounded-full bg-green-500 ring-4 ring-green-100" />
+                      <div className="mt-1.5 h-3 w-3 rounded-full bg-green-500 ring-4 ring-green-100" />
 
                       <div>
                         <p className="font-medium text-gray-800">Delivered</p>
@@ -610,7 +629,7 @@ export default function OrderDetailPage() {
                   {/* Cancelled */}
                   {order.order_status === "cancelled" && (
                     <div className="flex gap-3">
-                      <div className="w-3 h-3 mt-1.5 rounded-full bg-red-500 ring-4 ring-red-100" />
+                      <div className="mt-1.5 h-3 w-3 rounded-full bg-red-500 ring-4 ring-red-100" />
 
                       <div>
                         <p className="font-medium text-gray-800">Cancelled</p>
@@ -626,7 +645,7 @@ export default function OrderDetailPage() {
             </motion.div>
 
             {/* Receipt Footer — only visible on print */}
-            <div className="hidden print:block mt-8 text-center text-xs text-gray-400 border-t pt-4">
+            <div className="mt-8 hidden border-t pt-4 text-center text-xs text-gray-400 print:block">
               <p>Thank you for your order!</p>
 
               <p className="mt-1">
@@ -636,21 +655,21 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Need Help — hidden on print */}
-          <div className="mt-6 text-center no-print">
+          <div className="no-print mt-6 text-center">
             <p className="text-sm text-gray-500">
               Need help with your order?{" "}
-              <button className="text-blue-600 hover:text-blue-700 font-medium">
+              <button className="font-medium text-blue-600 hover:text-blue-700">
                 Contact Support
               </button>
             </p>
           </div>
 
           {canRequestRefund() && (
-            <div className="mt-4 text-center no-print">
+            <div className="no-print mt-4 text-center">
               <Button
                 variant="outline"
                 onClick={() => setShowRefundModal(true)}
-                className="border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+                className="cursor-pointer border-red-200 text-red-600 hover:bg-red-50"
               >
                 Request a Refund
               </Button>

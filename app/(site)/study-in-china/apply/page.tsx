@@ -11,6 +11,9 @@ import {
   Phone,
   ArrowLeft,
   Loader2,
+  CalendarDays,
+  Award,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +33,7 @@ export default function StudyInChinaApplyPage() {
   const [uploadedFiles, setUploadedFiles] = useState<
     Record<string, UploadedFile | null>
   >({});
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -40,9 +44,11 @@ export default function StudyInChinaApplyPage() {
     preferredProgram: "",
     message: "",
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   const [previewFile, setPreviewFile] = useState<{
     url: string;
     name: string;
@@ -51,9 +57,11 @@ export default function StudyInChinaApplyPage() {
   const { uploadState, uploadFile, resetUpload } = useUploadWithProgress();
 
   const requiredDocuments = documents.filter((d) => d.required);
+
   const completedCount = Object.values(uploadedFiles).filter(
     (f) => f !== null,
   ).length;
+
   const isUploadComplete = completedCount === requiredDocuments.length;
 
   const { data: session, status: sessionStatus } = useSession();
@@ -61,8 +69,8 @@ export default function StudyInChinaApplyPage() {
   useEffect(() => {
     if (!session?.user) return;
 
-    const firstName = session?.user.firstName;
-    const lastName = session?.user.lastName;
+    const firstName = session.user.firstName;
+    const lastName = session.user.lastName;
 
     setFormData((prev) => ({
       ...prev,
@@ -76,7 +84,10 @@ export default function StudyInChinaApplyPage() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleFileUpload = (docId: string, file: File | null) => {
@@ -128,8 +139,13 @@ export default function StudyInChinaApplyPage() {
   };
 
   const removeFile = (docId: string) => {
-    setUploadedFiles((prev) => ({ ...prev, [docId]: null }));
+    setUploadedFiles((prev) => ({
+      ...prev,
+      [docId]: null,
+    }));
+
     resetUpload(docId);
+
     toast.info("Document removed");
   };
 
@@ -160,33 +176,44 @@ export default function StudyInChinaApplyPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Create application row
+      // 1. Create application
       const appRes = await fetch("/api/study-applications", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, documents: {} }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          documents: {},
+        }),
       });
 
       if (!appRes.ok) {
         const err = await appRes.json();
+
         throw new Error(err.error ?? "Failed to create application");
       }
 
       const application = await appRes.json();
 
-      // 2. Upload documents with progress
+      // 2. Upload documents
       const uploadedDocs: Record<
         string,
-        { path: string; url: string; name: string }
+        {
+          path: string;
+          url: string;
+          name: string;
+        }
       > = {};
 
       for (const [docId, fileData] of Object.entries(uploadedFiles)) {
         if (!fileData) continue;
 
-        // Get signed URL from API
         const res = await fetch("/api/study-document", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             applicationId: application.id,
             docType: docId,
@@ -196,6 +223,7 @@ export default function StudyInChinaApplyPage() {
 
         if (!res.ok) {
           const err = await res.json();
+
           throw new Error(
             `Failed to get upload URL for ${fileData.name}: ${err.error}`,
           );
@@ -203,10 +231,8 @@ export default function StudyInChinaApplyPage() {
 
         const { signedUrl, filePath } = await res.json();
 
-        // Upload directly to Supabase with progress tracking
         await uploadFile(signedUrl, fileData.file, docId);
 
-        // Get public URL
         const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/study-documents/${filePath}`;
 
         uploadedDocs[docId] = {
@@ -216,10 +242,12 @@ export default function StudyInChinaApplyPage() {
         };
       }
 
-      // 3. Update application with document URLs
+      // 3. Save document information
       const updateRes = await fetch("/api/study-applications", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           applicationId: application.id,
           documents: uploadedDocs,
@@ -228,9 +256,11 @@ export default function StudyInChinaApplyPage() {
 
       if (!updateRes.ok) {
         const err = await updateRes.json();
+
         throw new Error(err.error ?? "Failed to update documents");
       }
 
+      // 4. Send confirmation
       const confirmationResponse = await fetch(
         "/api/study-applications/confirmation",
         {
@@ -252,9 +282,12 @@ export default function StudyInChinaApplyPage() {
         "Application submitted! We'll contact you within 48 hours.",
       );
 
-      // Reset form
+      // 5. Reset form state
+      const firstName = session?.user?.firstName;
+      const lastName = session?.user?.lastName;
+
       setFormData({
-        fullName: session?.user?.name ?? "",
+        fullName: [firstName, lastName].filter(Boolean).join(" "),
         email: session?.user?.email ?? "",
         whatsappNumber: "",
         country: "",
@@ -263,9 +296,24 @@ export default function StudyInChinaApplyPage() {
         preferredProgram: "",
         message: "",
       });
+
+      // Reset upload progress for every uploaded document
+      for (const docId of Object.keys(uploadedFiles)) {
+        resetUpload(docId);
+      }
+
+      // Reset uploaded files
       setUploadedFiles({});
+
+      // Reset document modal
+      setCurrentDocIndex(0);
+      setIsUploadModalOpen(false);
+
+      // Reset preview
+      setPreviewFile(null);
     } catch (error) {
       console.error("Submit error:", error);
+
       toast.error(
         error instanceof Error ? error.message : "Failed to submit application",
       );
@@ -278,6 +326,7 @@ export default function StudyInChinaApplyPage() {
     if (previewFile?.url.startsWith("blob:")) {
       URL.revokeObjectURL(previewFile.url);
     }
+
     setPreviewFile(null);
   };
 
@@ -293,6 +342,7 @@ export default function StudyInChinaApplyPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Study in China
           </Link>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -301,10 +351,12 @@ export default function StudyInChinaApplyPage() {
             <div className="bg-white/20 p-4 rounded-full shrink-0">
               <GraduationCap className="w-10 h-10 text-white" />
             </div>
+
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-white">
                 Submit Your Application
               </h1>
+
               <p className="text-blue-100 mt-1">
                 Fill in your details and upload your documents to get started
               </p>
@@ -318,16 +370,143 @@ export default function StudyInChinaApplyPage() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              {/* Personal Info */}
+              {/* Admissions & Payment Information */}
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-6">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="rounded-full bg-blue-600 p-2 shrink-0">
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Admissions & Payment Information
+                    </h2>
+
+                    <p className="text-sm text-gray-600 mt-1">
+                      Please review the intake options and payment structure
+                      before submitting your application.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                  <div className="rounded-xl bg-white border border-blue-100 p-4">
+                    <CalendarDays className="w-5 h-5 text-blue-600 mb-2" />
+
+                    <h3 className="font-semibold text-gray-900">
+                      March & September Intakes
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mt-1">
+                      Applications are available for both intake periods.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-white border border-blue-100 p-4">
+                    <Award className="w-5 h-5 text-blue-600 mb-2" />
+
+                    <h3 className="font-semibold text-gray-900">
+                      Scholarship & Self-Sponsor
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mt-1">
+                      Both scholarship and self-sponsored programs are
+                      available.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-white border border-blue-100 p-4">
+                    <CreditCard className="w-5 h-5 text-blue-600 mb-2" />
+
+                    <h3 className="font-semibold text-gray-900">
+                      Application Fee
+                    </h3>
+
+                    <p className="text-2xl font-bold text-blue-700 mt-1">
+                      $500
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-white border border-blue-100 overflow-hidden">
+                  <div className="p-4 border-b border-gray-100">
+                    <h3 className="font-semibold text-gray-900">
+                      Payment Structure
+                    </h3>
+                  </div>
+
+                  <div className="divide-y divide-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          1. Application Fee
+                        </p>
+
+                        <p className="text-sm text-gray-600">
+                          We will first contact you through WhatsApp. The $500
+                          application fee is paid after we contact you.
+                        </p>
+                      </div>
+
+                      <span className="font-bold text-blue-700 whitespace-nowrap">
+                        $500
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          2. Balance After Admission
+                        </p>
+
+                        <p className="text-sm text-gray-600">
+                          The remaining balance is paid after your admission
+                          letter is issued.
+                        </p>
+                      </div>
+
+                      <span className="font-bold text-blue-700 whitespace-nowrap">
+                        $1,300
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-blue-50">
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          Total Application Fees
+                        </p>
+
+                        <p className="text-sm text-gray-600">
+                          $500 application fee + $1,300 after admission
+                        </p>
+                      </div>
+
+                      <span className="text-lg font-bold text-blue-800 whitespace-nowrap">
+                        $1,800
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-500 mt-4">
+                  Submitting this application does not require immediate
+                  payment. Our team will review your application and contact you
+                  via WhatsApp with the next steps.
+                </p>
+              </div>
+
+              {/* Personal Information */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">
                   Personal Information
                 </h2>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label className="text-gray-700">
                       Full Name <span className="text-red-500">*</span>
                     </Label>
+
                     <Input
                       name="fullName"
                       value={formData.fullName}
@@ -337,10 +516,12 @@ export default function StudyInChinaApplyPage() {
                       required
                     />
                   </div>
+
                   <div>
                     <Label className="text-gray-700">
                       Email Address <span className="text-red-500">*</span>
                     </Label>
+
                     <Input
                       name="email"
                       type="email"
@@ -351,12 +532,15 @@ export default function StudyInChinaApplyPage() {
                       required
                     />
                   </div>
+
                   <div>
                     <Label className="text-gray-700">
                       WhatsApp Number <span className="text-red-500">*</span>
                     </Label>
+
                     <div className="relative mt-1">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
                       <Input
                         name="whatsappNumber"
                         value={formData.whatsappNumber}
@@ -367,8 +551,10 @@ export default function StudyInChinaApplyPage() {
                       />
                     </div>
                   </div>
+
                   <div>
                     <Label className="text-gray-700">Country</Label>
+
                     <Input
                       name="country"
                       value={formData.country}
@@ -377,6 +563,7 @@ export default function StudyInChinaApplyPage() {
                       className="mt-1"
                     />
                   </div>
+
                   <div>
                     <Label className="text-gray-700">
                       Age <span className="text-red-500">*</span>
@@ -397,16 +584,18 @@ export default function StudyInChinaApplyPage() {
                 </div>
               </div>
 
-              {/* Academic Info */}
+              {/* Academic Information */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">
                   Academic Preferences
                 </h2>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label className="text-gray-700">
                       Preferred University
                     </Label>
+
                     <Input
                       name="preferredUniversity"
                       value={formData.preferredUniversity}
@@ -415,10 +604,12 @@ export default function StudyInChinaApplyPage() {
                       className="mt-1"
                     />
                   </div>
+
                   <div>
                     <Label className="text-gray-700">
-                      Preferred Program<span className="text-red-500">*</span>
+                      Preferred Program <span className="text-red-500">*</span>
                     </Label>
+
                     <Input
                       name="preferredProgram"
                       value={formData.preferredProgram}
@@ -429,10 +620,12 @@ export default function StudyInChinaApplyPage() {
                     />
                   </div>
                 </div>
+
                 <div className="mt-6">
                   <Label className="text-gray-700">
                     Additional Message (Optional)
                   </Label>
+
                   <Textarea
                     name="message"
                     value={formData.message}
@@ -449,14 +642,17 @@ export default function StudyInChinaApplyPage() {
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-100">
                   Required Documents
                 </h2>
+
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm text-gray-500">
                     Upload all required documents for processing
                   </p>
+
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">
                       {completedCount} / {requiredDocuments.length}
                     </span>
+
                     {isUploadComplete && (
                       <CheckCircle className="w-5 h-5 text-green-600" />
                     )}
@@ -467,7 +663,12 @@ export default function StudyInChinaApplyPage() {
                   <div
                     className="h-full bg-blue-600 rounded-full transition-all duration-500"
                     style={{
-                      width: `${(completedCount / requiredDocuments.length) * 100}%`,
+                      width:
+                        requiredDocuments.length > 0
+                          ? `${
+                              (completedCount / requiredDocuments.length) * 100
+                            }%`
+                          : "0%",
                     }}
                   />
                 </div>
@@ -493,12 +694,13 @@ export default function StudyInChinaApplyPage() {
 
                 {isUploadComplete && (
                   <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> All documents uploaded
-                    successfully!
+                    <CheckCircle className="w-4 h-4" />
+                    All documents uploaded successfully!
                   </p>
                 )}
               </div>
 
+              {/* Submit */}
               <Button
                 type="submit"
                 disabled={
@@ -551,7 +753,7 @@ export default function StudyInChinaApplyPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-            onClick={() => setPreviewFile(null)}
+            onClick={closePreview}
           >
             <motion.div
               initial={{ scale: 0.95 }}
@@ -562,13 +764,16 @@ export default function StudyInChinaApplyPage() {
             >
               <div className="flex justify-between items-center p-4 border-b">
                 <h3 className="font-semibold">{previewFile.name}</h3>
+
                 <button
+                  type="button"
                   onClick={closePreview}
                   className="p-1 hover:bg-gray-100 rounded"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
               <div className="p-4">
                 {previewFile.name.toLowerCase().endsWith(".pdf") ? (
                   <>
@@ -577,6 +782,7 @@ export default function StudyInChinaApplyPage() {
                       title={previewFile.name}
                       className="w-full h-[70vh] rounded-lg"
                     />
+
                     <a
                       href={previewFile.url}
                       target="_blank"

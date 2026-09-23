@@ -17,28 +17,38 @@ const CheckoutButton = dynamic(() => import("../CheckoutButton"), {
   ),
 });
 
-type Props = {
+interface ShippingAddress {
+  streetAddress: string;
+  apartment: string;
+  city: string;
+  zipCode: string;
+  country: string;
+}
+
+interface OrderSummaryProps {
   selectedCount: number;
+  selectedItems: any[];
   subtotal: number;
   totalShipping: number;
   totalDiscount: number;
   total: number;
-};
+}
 
 export default function OrderSummary({
   selectedCount,
+  selectedItems,
   subtotal,
   totalShipping,
   totalDiscount,
   total,
-}: Props) {
+}: OrderSummaryProps) {
   const { country } = useCurrency();
   const { data: session } = useSession();
-  const isNigeria = country === "NG";
-  const isGhana = country === "GH"; // Ghana gets Paystack but no shipping
 
-  // Build shipping address from session
-  const shippingAddress = {
+  const isNigeria = country === "NG";
+  const isGhana = country === "GH";
+
+  const shippingAddress: ShippingAddress = {
     streetAddress: session?.user?.streetAddress ?? "",
     apartment: session?.user?.apartment ?? "",
     city: session?.user?.city ?? "",
@@ -51,6 +61,7 @@ export default function OrderSummary({
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
         <div className="bg-linear-to-r from-blue-600 to-blue-700 px-5 py-4">
           <h2 className="text-white font-semibold text-lg">Order Summary</h2>
+
           <p className="text-blue-100 text-sm">
             {selectedCount} item{selectedCount !== 1 ? "s" : ""} selected
           </p>
@@ -62,7 +73,9 @@ export default function OrderSummary({
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <ShoppingCart className="w-6 h-6 text-gray-400" />
               </div>
+
               <p className="text-gray-500 text-sm">No items selected</p>
+
               <p className="text-xs text-gray-400 mt-1">
                 Select items to checkout
               </p>
@@ -81,6 +94,7 @@ export default function OrderSummary({
                   <Truck className="w-3.5 h-3.5 text-gray-400" />
                   <span className="text-gray-600">Shipping</span>
                 </div>
+
                 {isNigeria ? (
                   totalShipping > 0 ? (
                     <ProductPrice yuanPrice={totalShipping} />
@@ -98,6 +112,7 @@ export default function OrderSummary({
               {!isNigeria && (
                 <div className="flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-3">
                   <Mail className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+
                   <p className="text-xs text-amber-700">
                     Shipping to countries outside Nigeria will be calculated and
                     sent to your email after checkout.
@@ -110,8 +125,10 @@ export default function OrderSummary({
                 <div className="flex justify-between text-sm">
                   <div className="flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-green-500" />
+
                     <span className="text-gray-600">Discount</span>
                   </div>
+
                   <span className="flex text-green-600 whitespace-nowrap">
                     - <ProductPrice yuanPrice={totalDiscount} />
                   </span>
@@ -122,11 +139,12 @@ export default function OrderSummary({
               <div className="pt-3 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-gray-800">Total</span>
+
                   <span className="text-xl font-bold text-blue-600">
-                    {/* For Nigeria include shipping, for others exclude it */}
                     <ProductPrice yuanPrice={isNigeria ? total : subtotal} />
                   </span>
                 </div>
+
                 <p className="text-xs text-gray-400 mt-1">
                   {isNigeria
                     ? "*Shipping cost included where applicable"
@@ -137,6 +155,7 @@ export default function OrderSummary({
               <div className="pt-2">
                 <CheckoutButton
                   total={isNigeria ? total : subtotal}
+                  items={selectedItems}
                   shippingAddress={shippingAddress}
                 />
               </div>

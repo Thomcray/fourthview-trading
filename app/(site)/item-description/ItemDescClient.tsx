@@ -40,7 +40,7 @@ export default function ItemDescriptionClient() {
   return (
     <section className="w-full h-full overflow-y-scroll space-y-6 flex flex-col items-center border-0 px-8 sm:px-2 py-8 max-sm:px-4">
       <ViewProduct selectedItem={selectedItem} />
-      <ItemDescTab />
+      <ItemDescTab productId={selectedItem.id} />
       <SimilarItems selectedItem={selectedItem} />
     </section>
   );
