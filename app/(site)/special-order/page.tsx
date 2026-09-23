@@ -16,16 +16,6 @@ import { useRouter } from "next/navigation";
 const SPECIAL_ORDER_DEPOSIT = 50_000;
 const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
 
-declare global {
-  interface Window {
-    PaystackPop: {
-      setup: (config: object) => {
-        openIframe: () => void;
-      };
-    };
-  }
-}
-
 function loadPaystackScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.PaystackPop) {
@@ -46,8 +36,11 @@ function loadPaystackScript(): Promise<void> {
     }
 
     const script = document.createElement("script");
+
     script.src = "https://js.paystack.co/v1/inline.js";
+
     script.onload = () => resolve();
+
     script.onerror = () => reject(new Error("Failed to load Paystack script"));
 
     document.body.appendChild(script);
@@ -152,7 +145,7 @@ export default function SpecialOrders() {
         setOrderImages((prev) => [...prev, file]);
       });
     },
-    [orderImages, validateImage],
+    [orderImages],
   );
 
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -301,37 +294,37 @@ export default function SpecialOrders() {
 
   return (
     <section className="min-h-screen bg-linear-to-b from-gray-50 to-white py-8 sm:py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+      <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">
+        <div className="mb-8 text-center">
+          <h1 className="mb-3 text-3xl font-bold text-blue-900 sm:text-4xl">
             Special Orders & Enquiries
           </h1>
 
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-gray-600">
             Have a special request? Let us know and we&apos;ll get back to you
             within 24 hours
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <form className="p-6 sm:p-8 space-y-6" onSubmit={handleOrder}>
+        <div className="overflow-hidden rounded-2xl bg-white shadow-xl">
+          <form className="space-y-6 p-6 sm:p-8" onSubmit={handleOrder}>
             {/* Deposit Notice */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-blue-50 border border-blue-200 rounded-xl p-4"
+              className="rounded-xl border border-blue-200 bg-blue-50 p-4"
             >
               <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
 
                 <div>
                   <h3 className="font-semibold text-blue-900">
                     ₦50,000 Refundable Commitment Deposit
                   </h3>
 
-                  <p className="text-sm text-blue-800 mt-1 leading-relaxed">
+                  <p className="mt-1 text-sm leading-relaxed text-blue-800">
                     A refundable ₦50,000 deposit is required when submitting a
                     special order request. The deposit will be refunded when
                     your actual order is placed.
@@ -345,18 +338,18 @@ export default function SpecialOrders() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
+                className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3"
               >
-                <AlertCircle className="w-5 h-5 text-red-500" />
+                <AlertCircle className="h-5 w-5 text-red-500" />
                 <p className="text-sm text-red-600">{error}</p>
               </motion.div>
             )}
 
             {/* Email Field */}
             <div className="space-y-2">
-              <Label className="text-gray-700 font-medium">
+              <Label className="font-medium text-gray-700">
                 Email Address
-                {!session?.user && <span className="text-red-500 ml-1">*</span>}
+                {!session?.user && <span className="ml-1 text-red-500">*</span>}
               </Label>
 
               <Input
@@ -364,7 +357,7 @@ export default function SpecialOrders() {
                 name="email"
                 defaultValue={session?.user?.email || ""}
                 placeholder={!session?.user ? "your@email.com" : ""}
-                className="py-6 px-4 bg-gray-50 border-gray-200 focus:bg-white"
+                className="border-gray-200 bg-gray-50 px-4 py-6 focus:bg-white"
                 readOnly={!!session?.user}
                 required={!session?.user}
               />
@@ -378,7 +371,7 @@ export default function SpecialOrders() {
 
             {/* WhatsApp Number */}
             <div className="space-y-2">
-              <Label className="text-gray-700 font-medium">
+              <Label className="font-medium text-gray-700">
                 WhatsApp Number <span className="text-red-500">*</span>
               </Label>
 
@@ -386,7 +379,7 @@ export default function SpecialOrders() {
                 type="tel"
                 name="whatsapp"
                 placeholder="+234 813 123 4567"
-                className="py-6 px-4 bg-gray-50 border-gray-200 focus:bg-white"
+                className="border-gray-200 bg-gray-50 px-4 py-6 focus:bg-white"
                 required
               />
 
@@ -397,7 +390,7 @@ export default function SpecialOrders() {
 
             {/* Order Description */}
             <div className="space-y-2">
-              <Label className="text-gray-700 font-medium">
+              <Label className="font-medium text-gray-700">
                 Order Description <span className="text-red-500">*</span>
               </Label>
 
@@ -412,11 +405,11 @@ export default function SpecialOrders() {
             {/* Image Upload Section */}
             <div className="space-y-3">
               <div>
-                <Label className="text-gray-700 font-medium">
+                <Label className="font-medium text-gray-700">
                   Reference Images (Optional)
                 </Label>
 
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   Upload up to {MAX_IMAGES} images to help us understand your
                   request better
                 </p>
@@ -427,20 +420,15 @@ export default function SpecialOrders() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`
-                  relative border-2 border-dashed rounded-xl p-6 text-center
-                  transition-all duration-200 cursor-pointer
-                  ${
-                    isDragging
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-300 hover:border-blue-400 bg-gray-50"
-                  }
-                  ${
-                    orderImages.length >= MAX_IMAGES
-                      ? "opacity-50 pointer-events-none"
-                      : ""
-                  }
-                `}
+                className={`relative cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-all duration-200 ${
+                  isDragging
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300 bg-gray-50 hover:border-blue-400"
+                } ${
+                  orderImages.length >= MAX_IMAGES
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }`}
               >
                 <Input
                   type="file"
@@ -449,20 +437,20 @@ export default function SpecialOrders() {
                   accept="image/*"
                   onChange={handleImageChange}
                   disabled={orderImages.length >= MAX_IMAGES}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                 />
 
-                <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                <Upload className="mx-auto mb-2 h-10 w-10 text-gray-400" />
 
                 <p className="text-sm text-gray-600">
                   Click to upload or drag and drop
                 </p>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-gray-400">
                   PNG, JPG, GIF up to 5MB each
                 </p>
 
-                <p className="text-xs text-orange-500 mt-2">
+                <p className="mt-2 text-xs text-orange-500">
                   ⚠️ Maximum {MAX_IMAGES} images
                 </p>
               </div>
@@ -480,14 +468,14 @@ export default function SpecialOrders() {
                       variant="ghost"
                       size="sm"
                       onClick={clearAllImages}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      className="text-red-500 hover:bg-red-50 hover:text-red-600"
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
+                      <Trash2 className="mr-1 h-4 w-4" />
                       Clear All
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <AnimatePresence>
                       {orderImages.map((image, index) => (
                         <motion.div
@@ -504,9 +492,9 @@ export default function SpecialOrders() {
                             opacity: 0,
                             scale: 0.8,
                           }}
-                          className="relative group"
+                          className="group relative"
                         >
-                          <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                          <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                             <Image
                               src={URL.createObjectURL(image)}
                               alt={`Preview ${index + 1}`}
@@ -516,18 +504,18 @@ export default function SpecialOrders() {
                             />
 
                             {/* Overlay */}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                               <button
                                 type="button"
                                 onClick={() => removeImage(index)}
-                                className="p-1.5 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+                                className="rounded-full bg-red-500 p-1.5 transition-colors hover:bg-red-600"
                               >
-                                <Trash2 className="w-4 h-4 text-white" />
+                                <Trash2 className="h-4 w-4 text-white" />
                               </button>
                             </div>
 
                             {/* File Size Badge */}
-                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
+                            <div className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
                               {(image.size / (1024 * 1024)).toFixed(2)} MB
                             </div>
                           </div>
@@ -543,25 +531,25 @@ export default function SpecialOrders() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6 text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full cursor-pointer rounded-xl bg-linear-to-r from-blue-600 to-blue-700 py-6 text-base font-semibold text-white shadow-md transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   {isPaymentLoading
                     ? "Waiting for payment..."
                     : "Submitting..."}
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <Send className="w-5 h-5" />
+                  <Send className="h-5 w-5" />
                   Pay ₦50,000 & Submit Special Order
                 </div>
               )}
             </Button>
 
             {/* Help Text */}
-            <p className="text-center text-xs text-gray-500 pt-4 border-t">
+            <p className="border-t pt-4 text-center text-xs text-gray-500">
               Your ₦50,000 commitment deposit is refundable when your actual
               order is placed. We&apos;ll review your request and get back to
               you within 24-48 hours.

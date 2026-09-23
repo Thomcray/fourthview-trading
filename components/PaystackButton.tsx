@@ -42,38 +42,22 @@ interface PaystackButtonProps {
   paymentMethod?: string;
 }
 
-interface PaystackConfig {
-  key: string;
-  email: string;
-  amount: number;
-  currency: string;
-  ref: string;
-  metadata: {
-    signature: string;
-    custom_fields: Array<{
-      display_name: string;
-      variable_name: string;
-      value: string;
-    }>;
-  };
-  callback: () => void;
-  onClose: () => void;
-}
-
-declare global {
-  interface Window {
-    PaystackPop: {
-      setup: (config: PaystackConfig) => {
-        openIframe: () => void;
-      };
-    };
-  }
-}
-
 function loadPaystackScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.PaystackPop) {
       return resolve();
+    }
+
+    const existingScript = document.querySelector(
+      'script[src="https://js.paystack.co/v1/inline.js"]',
+    );
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve());
+      existingScript.addEventListener("error", () =>
+        reject(new Error("Failed to load Paystack script")),
+      );
+      return;
     }
 
     const script = document.createElement("script");
@@ -253,8 +237,8 @@ export default function PaystackButton({
 
   if (currencyLoading) {
     return (
-      <Button disabled className="cursor-pointer h-10 w-full">
-        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2 animate-spin" />
+      <Button disabled className="h-10 w-full cursor-pointer">
+        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
         Loading...
       </Button>
     );
@@ -268,11 +252,11 @@ export default function PaystackButton({
         type="button"
         onClick={handlePayment}
         disabled={isLoading || !user || items.length === 0}
-        className="cursor-pointer h-10 w-full"
+        className="h-10 w-full cursor-pointer"
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2 animate-spin" />
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             Processing...
           </>
         ) : (
@@ -280,7 +264,7 @@ export default function PaystackButton({
         )}
       </Button>
 
-      <p className="text-xs text-gray-400 mt-1 text-center">
+      <p className="mt-1 text-center text-xs text-gray-400">
         Billed in Nigerian Naira (NGN)
       </p>
     </div>
