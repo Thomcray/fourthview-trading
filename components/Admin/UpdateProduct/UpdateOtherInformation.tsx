@@ -1,6 +1,5 @@
 "use client";
 
-import Selection from "@/components/Selection";
 import React, { useState, useEffect } from "react";
 import { useCurrency } from "@/components/CurrencyContext";
 import { useUpdateForm } from "./UpdateForm"; // ← added
@@ -32,7 +31,8 @@ export default function UpdateOtherInformation({
   const { formatPrice } = useCurrency();
 
   // Pull everything needed from context
-  const { finalProductType, customType, formData, product } = useUpdateForm();
+  const { finalProductType, customType, formData, product, updateFormData } =
+    useUpdateForm();
   const productType = finalProductType;
   const isCustom = customType.trim().length > 0;
   const productWeight = formData.weight;
@@ -52,6 +52,10 @@ export default function UpdateOtherInformation({
   const hasPredefinedSizes = predefinedSizes.length > 0;
 
   useEffect(() => {
+    setSelectedWeight(formData.weight || "");
+  }, [formData.weight]);
+
+  useEffect(() => {
     if (!selectedWeight) {
       setCalculatedCost(null);
       return;
@@ -68,6 +72,7 @@ export default function UpdateOtherInformation({
         const data = await res.json();
         setCalculatedCost(data.shippingCost);
         setRatePerKg(data.rate_per_kg);
+        updateFormData("shippingCost", String(data.shippingCost));
       } catch (err) {
         console.error("Failed to calculate shipping:", err);
       } finally {
@@ -75,7 +80,7 @@ export default function UpdateOtherInformation({
       }
     };
     calculateShipping();
-  }, [selectedWeight]);
+  }, [selectedWeight, updateFormData]);
 
   const addCustomSpec = () => {
     if (newSpec.trim() && !customSpecs.includes(newSpec.trim())) {
@@ -197,7 +202,11 @@ export default function UpdateOtherInformation({
           type="number"
           name="weight"
           value={selectedWeight}
-          onChange={(e) => setSelectedWeight(e.target.value)}
+          onChange={(e) => {
+            const weight = e.target.value;
+            setSelectedWeight(weight);
+            updateFormData("weight", weight);
+          }}
           placeholder="e.g. 1.5"
           min="0.01"
           step="0.01"
@@ -213,7 +222,7 @@ export default function UpdateOtherInformation({
       {selectedWeight && calculatedCost !== null && (
         <div className="flex flex-col gap-1.5">
           <SectionLabel>Calculated Shipping Cost</SectionLabel>
-          {shippingCost && (
+          {shippingCost !== undefined && shippingCost !== null && (
             <CurrentValueBadge
               label="Previous shipping"
               value={`¥${shippingCost}`}
