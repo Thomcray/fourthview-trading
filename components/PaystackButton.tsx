@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCurrency } from "./CurrencyContext";
 import { toast } from "react-toastify";
 
-const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
+const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
 
 interface ShippingAddress {
   streetAddress: string;
