@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { useApp } from "./AppContext";
 import type { Cart } from "./AppContext";
 
-const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY!;
+const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
 
 interface ShippingAddress {
   streetAddress: string;
