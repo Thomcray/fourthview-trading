@@ -62,11 +62,28 @@ const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   GB: "GBP",
   CA: "CAD",
   AU: "AUD",
+  CN: "CNY",
+  // Eurozone
   DE: "EUR",
   FR: "EUR",
   IT: "EUR",
   ES: "EUR",
-  CN: "CNY",
+  NL: "EUR",
+  BE: "EUR",
+  AT: "EUR",
+  IE: "EUR",
+  PT: "EUR",
+  FI: "EUR",
+  GR: "EUR",
+  LU: "EUR",
+  SK: "EUR",
+  SI: "EUR",
+  EE: "EUR",
+  LV: "EUR",
+  LT: "EUR",
+  MT: "EUR",
+  CY: "EUR",
+  HR: "EUR",
 };
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(
@@ -113,27 +130,38 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     if (ratesLoading || settingsLoading || hasDetected.current) return;
     hasDetected.current = true;
 
-    const saved = localStorage.getItem("preferredCurrency");
-    if (saved && CURRENCY_META[saved]) {
-      setCurrencyCode(saved);
-      const savedCountry = localStorage.getItem("detectedCountry");
-      if (savedCountry) setCountryCode(savedCountry);
+    // One-time cleanup of the old key from earlier visits
+    try {
+      localStorage.removeItem("detectedCountry");
+    } catch {}
+
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("preferredCurrency");
+    } catch {}
+
+    const savedCurrency = saved && CURRENCY_META[saved] ? saved : null;
+
+    if (savedCurrency) {
+      // Visitor chose a currency: use it now, don't wait for the location call
+      setCurrencyCode(savedCurrency);
       setLocationLoading(false);
-      return;
     }
 
     fetch("/api/location")
       .then((res) => res.json())
       .then((data) => {
-        const code = data.country_code;
-        setCountryCode(code);
-        if (code) localStorage.setItem("detectedCountry", code);
-        const detected = (code && COUNTRY_CURRENCY_MAP[code]) || "NGN";
-        setCurrencyCode(detected);
+        const code: string | null = data.country_code ?? null;
+        setCountryCode(code); // kept in memory only, never written to storage
+        if (!savedCurrency) {
+          setCurrencyCode((code && COUNTRY_CURRENCY_MAP[code]) || "NGN");
+        }
       })
       .catch(() => {
-        setLocationError("Could not detect location");
-        setCurrencyCode("NGN");
+        if (!savedCurrency) {
+          setLocationError("Could not detect location");
+          setCurrencyCode("NGN");
+        }
       })
       .finally(() => {
         setLocationLoading(false);
@@ -143,7 +171,9 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const setCurrency = useCallback((code: string) => {
     if (!CURRENCY_META[code]) return;
     setCurrencyCode(code);
-    localStorage.setItem("preferredCurrency", code);
+    try {
+      localStorage.setItem("preferredCurrency", code);
+    } catch {}
   }, []);
 
   const getRate = useCallback(

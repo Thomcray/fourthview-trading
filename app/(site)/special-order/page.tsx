@@ -8,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload, Trash2, AlertCircle, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useState, useTransition, useCallback, useEffect } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const SPECIAL_ORDER_DEPOSIT = 50_000;
 const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
@@ -61,10 +62,6 @@ export default function SpecialOrders() {
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   const router = useRouter();
-
-  useEffect(() => {
-    loadPaystackScript().catch(() => {});
-  }, []);
 
   const validateImage = (file: File): boolean => {
     if (!file.type.startsWith("image/")) {
@@ -555,6 +552,13 @@ export default function SpecialOrders() {
               you within 24-48 hours.
             </p>
           </form>
+          <p className="px-6 pb-6 text-center text-xs text-gray-500 sm:px-8">
+            Payments are processed by Paystack. See our{" "}
+            <Link href="/cookies" className="underline">
+              Cookie Policy
+            </Link>
+            .
+          </p>
         </div>
       </div>
     </section>

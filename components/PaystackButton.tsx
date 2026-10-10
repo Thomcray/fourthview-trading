@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -74,10 +74,6 @@ export default function PaystackButton({
 
   const user = session?.user;
 
-  useEffect(() => {
-    loadPaystackScript().catch(() => {});
-  }, []);
-
   const handlePayment = async () => {
     if (!user) {
       toast.error("Please sign in to continue");
@@ -93,8 +89,6 @@ export default function PaystackButton({
 
     try {
       await loadPaystackScript();
-
-      console.log("Checkout items being sent to payment intent:", items);
 
       const intentRes = await fetch("/api/payment/intent", {
         method: "POST",
@@ -261,7 +255,11 @@ export default function PaystackButton({
       </Button>
 
       <p className="mt-1 text-center text-xs text-gray-400">
-        Billed in Nigerian Naira (NGN)
+        Payments are processed by Paystack. See our{" "}
+        <a href="/cookies" className="underline">
+          Cookie Policy
+        </a>
+        .
       </p>
     </div>
   );
