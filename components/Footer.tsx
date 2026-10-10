@@ -251,6 +251,7 @@ export default async function Footer() {
               >
                 Privacy Policy
               </Link>
+
               <Link
                 href="/terms"
                 className="text-gray-400 hover:text-white text-xs transition-colors"

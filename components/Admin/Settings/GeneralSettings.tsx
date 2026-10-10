@@ -16,13 +16,16 @@ import {
   CheckCircle,
   AlertCircle,
   MessageCircle,
-  Instagram,
-  Facebook,
-  Twitter,
-  Youtube,
   Video,
   PiggyBank,
 } from "lucide-react";
+import {
+  siFacebook,
+  siX,
+  siInstagram,
+  siYoutube,
+  siTiktok,
+} from "simple-icons";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
@@ -246,42 +249,87 @@ export default function GeneralSettings() {
     {
       name: "whatsapp",
       label: "WhatsApp",
-      icon: MessageCircle,
+      icon: <MessageCircle className="w-4 h-4" />,
       placeholder: "+234 813 123 4567",
       prefix: "wa.me/",
     },
     {
       name: "instagram",
       label: "Instagram",
-      icon: Instagram,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-4 h-4"
+          aria-hidden="true"
+        >
+          <path d={siInstagram.path} />
+        </svg>
+      ),
       placeholder: "yourhandle",
       prefix: "instagram.com/",
     },
     {
       name: "facebook",
       label: "Facebook",
-      icon: Facebook,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-4 h-4"
+          aria-hidden="true"
+        >
+          <path d={siFacebook.path} />
+        </svg>
+      ),
       placeholder: "yourpage",
       prefix: "facebook.com/",
     },
     {
-      name: "twitter",
-      label: "X (Twitter)",
-      icon: Twitter,
+      name: "x",
+      label: "X",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-4 h-4"
+          aria-hidden="true"
+        >
+          <path d={siX.path} />
+        </svg>
+      ),
       placeholder: "yourhandle",
       prefix: "x.com/",
     },
     {
       name: "tiktok",
       label: "TikTok",
-      icon: Video,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-4 h-4"
+          aria-hidden="true"
+        >
+          <path d={siTiktok.path} />
+        </svg>
+      ),
       placeholder: "@yourhandle",
       prefix: "tiktok.com/",
     },
     {
       name: "youtube",
       label: "YouTube",
-      icon: Youtube,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-4 h-4"
+          aria-hidden="true"
+        >
+          <path d={siYoutube.path} />
+        </svg>
+      ),
       placeholder: "yourchannel",
       prefix: "youtube.com/",
     },
@@ -416,7 +464,7 @@ export default function GeneralSettings() {
               </Label>
               <div className="relative mt-1.5 flex items-center">
                 <div className="absolute left-3 text-gray-400">
-                  <field.icon className="w-4 h-4" />
+                  {field.icon}
                 </div>
                 <span className="absolute left-9 text-xs text-gray-400 pointer-events-none">
                   {field.prefix}

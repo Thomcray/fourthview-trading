@@ -29,7 +29,7 @@ type MenuDrawerProps = {
 
 const mainMenuItems = [
   {
-    title: "Change Money with Us",
+    title: "Payment Assistance",
     path: "/change-money",
     icon: DollarSign,
     color: "text-emerald-600",

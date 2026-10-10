@@ -100,7 +100,7 @@ export default function CurrencyExchangePage() {
                   Live Exchange Rates
                 </div>
                 <h1 className="text-4xl lg:text-5xl font-bold text-blue-950 mb-4">
-                  Fourth View Currency Exchange
+                  Fourth View Payment Assistance
                 </h1>
                 <p className="text-lg text-gray-600 mb-8">
                   With live rates and real-time updates. Fast, secure, and
