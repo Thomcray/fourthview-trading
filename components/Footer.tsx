@@ -4,15 +4,18 @@ import {
   Mail,
   MessageCircle,
   Phone,
-  Twitter,
-  Instagram,
-  Youtube,
   MapPin,
   Shield,
   RefreshCw,
   CreditCard,
-  Video,
 } from "lucide-react";
+import {
+  siX,
+  siInstagram,
+  siYoutube,
+  siFacebook,
+  siTiktok,
+} from "simple-icons";
 import { getStoreSettings } from "@/app/_lib/settings";
 import WhatsAppButton from "./WhatsAppButton";
 
@@ -37,43 +40,88 @@ export default async function Footer() {
 
   const socialLinks = [
     settings?.facebook && {
-      icon: Facebook,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siFacebook.path} />
+        </svg>
+      ),
       href: `https://facebook.com/${settings.facebook}`,
       label: "Facebook",
       color: "hover:text-blue-500",
     },
     settings?.twitter && {
-      icon: Twitter,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siX.path} />
+        </svg>
+      ),
       href: `https://x.com/${settings.twitter}`,
-      label: "X (Twitter)",
+      label: "X",
       color: "hover:text-sky-500",
     },
     settings?.instagram && {
-      icon: Instagram,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siInstagram.path} />
+        </svg>
+      ),
       href: `https://instagram.com/${settings.instagram}`,
       label: "Instagram",
       color: "hover:text-pink-500",
     },
     settings?.youtube && {
-      icon: Youtube,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siYoutube.path} />
+        </svg>
+      ),
       href: `https://youtube.com/${settings.youtube}`,
       label: "YouTube",
       color: "hover:text-red-600",
     },
     settings?.tiktok && {
-      icon: Video,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siTiktok.path} />
+        </svg>
+      ),
       href: `https://tiktok.com/${settings.tiktok}`,
       label: "TikTok",
       color: "hover:text-white",
     },
     settings?.whatsapp && {
-      icon: MessageCircle,
+      icon: <MessageCircle className="w-5 h-5" />,
       href: `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`,
       label: "WhatsApp",
       color: "hover:text-green-500",
     },
   ].filter(Boolean) as Array<{
-    icon: typeof Facebook;
+    icon: React.ReactNode;
     href: string;
     label: string;
     color: string;
@@ -117,7 +165,7 @@ export default async function Footer() {
             {socialLinks.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-2">
                 {socialLinks.map((social) => (
-                  <Link
+                  <a
                     key={social.label}
                     href={social.href}
                     target="_blank"
@@ -125,8 +173,8 @@ export default async function Footer() {
                     className={`p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all duration-300 ${social.color}`}
                     aria-label={social.label}
                   >
-                    <social.icon className="w-4 h-4" />
-                  </Link>
+                    {social.icon}
+                  </a>
                 ))}
               </div>
             )}

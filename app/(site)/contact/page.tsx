@@ -2,17 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  Send,
-  MessageCircle,
-  Facebook,
-  Twitter,
-  Instagram,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Send, MessageCircle } from "lucide-react";
+import { siFacebook, siX, siInstagram } from "simple-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,22 +53,22 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: "Email Us",
-      details: settings.storeEmail || "info@fourthview.com",
-      link: `mailto:${settings.storeEmail || "info@fourthview.com"}`,
+      details: settings.storeEmail || "fourthviewtradingltd@gmail.com",
+      link: `mailto:${settings.storeEmail || "fourthviewtradingltd@gmail.com"}`,
       color: "from-blue-500 to-blue-600",
     },
     {
       icon: Phone,
       title: "Call Us",
-      details: settings.storePhone || "+234 813 123 4567",
-      link: `tel:${(settings.storePhone || "+2348131234567").replace(/\s+/g, "")}`,
+      details: settings.storePhone || "+234 907 226 2069",
+      link: `tel:${(settings.storePhone || "+2349072262069").replace(/\s+/g, "")}`,
       color: "from-green-500 to-green-600",
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      details: settings.storeAddress || "Lagos, Nigeria",
-      link: `https://maps.google.com/?q=${encodeURIComponent(settings.storeAddress || "Lagos, Nigeria")}`,
+      details: settings.storeAddress || "Abuja, Nigeria",
+      link: `https://maps.google.com/?q=${encodeURIComponent(settings.storeAddress || "Abuja, Nigeria")}`,
       color: "from-red-500 to-red-600",
     },
     {
@@ -91,31 +82,59 @@ export default function ContactPage() {
 
   const socialLinks = [
     settings.facebook && {
-      icon: Facebook,
-      href: settings.facebook,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siFacebook.path} />
+        </svg>
+      ),
+      href: `https://facebook.com/${settings.facebook}`,
       label: "Facebook",
       color: "hover:text-blue-600",
     },
     settings.twitter && {
-      icon: Twitter,
-      href: settings.twitter,
-      label: "Twitter",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siX.path} />
+        </svg>
+      ),
+
+      href: `https://x.com/${settings.twitter}`,
+      label: "X",
       color: "hover:text-sky-500",
     },
     settings.instagram && {
-      icon: Instagram,
-      href: settings.instagram,
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path d={siInstagram.path} />
+        </svg>
+      ),
+      href: `https://instagram.com/${settings.instagram}`,
       label: "Instagram",
       color: "hover:text-pink-500",
     },
     settings.whatsapp && {
-      icon: MessageCircle,
+      icon: <MessageCircle className="w-5 h-5" />,
       href: `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}`,
       label: "WhatsApp",
       color: "hover:text-green-500",
     },
   ].filter(Boolean) as {
-    icon: React.ElementType;
+    icon: React.ReactNode;
     href: string;
     label: string;
     color: string;
@@ -302,7 +321,7 @@ export default function ContactPage() {
                       aria-label={social.label}
                       className={`p-3 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition-all ${social.color}`}
                     >
-                      <social.icon className="w-5 h-5" />
+                      {social.icon}
                     </a>
                   ))}
                 </div>
