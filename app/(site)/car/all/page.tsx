@@ -373,7 +373,13 @@ export default function AllCarsPage() {
 
                         {!car.sold && (
                           <p className="text-xs text-gray-400">
-                            (incl. shipping &amp; clearing)
+                            {car.shippingCost > 0 && car.clearingCost > 0
+                              ? "Includes shipping & clearing"
+                              : car.shippingCost > 0
+                                ? "Includes shipping"
+                                : car.clearingCost > 0
+                                  ? "Includes clearing"
+                                  : ""}
                           </p>
                         )}
                       </div>

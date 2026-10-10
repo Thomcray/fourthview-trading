@@ -16,6 +16,8 @@ export type CarType = {
   totalPrice: number;
   imageUrl: string[];
   sold: boolean;
+  shippingCost: number;
+  clearingCost: number;
 };
 
 type Props = {
@@ -165,7 +167,13 @@ export default function CarConditionSection({
 
                   {!car.sold && (
                     <span className="text-xs text-gray-400 ml-1">
-                      (incl. shipping &amp; clearing)
+                      {car.shippingCost > 0 && car.clearingCost > 0
+                        ? "Includes shipping & clearing"
+                        : car.shippingCost > 0
+                          ? "Includes shipping"
+                          : car.clearingCost > 0
+                            ? "Includes clearing"
+                            : ""}
                     </span>
                   )}
                 </div>
