@@ -245,16 +245,13 @@ export default async function Footer() {
               . All rights reserved.
             </p>
             <div className="flex items-center gap-6">
-              <p className="text-gray-700">
-                This page lists the cookies and local storage our site uses. For
-                how we handle your personal data more generally, see our{" "}
-                <Link
-                  href="/privacy"
-                  className="text-gray-400 hover:text-white text-xs transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </p>
+              <Link
+                href="/privacy"
+                className="text-gray-400 hover:text-white text-xs transition-colors"
+              >
+                Privacy Policy
+              </Link>
+
               <Link
                 href="/terms"
                 className="text-gray-400 hover:text-white text-xs transition-colors"
