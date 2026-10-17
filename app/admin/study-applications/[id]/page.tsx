@@ -35,14 +35,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import DocumentViewerModal from "@/components/Admin/Modals/DocumentViewerModal";
 import {
-  APPLICATION_FEE,
-  STUDY_PLANS,
+  SPONSORSHIP_LABELS,
   formatUSD,
   isSponsorshipType,
 } from "@/app/_lib/study-pricing";
-import { Textarea } from "@/components/ui/textarea";
-import DocumentViewerModal from "@/components/Admin/Modals/DocumentViewerModal";
 
 type StudyApplication = {
   id: number;
@@ -67,9 +66,11 @@ type StudyApplication = {
       name: string;
     }
   >;
+  sponsorship_type: string | null; // null for older applications
+  application_fee: number | null;
+  balance_due: number | null;
   created_at: string;
   updated_at: string;
-  sponsorship_type: string | null;
 };
 
 const statusConfig: Record<
@@ -488,35 +489,34 @@ export default function StudyApplicationDetailPage() {
 
               <div className="p-6">
                 {isSponsorshipType(application.sponsorship_type) ? (
-                  (() => {
-                    const plan = STUDY_PLANS[application.sponsorship_type];
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">
+                        Sponsorship type
+                      </span>
 
-                    return (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-500">
-                            Sponsorship type
-                          </span>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          application.sponsorship_type === "scholarship"
+                            ? "bg-indigo-100 text-indigo-700"
+                            : "bg-emerald-100 text-emerald-700"
+                        }`}
+                      >
+                        {SPONSORSHIP_LABELS[application.sponsorship_type]}
+                      </span>
+                    </div>
 
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                              application.sponsorship_type === "scholarship"
-                                ? "bg-indigo-100 text-indigo-700"
-                                : "bg-emerald-100 text-emerald-700"
-                            }`}
-                          >
-                            {plan.label}
-                          </span>
-                        </div>
+                    <Separator />
 
-                        <Separator />
-
+                    {application.application_fee !== null &&
+                    application.balance_due !== null ? (
+                      <>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-500">
                             Application fee
                           </span>
                           <span className="font-medium text-gray-800">
-                            {formatUSD(APPLICATION_FEE)}
+                            {formatUSD(application.application_fee)}
                           </span>
                         </div>
 
@@ -525,7 +525,7 @@ export default function StudyApplicationDetailPage() {
                             Balance after admission
                           </span>
                           <span className="font-medium text-gray-800">
-                            {formatUSD(plan.balance)}
+                            {formatUSD(application.balance_due)}
                           </span>
                         </div>
 
@@ -534,12 +534,19 @@ export default function StudyApplicationDetailPage() {
                             Total
                           </span>
                           <span className="font-bold text-blue-700">
-                            {formatUSD(APPLICATION_FEE + plan.balance)}
+                            {formatUSD(
+                              application.application_fee +
+                                application.balance_due,
+                            )}
                           </span>
                         </div>
-                      </div>
-                    );
-                  })()
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No fee amounts recorded.
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-gray-500 text-sm">
                     No sponsorship type recorded (application submitted before

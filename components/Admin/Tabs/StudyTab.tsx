@@ -18,13 +18,13 @@ import {
   MapPin,
   FileText,
 } from "lucide-react";
+import { toast } from "react-toastify";
+import Link from "next/link";
 import {
-  STUDY_PLANS,
+  SPONSORSHIP_LABELS,
   formatUSD,
   isSponsorshipType,
 } from "@/app/_lib/study-pricing";
-import { toast } from "react-toastify";
-import Link from "next/link";
 
 type StudyApplication = {
   id: number;
@@ -42,8 +42,10 @@ type StudyApplication = {
     | "approved"
     | "rejected";
   documents: Record<string, string>;
-  created_at: string;
   sponsorship_type: string | null;
+  application_fee: number | null;
+  balance_due: number | null;
+  created_at: string;
 };
 
 const headers = [
@@ -131,12 +133,11 @@ export default function StudyTab() {
     );
   };
 
-  const getSponsorshipBadge = (type: string | null) => {
+  const getSponsorshipBadge = (type: string | null, balance: number | null) => {
     if (!isSponsorshipType(type)) {
       return <span className="text-xs text-gray-400">—</span>;
     }
 
-    const plan = STUDY_PLANS[type];
     const color =
       type === "scholarship"
         ? "bg-indigo-100 text-indigo-700"
@@ -147,11 +148,14 @@ export default function StudyTab() {
         <span
           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${color}`}
         >
-          {plan.label}
+          {SPONSORSHIP_LABELS[type]}
         </span>
-        <p className="text-xs text-gray-400 mt-1">
-          Balance: {formatUSD(plan.balance)}
-        </p>
+
+        {balance !== null && (
+          <p className="text-xs text-gray-400 mt-1">
+            Balance: {formatUSD(balance)}
+          </p>
+        )}
       </div>
     );
   };
@@ -169,6 +173,8 @@ export default function StudyTab() {
         "University",
         "Program",
         "Sponsorship",
+        "Application Fee",
+        "Balance Due",
         "Status",
         "Date",
       ],
@@ -181,8 +187,10 @@ export default function StudyTab() {
         a.preferred_university,
         a.preferred_program,
         isSponsorshipType(a.sponsorship_type)
-          ? STUDY_PLANS[a.sponsorship_type].label
+          ? SPONSORSHIP_LABELS[a.sponsorship_type]
           : "",
+        a.application_fee ?? "",
+        a.balance_due ?? "",
         a.status,
         new Date(a.created_at).toLocaleDateString(),
       ]),
@@ -281,6 +289,7 @@ export default function StudyTab() {
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>
+
             <select
               value={sponsorshipFilter}
               onChange={(e) => setSponsorshipFilter(e.target.value)}
@@ -290,6 +299,7 @@ export default function StudyTab() {
               <option value="scholarship">Scholarship</option>
               <option value="self-sponsor">Self Sponsor</option>
             </select>
+
             <Button variant="outline" onClick={handleExport} className="gap-2">
               <Download className="w-4 h-4" />
               Export CSV
@@ -362,7 +372,9 @@ export default function StudyTab() {
                   </div>
 
                   {/* Sponsorship */}
-                  <div>{getSponsorshipBadge(app.sponsorship_type)}</div>
+                  <div>
+                    {getSponsorshipBadge(app.sponsorship_type, app.balance_due)}
+                  </div>
 
                   {/* Documents + Date row */}
                   <div className="flex items-center justify-between text-sm">
@@ -446,7 +458,10 @@ export default function StudyTab() {
                       </p>
                     </TableCell>
                     <TableCell>
-                      {getSponsorshipBadge(app.sponsorship_type)}
+                      {getSponsorshipBadge(
+                        app.sponsorship_type,
+                        app.balance_due,
+                      )}
                     </TableCell>
                     <TableCell>{getStatusBadge(app.status)}</TableCell>
                     <TableCell>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap,
@@ -26,13 +27,14 @@ import {
   studyDocuments as documents,
   UploadedFile,
 } from "@/app/_lib/study-document-config";
-import {
-  APPLICATION_FEE,
-  STUDY_PLANS as PAYMENT_PLANS,
-  formatUSD,
-  type SponsorshipType,
-} from "@/app/_lib/study-pricing";
 import { useUploadWithProgress } from "@/hooks/useUploadWithProgress";
+import {
+  SPONSORSHIP_LABELS,
+  formatUSD,
+  getBalance,
+  type SponsorshipType,
+  type StudyPricing,
+} from "@/app/_lib/study-pricing";
 import Image from "next/image";
 
 export default function StudyInChinaApplyPage() {
@@ -51,6 +53,9 @@ export default function StudyInChinaApplyPage() {
     message: "",
   });
 
+  const [sponsorshipType, setSponsorshipType] =
+    useState<SponsorshipType>("scholarship");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentDocIndex, setCurrentDocIndex] = useState(0);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -62,6 +67,22 @@ export default function StudyInChinaApplyPage() {
 
   const { uploadState, uploadFile, resetUpload } = useUploadWithProgress();
 
+  const {
+    data: pricing,
+    isLoading: pricingLoading,
+    isError: pricingError,
+  } = useQuery<StudyPricing>({
+    queryKey: ["studyPricing"],
+    queryFn: async () => {
+      const res = await fetch("/api/study-pricing");
+      if (!res.ok) throw new Error("Failed to load pricing");
+      return res.json();
+    },
+  });
+
+  const planLabel = SPONSORSHIP_LABELS[sponsorshipType];
+  const balance = pricing ? getBalance(pricing, sponsorshipType) : null;
+
   const requiredDocuments = documents.filter((d) => d.required);
 
   const completedCount = Object.values(uploadedFiles).filter(
@@ -71,12 +92,6 @@ export default function StudyInChinaApplyPage() {
   const isUploadComplete = completedCount === requiredDocuments.length;
 
   const { data: session, status: sessionStatus } = useSession();
-
-  const [sponsorshipType, setSponsorshipType] =
-    useState<SponsorshipType>("scholarship");
-
-  const plan = PAYMENT_PLANS[sponsorshipType];
-  const totalFee = APPLICATION_FEE + plan.balance;
 
   useEffect(() => {
     if (!session?.user) return;
@@ -172,6 +187,8 @@ export default function StudyInChinaApplyPage() {
     if (
       !formData.whatsappNumber ||
       !formData.age ||
+      !formData.country ||
+      !formData.preferredUniversity ||
       !formData.preferredProgram
     ) {
       toast.error("Please fill in all required fields");
@@ -404,12 +421,13 @@ export default function StudyInChinaApplyPage() {
                   </div>
                 </div>
 
+                {/* Sponsorship tabs */}
                 <div
                   role="tablist"
                   aria-label="Sponsorship type"
                   className="grid grid-cols-2 gap-1 rounded-xl bg-blue-100/70 p-1 mb-5"
                 >
-                  {(Object.keys(PAYMENT_PLANS) as SponsorshipType[]).map(
+                  {(Object.keys(SPONSORSHIP_LABELS) as SponsorshipType[]).map(
                     (type) => {
                       const isActive = sponsorshipType === type;
 
@@ -426,7 +444,7 @@ export default function StudyInChinaApplyPage() {
                               : "text-gray-600 hover:text-blue-700"
                           }`}
                         >
-                          {PAYMENT_PLANS[type].label}
+                          {SPONSORSHIP_LABELS[type]}
                         </button>
                       );
                     },
@@ -454,8 +472,8 @@ export default function StudyInChinaApplyPage() {
                     </h3>
 
                     <p className="text-sm text-gray-600 mt-1">
-                      Both scholarship and self-sponsored programs are
-                      available.
+                      Choose your sponsorship type above to see the matching
+                      payment structure.
                     </p>
                   </div>
 
@@ -467,66 +485,80 @@ export default function StudyInChinaApplyPage() {
                     </h3>
 
                     <p className="text-2xl font-bold text-blue-700 mt-1">
-                      $500
+                      {pricing ? formatUSD(pricing.applicationFee) : "—"}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-white border border-blue-100 overflow-hidden">
-                  <div className="p-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-900">
-                      Payment Structure ({plan.label})
-                    </h3>
+                {pricingLoading ? (
+                  <div className="h-40 rounded-xl bg-blue-100/50 animate-pulse" />
+                ) : pricingError || !pricing || balance === null ? (
+                  <p className="text-sm text-red-600">
+                    Fees could not be loaded. Please refresh the page.
+                  </p>
+                ) : (
+                  <div className="rounded-xl bg-white border border-blue-100 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100">
+                      <h3 className="font-semibold text-gray-900">
+                        Payment Structure ({planLabel})
+                      </h3>
+                    </div>
+
+                    <div className="divide-y divide-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            1. Application Fee
+                          </p>
+
+                          <p className="text-sm text-gray-600">
+                            We will first contact you through WhatsApp. The{" "}
+                            {formatUSD(pricing.applicationFee)} application fee
+                            is paid after we contact you.
+                          </p>
+                        </div>
+
+                        <span className="font-bold text-blue-700 whitespace-nowrap">
+                          {formatUSD(pricing.applicationFee)}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            2. Balance After Admission
+                          </p>
+
+                          <p className="text-sm text-gray-600">
+                            The remaining balance is paid after your admission
+                            letter is issued.
+                          </p>
+                        </div>
+
+                        <span className="font-bold text-blue-700 whitespace-nowrap">
+                          {formatUSD(balance)}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-blue-50">
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            Total Application Fees
+                          </p>
+
+                          <p className="text-sm text-gray-600">
+                            {formatUSD(pricing.applicationFee)} application fee
+                            + {formatUSD(balance)} after admission
+                          </p>
+                        </div>
+
+                        <span className="text-lg font-bold text-blue-800 whitespace-nowrap">
+                          {formatUSD(pricing.applicationFee + balance)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="divide-y divide-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          1. Application Fee
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          We will first contact you through WhatsApp. The{" "}
-                          {formatUSD(APPLICATION_FEE)} application fee is paid
-                          after we contact you.
-                        </p>
-                      </div>
-                      <span className="font-bold text-blue-700 whitespace-nowrap">
-                        {formatUSD(APPLICATION_FEE)}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          2. Balance After Admission
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          The remaining balance is paid after your admission
-                          letter is issued.
-                        </p>
-                      </div>
-                      <span className="font-bold text-blue-700 whitespace-nowrap">
-                        {formatUSD(plan.balance)}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-blue-50">
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          Total Application Fees
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {formatUSD(APPLICATION_FEE)} application fee +{" "}
-                          {formatUSD(plan.balance)} after admission
-                        </p>
-                      </div>
-                      <span className="text-lg font-bold text-blue-800 whitespace-nowrap">
-                        {formatUSD(totalFee)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                )}
 
                 <p className="text-xs text-gray-500 mt-4">
                   Submitting this application does not require immediate
@@ -593,7 +625,9 @@ export default function StudyInChinaApplyPage() {
                   </div>
 
                   <div>
-                    <Label className="text-gray-700">Country</Label>
+                    <Label className="text-gray-700">
+                      Country <span className="text-red-500">*</span>
+                    </Label>
 
                     <Input
                       name="country"
@@ -601,6 +635,7 @@ export default function StudyInChinaApplyPage() {
                       onChange={handleInputChange}
                       placeholder="Your country"
                       className="mt-1"
+                      required
                     />
                   </div>
 
@@ -633,7 +668,8 @@ export default function StudyInChinaApplyPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label className="text-gray-700">
-                      Preferred University
+                      Preferred University{" "}
+                      <span className="text-red-500">*</span>
                     </Label>
 
                     <Input
@@ -642,6 +678,7 @@ export default function StudyInChinaApplyPage() {
                       onChange={handleInputChange}
                       placeholder="e.g., Tsinghua University"
                       className="mt-1"
+                      required
                     />
                   </div>
 
@@ -747,7 +784,8 @@ export default function StudyInChinaApplyPage() {
                   isSubmitting ||
                   sessionStatus === "loading" ||
                   !session?.user ||
-                  !isUploadComplete
+                  !isUploadComplete ||
+                  !pricing
                 }
                 className="w-full bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold cursor-pointer"
               >

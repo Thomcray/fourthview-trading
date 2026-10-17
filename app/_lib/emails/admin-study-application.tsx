@@ -10,6 +10,14 @@ import {
   Hr,
 } from "@react-email/components";
 
+const row = {
+  margin: "6px 0",
+  color: "#374151",
+  fontSize: "14px",
+};
+
+const formatUSD = (n: number) => `$${n.toLocaleString("en-US")}`;
+
 export function AdminStudyApplicationEmail({
   applicationId,
   fullName,
@@ -40,7 +48,6 @@ export function AdminStudyApplicationEmail({
   baseUrl: string;
 }) {
   const adminUrl = `${baseUrl}/admin/orders-request?tab=study`;
-  const fmt = (n: number) => `$${n.toLocaleString("en-US")}`;
 
   return (
     <Html>
@@ -97,63 +104,27 @@ export function AdminStudyApplicationEmail({
               Applicant Details
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Application ID:</strong> #{applicationId}
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Name:</strong> {fullName}
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Email:</strong> {email}
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>WhatsApp:</strong> {whatsappNumber}
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Country:</strong> {country}
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Age:</strong> {age}
             </Text>
           </Section>
@@ -177,30 +148,16 @@ export function AdminStudyApplicationEmail({
               Study Preferences
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>University:</strong> {preferredUniversity}
             </Text>
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Program:</strong> {preferredProgram}
             </Text>
 
             {sponsorshipType && (
-              <Text
-                style={{ margin: "6px 0", color: "#374151", fontSize: "14px" }}
-              >
+              <Text style={row}>
                 <strong>Sponsorship:</strong> {sponsorshipType}
               </Text>
             )}
@@ -208,47 +165,24 @@ export function AdminStudyApplicationEmail({
             {applicationFee !== undefined &&
               balanceAfterAdmission !== undefined && (
                 <>
-                  <Text
-                    style={{
-                      margin: "6px 0",
-                      color: "#374151",
-                      fontSize: "14px",
-                    }}
-                  >
-                    <strong>Application fee:</strong> {fmt(applicationFee)}
+                  <Text style={row}>
+                    <strong>Application fee:</strong>{" "}
+                    {formatUSD(applicationFee)}
                   </Text>
 
-                  <Text
-                    style={{
-                      margin: "6px 0",
-                      color: "#374151",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <Text style={row}>
                     <strong>Balance after admission:</strong>{" "}
-                    {fmt(balanceAfterAdmission)}
+                    {formatUSD(balanceAfterAdmission)}
                   </Text>
 
-                  <Text
-                    style={{
-                      margin: "6px 0",
-                      color: "#374151",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <Text style={row}>
                     <strong>Total:</strong>{" "}
-                    {fmt(applicationFee + balanceAfterAdmission)}
+                    {formatUSD(applicationFee + balanceAfterAdmission)}
                   </Text>
                 </>
               )}
 
-            <Text
-              style={{
-                margin: "6px 0",
-                color: "#374151",
-                fontSize: "14px",
-              }}
-            >
+            <Text style={row}>
               <strong>Status:</strong> PENDING
             </Text>
 
