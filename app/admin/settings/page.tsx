@@ -12,6 +12,7 @@ import {
   Shield,
   Building2,
   Search,
+  GraduationCap,
 } from "lucide-react";
 import GeneralSettings from "@/components/Admin/Settings/GeneralSettings";
 import ExchangeRateSettings from "@/components/Admin/Settings/ExchangeRateSettings";
@@ -20,10 +21,12 @@ import ShippingSettings from "@/components/Admin/Settings/ShippingSettings";
 import EmailSettings from "@/components/Admin/Settings/EmailSettings";
 import NotificationSettings from "@/components/Admin/Settings/NotificationSettings";
 import SecuritySettings from "@/components/Admin/Settings/SecuritySettings";
+import StudyFeesSettings from "@/components/Admin/Settings/StudyFeesSettings";
 
 const settingsTabs = [
   { id: "general", label: "General", icon: Building2 },
   { id: "exchange-rate", label: "Exchange Rate", icon: RefreshCw },
+  { id: "study-fees", label: "Study Fees", icon: GraduationCap },
   { id: "payment", label: "Payment", icon: CreditCard },
   { id: "shipping", label: "Shipping", icon: Truck },
   { id: "email", label: "Email", icon: Mail },
@@ -115,6 +118,7 @@ export default function AdminSettingsPage() {
               >
                 {activeTab === "general" && <GeneralSettings />}
                 {activeTab === "exchange-rate" && <ExchangeRateSettings />}
+                {activeTab === "study-fees" && <StudyFeesSettings />}
                 {activeTab === "payment" && <PaymentSettings />}
                 {activeTab === "shipping" && <ShippingSettings />}
                 {activeTab === "email" && <EmailSettings />}

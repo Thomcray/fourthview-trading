@@ -53,7 +53,7 @@ export async function sendApiKeyRotationEmail({
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   await resend.emails.send({
-    from: "Fourthview Security <security@fourthview.com>",
+    from: "Fourthview Security <security@fourthview.online>",
     to,
     subject: "API Key Rotated - Action Required",
     html: `
@@ -229,6 +229,9 @@ export async function sendAdminStudyApplicationEmail({
   preferredUniversity,
   preferredProgram,
   message,
+  sponsorshipType,
+  applicationFee,
+  balanceAfterAdmission,
   baseUrl,
 }: {
   to: string;
@@ -241,12 +244,17 @@ export async function sendAdminStudyApplicationEmail({
   preferredUniversity: string;
   preferredProgram: string;
   message: string | null;
+  sponsorshipType?: string;
+  applicationFee?: number;
+  balanceAfterAdmission?: number;
   baseUrl: string;
 }) {
   await resend.emails.send({
     from: "Fourthview <study@fourthview.online>",
     to,
-    subject: `New Study Application - ${fullName}`,
+    subject: `New Study Application - ${fullName}${
+      sponsorshipType ? ` (${sponsorshipType})` : ""
+    }`,
     react: AdminStudyApplicationEmail({
       applicationId,
       fullName,
@@ -257,6 +265,9 @@ export async function sendAdminStudyApplicationEmail({
       preferredUniversity,
       preferredProgram,
       message,
+      sponsorshipType,
+      applicationFee,
+      balanceAfterAdmission,
       baseUrl,
     }),
   });

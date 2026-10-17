@@ -21,6 +21,7 @@ import {
   BookOpen,
   MessageSquare,
   Trash2,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import DocumentViewerModal from "@/components/Admin/Modals/DocumentViewerModal";
+import {
+  SPONSORSHIP_LABELS,
+  formatUSD,
+  isSponsorshipType,
+} from "@/app/_lib/study-pricing";
 
 type StudyApplication = {
   id: number;
@@ -60,6 +66,9 @@ type StudyApplication = {
       name: string;
     }
   >;
+  sponsorship_type: string | null; // null for older applications
+  application_fee: number | null;
+  balance_due: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -218,7 +227,7 @@ export default function StudyApplicationDetailPage() {
         queryKey: ["studyApplications"],
       });
 
-      router.push("/admin/orders-request");
+      router.push("/admin/orders-request?tab=study");
     },
 
     onError: (error: Error) => {
@@ -303,7 +312,7 @@ export default function StudyApplicationDetailPage() {
           </p>
 
           <Button
-            onClick={() => router.push("/admin/orders-request")}
+            onClick={() => router.push("/admin/orders-request?tab=study")}
             className="bg-blue-600 hover:bg-blue-700"
           >
             Back to Applications
@@ -457,6 +466,92 @@ export default function StudyApplicationDetailPage() {
                       <p className="text-gray-700">{application.message}</p>
                     </div>
                   </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Sponsorship & Fees */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    Sponsorship & Fees
+                  </h2>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {isSponsorshipType(application.sponsorship_type) ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">
+                        Sponsorship type
+                      </span>
+
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          application.sponsorship_type === "scholarship"
+                            ? "bg-indigo-100 text-indigo-700"
+                            : "bg-emerald-100 text-emerald-700"
+                        }`}
+                      >
+                        {SPONSORSHIP_LABELS[application.sponsorship_type]}
+                      </span>
+                    </div>
+
+                    <Separator />
+
+                    {application.application_fee !== null &&
+                    application.balance_due !== null ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">
+                            Application fee
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            {formatUSD(application.application_fee)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">
+                            Balance after admission
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            {formatUSD(application.balance_due)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">
+                          <span className="text-sm font-semibold text-gray-800">
+                            Total
+                          </span>
+                          <span className="font-bold text-blue-700">
+                            {formatUSD(
+                              application.application_fee +
+                                application.balance_due,
+                            )}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No fee amounts recorded.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">
+                    No sponsorship type recorded (application submitted before
+                    this was added).
+                  </p>
                 )}
               </div>
             </motion.div>
