@@ -20,6 +20,9 @@ export function AdminStudyApplicationEmail({
   preferredUniversity,
   preferredProgram,
   message,
+  sponsorshipType,
+  applicationFee,
+  balanceAfterAdmission,
   baseUrl,
 }: {
   applicationId: number;
@@ -31,9 +34,13 @@ export function AdminStudyApplicationEmail({
   preferredUniversity: string;
   preferredProgram: string;
   message: string | null;
+  sponsorshipType?: string;
+  applicationFee?: number;
+  balanceAfterAdmission?: number;
   baseUrl: string;
 }) {
   const adminUrl = `${baseUrl}/admin/orders-request?tab=study`;
+  const fmt = (n: number) => `$${n.toLocaleString("en-US")}`;
 
   return (
     <Html>
@@ -189,6 +196,51 @@ export function AdminStudyApplicationEmail({
             >
               <strong>Program:</strong> {preferredProgram}
             </Text>
+
+            {sponsorshipType && (
+              <Text
+                style={{ margin: "6px 0", color: "#374151", fontSize: "14px" }}
+              >
+                <strong>Sponsorship:</strong> {sponsorshipType}
+              </Text>
+            )}
+
+            {applicationFee !== undefined &&
+              balanceAfterAdmission !== undefined && (
+                <>
+                  <Text
+                    style={{
+                      margin: "6px 0",
+                      color: "#374151",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <strong>Application fee:</strong> {fmt(applicationFee)}
+                  </Text>
+
+                  <Text
+                    style={{
+                      margin: "6px 0",
+                      color: "#374151",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <strong>Balance after admission:</strong>{" "}
+                    {fmt(balanceAfterAdmission)}
+                  </Text>
+
+                  <Text
+                    style={{
+                      margin: "6px 0",
+                      color: "#374151",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <strong>Total:</strong>{" "}
+                    {fmt(applicationFee + balanceAfterAdmission)}
+                  </Text>
+                </>
+              )}
 
             <Text
               style={{

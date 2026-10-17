@@ -26,6 +26,12 @@ import {
   studyDocuments as documents,
   UploadedFile,
 } from "@/app/_lib/study-document-config";
+import {
+  APPLICATION_FEE,
+  STUDY_PLANS as PAYMENT_PLANS,
+  formatUSD,
+  type SponsorshipType,
+} from "@/app/_lib/study-pricing";
 import { useUploadWithProgress } from "@/hooks/useUploadWithProgress";
 import Image from "next/image";
 
@@ -65,6 +71,12 @@ export default function StudyInChinaApplyPage() {
   const isUploadComplete = completedCount === requiredDocuments.length;
 
   const { data: session, status: sessionStatus } = useSession();
+
+  const [sponsorshipType, setSponsorshipType] =
+    useState<SponsorshipType>("scholarship");
+
+  const plan = PAYMENT_PLANS[sponsorshipType];
+  const totalFee = APPLICATION_FEE + plan.balance;
 
   useEffect(() => {
     if (!session?.user) return;
@@ -176,7 +188,7 @@ export default function StudyInChinaApplyPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Create application
+      // Create application
       const appRes = await fetch("/api/study-applications", {
         method: "POST",
         headers: {
@@ -184,6 +196,7 @@ export default function StudyInChinaApplyPage() {
         },
         body: JSON.stringify({
           ...formData,
+          sponsorshipType,
           documents: {},
         }),
       });
@@ -196,7 +209,7 @@ export default function StudyInChinaApplyPage() {
 
       const application = await appRes.json();
 
-      // 2. Upload documents
+      // Upload documents
       const uploadedDocs: Record<
         string,
         {
@@ -242,7 +255,7 @@ export default function StudyInChinaApplyPage() {
         };
       }
 
-      // 3. Save document information
+      // Save document information
       const updateRes = await fetch("/api/study-applications", {
         method: "PATCH",
         headers: {
@@ -260,7 +273,7 @@ export default function StudyInChinaApplyPage() {
         throw new Error(err.error ?? "Failed to update documents");
       }
 
-      // 4. Send confirmation
+      // Send confirmation
       const confirmationResponse = await fetch(
         "/api/study-applications/confirmation",
         {
@@ -282,7 +295,7 @@ export default function StudyInChinaApplyPage() {
         "Application submitted! We'll contact you within 48 hours.",
       );
 
-      // 5. Reset form state
+      // Reset form state
       const firstName = session?.user?.firstName;
       const lastName = session?.user?.lastName;
 
@@ -296,6 +309,8 @@ export default function StudyInChinaApplyPage() {
         preferredProgram: "",
         message: "",
       });
+
+      setSponsorshipType("scholarship");
 
       // Reset upload progress for every uploaded document
       for (const docId of Object.keys(uploadedFiles)) {
@@ -389,6 +404,35 @@ export default function StudyInChinaApplyPage() {
                   </div>
                 </div>
 
+                <div
+                  role="tablist"
+                  aria-label="Sponsorship type"
+                  className="grid grid-cols-2 gap-1 rounded-xl bg-blue-100/70 p-1 mb-5"
+                >
+                  {(Object.keys(PAYMENT_PLANS) as SponsorshipType[]).map(
+                    (type) => {
+                      const isActive = sponsorshipType === type;
+
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          role="tab"
+                          aria-selected={isActive}
+                          onClick={() => setSponsorshipType(type)}
+                          className={`rounded-lg px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer ${
+                            isActive
+                              ? "bg-white text-blue-700 shadow-sm"
+                              : "text-gray-600 hover:text-blue-700"
+                          }`}
+                        >
+                          {PAYMENT_PLANS[type].label}
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                   <div className="rounded-xl bg-white border border-blue-100 p-4">
                     <CalendarDays className="w-5 h-5 text-blue-600 mb-2" />
@@ -431,7 +475,7 @@ export default function StudyInChinaApplyPage() {
                 <div className="rounded-xl bg-white border border-blue-100 overflow-hidden">
                   <div className="p-4 border-b border-gray-100">
                     <h3 className="font-semibold text-gray-900">
-                      Payment Structure
+                      Payment Structure ({plan.label})
                     </h3>
                   </div>
 
@@ -441,15 +485,14 @@ export default function StudyInChinaApplyPage() {
                         <p className="font-medium text-gray-900">
                           1. Application Fee
                         </p>
-
                         <p className="text-sm text-gray-600">
-                          We will first contact you through WhatsApp. The $500
-                          application fee is paid after we contact you.
+                          We will first contact you through WhatsApp. The{" "}
+                          {formatUSD(APPLICATION_FEE)} application fee is paid
+                          after we contact you.
                         </p>
                       </div>
-
                       <span className="font-bold text-blue-700 whitespace-nowrap">
-                        $500
+                        {formatUSD(APPLICATION_FEE)}
                       </span>
                     </div>
 
@@ -458,15 +501,13 @@ export default function StudyInChinaApplyPage() {
                         <p className="font-medium text-gray-900">
                           2. Balance After Admission
                         </p>
-
                         <p className="text-sm text-gray-600">
                           The remaining balance is paid after your admission
                           letter is issued.
                         </p>
                       </div>
-
                       <span className="font-bold text-blue-700 whitespace-nowrap">
-                        $1,300
+                        {formatUSD(plan.balance)}
                       </span>
                     </div>
 
@@ -475,14 +516,13 @@ export default function StudyInChinaApplyPage() {
                         <p className="font-semibold text-gray-900">
                           Total Application Fees
                         </p>
-
                         <p className="text-sm text-gray-600">
-                          $500 application fee + $1,300 after admission
+                          {formatUSD(APPLICATION_FEE)} application fee +{" "}
+                          {formatUSD(plan.balance)} after admission
                         </p>
                       </div>
-
                       <span className="text-lg font-bold text-blue-800 whitespace-nowrap">
-                        $1,800
+                        {formatUSD(totalFee)}
                       </span>
                     </div>
                   </div>

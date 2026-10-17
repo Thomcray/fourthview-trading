@@ -5,6 +5,11 @@ import { NextResponse } from "next/server";
 import { createNotification } from "@/app/_lib/create-notification";
 import { sendAdminStudyApplicationEmail } from "@/app/_lib/email";
 import { getStoreSettings } from "@/app/_lib/settings";
+import {
+  isSponsorshipType,
+  STUDY_PLANS,
+  APPLICATION_FEE,
+} from "@/app/_lib/study-pricing";
 
 // POST: Create a new application for the authenticated user
 export async function POST(req: Request) {
@@ -39,6 +44,18 @@ export async function POST(req: Request) {
       );
     }
 
+    const rawType: unknown = body.sponsorshipType;
+
+    if (!isSponsorshipType(rawType)) {
+      return NextResponse.json(
+        { error: "Please select a valid sponsorship type." },
+        { status: 400 },
+      );
+    }
+
+    const sponsorshipType = rawType;
+    const plan = STUDY_PLANS[sponsorshipType];
+
     if (
       !body.fullName ||
       !body.email ||
@@ -66,6 +83,7 @@ export async function POST(req: Request) {
           preferred_university: body.preferredUniversity,
           preferred_program: body.preferredProgram,
           message: body.message ?? null,
+          sponsorship_type: sponsorshipType,
           documents: {},
           status: "pending",
         },
@@ -92,7 +110,7 @@ export async function POST(req: Request) {
         title: "New Study Application",
         message: `${body.fullName} applied for ${
           body.preferredProgram || "a program"
-        }`,
+        } (${plan.label})`,
         type: "study_application",
         referenceId: application.id.toString(),
       }).catch((err) => {
@@ -111,6 +129,9 @@ export async function POST(req: Request) {
             preferredUniversity: body.preferredUniversity,
             preferredProgram: body.preferredProgram,
             message: body.message ?? null,
+            sponsorshipType: plan.label,
+            applicationFee: APPLICATION_FEE,
+            balanceAfterAdmission: plan.balance,
             baseUrl,
           }).catch((err) => {
             console.error("Study application email error:", err);
